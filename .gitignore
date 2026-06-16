@@ -47,6 +47,10 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Angular cache
+.angular/
+**/.angular/
+
 # Optional npm cache directory
 .npm
 
