@@ -24,6 +24,8 @@ Git
 
 ## Local Setup
 
+For a detailed beginner-friendly setup guide, see [Local Development Setup](docs/local-development.md).
+
 ```bash
 pnpm install
 cp .env.example .env
