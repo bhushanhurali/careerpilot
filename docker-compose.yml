@@ -31,15 +31,20 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-careerpilot}:${POSTGRES_PASSWORD:-careerpilot_dev_password}@postgres:5432/${POSTGRES_DB:-careerpilot}
       CORS_ORIGIN: ${BACKEND_CORS_ORIGIN:-http://localhost:4200}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-at-least-32-characters-access-secret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-replace-with-at-least-32-characters-refresh-secret}
+      ACCESS_TOKEN_TTL_SECONDS: ${ACCESS_TOKEN_TTL_SECONDS:-900}
+      REFRESH_TOKEN_TTL_SECONDS: ${REFRESH_TOKEN_TTL_SECONDS:-2592000}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     ports:
       - '${BACKEND_PORT:-3000}:3000'
     volumes:
-      - ./apps/backend:/workspace/apps/backend
+      - ./apps/backend/src:/workspace/apps/backend/src
+      - ./apps/backend/package.json:/workspace/apps/backend/package.json:ro
+      - ./apps/backend/tsconfig.json:/workspace/apps/backend/tsconfig.json:ro
       - ./package.json:/workspace/package.json:ro
       - ./pnpm-workspace.yaml:/workspace/pnpm-workspace.yaml:ro
       - ./pnpm-lock.yaml:/workspace/pnpm-lock.yaml:ro
-      - backend_node_modules:/workspace/apps/backend/node_modules
-      - root_node_modules:/workspace/node_modules
     command: pnpm --filter @careerpilot/backend dev
 
   frontend:
@@ -49,19 +54,20 @@ services:
     container_name: careerpilot-frontend
     environment:
       NG_APP_API_BASE_URL: ${NG_APP_API_BASE_URL:-http://localhost:3000/api/v1}
+      CHOKIDAR_USEPOLLING: 'true'
     ports:
       - '${FRONTEND_PORT:-4200}:4200'
     volumes:
-      - ./apps/frontend:/workspace/apps/frontend
+      - ./apps/frontend/src:/workspace/apps/frontend/src
+      - ./apps/frontend/angular.json:/workspace/apps/frontend/angular.json:ro
+      - ./apps/frontend/package.json:/workspace/apps/frontend/package.json:ro
+      - ./apps/frontend/tsconfig.json:/workspace/apps/frontend/tsconfig.json:ro
+      - ./apps/frontend/tsconfig.app.json:/workspace/apps/frontend/tsconfig.app.json:ro
+      - ./apps/frontend/tsconfig.spec.json:/workspace/apps/frontend/tsconfig.spec.json:ro
       - ./package.json:/workspace/package.json:ro
       - ./pnpm-workspace.yaml:/workspace/pnpm-workspace.yaml:ro
       - ./pnpm-lock.yaml:/workspace/pnpm-lock.yaml:ro
-      - frontend_node_modules:/workspace/apps/frontend/node_modules
-      - root_node_modules:/workspace/node_modules
-    command: pnpm --filter @careerpilot/frontend dev --host 0.0.0.0
+    command: pnpm --filter @careerpilot/frontend exec ng serve --host 0.0.0.0 --poll 2000
 
 volumes:
   postgres_data:
-  backend_node_modules:
-  frontend_node_modules:
-  root_node_modules:
