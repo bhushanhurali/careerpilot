@@ -1,38 +1,21 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
+
+import { AuthStore } from '../auth/auth.store';
 
 @Component({
   selector: 'cp-app-shell',
-  imports: [MatToolbarModule],
-  template: `
-    <mat-toolbar color="primary">
-      <span>CareerPilot</span>
-    </mat-toolbar>
-
-    <main class="app-shell__content">
-      <h1>CareerPilot foundation is ready.</h1>
-      <p>Phase 0 contains infrastructure only. Business features start in later phases.</p>
-    </main>
-  `,
-  styles: [
-    `
-      .app-shell__content {
-        width: min(960px, calc(100% - 32px));
-        margin: 48px auto;
-      }
-
-      h1 {
-        margin: 0 0 12px;
-        font-size: 2rem;
-        font-weight: 600;
-      }
-
-      p {
-        margin: 0;
-        color: #52616f;
-      }
-    `,
-  ],
+  imports: [MatButtonModule, MatIconModule, MatToolbarModule],
+  templateUrl: './app-shell.component.html',
+  styleUrl: './app-shell.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppShellComponent {}
+export class AppShellComponent {
+  protected readonly authStore = inject(AuthStore);
+
+  protected logout(): void {
+    this.authStore.logout().subscribe();
+  }
+}
