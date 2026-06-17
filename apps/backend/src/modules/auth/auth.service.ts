@@ -1,4 +1,4 @@
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 import { HttpError } from '../../shared/errors/http-error.js';
 import {
@@ -125,7 +125,7 @@ export class AuthService {
     try {
       payload = verifyRefreshToken(rawRefreshToken);
     } catch (error) {
-      if (error instanceof JsonWebTokenError || error instanceof TokenExpiredError) {
+      if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.TokenExpiredError) {
         throw invalidRefreshTokenError();
       }
       throw error;

@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 import { HttpError } from '../shared/errors/http-error.js';
 import { verifyAccessToken } from '../shared/security/jwt.js';
@@ -22,12 +22,12 @@ export const authenticate: RequestHandler = (request, _response, next) => {
     };
     next();
   } catch (error) {
-    if (error instanceof TokenExpiredError) {
+    if (error instanceof jwt.TokenExpiredError) {
       next(new HttpError(401, 'AUTH_TOKEN_EXPIRED', 'Access token has expired'));
       return;
     }
 
-    if (error instanceof JsonWebTokenError || error instanceof Error) {
+    if (error instanceof jwt.JsonWebTokenError || error instanceof Error) {
       next(new HttpError(401, 'AUTH_TOKEN_INVALID', 'Access token is invalid'));
       return;
     }
