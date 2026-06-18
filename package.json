@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.",
+  "author": "Bhushan Hurali",
   "packageManager": "pnpm@10.12.1",
   "engines": {
     "node": ">=22",
