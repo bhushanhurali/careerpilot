@@ -10,6 +10,9 @@ CareerPilot uses:
 - pnpm for package management
 - Git and GitHub for version control
 
+The repository is a pnpm workspace. Run commands from the repository root unless a section says
+otherwise.
+
 ## 1. Required Software
 
 Install these tools before running the project:
@@ -133,12 +136,6 @@ CareerPilot uses Conventional Commits. Use Commitizen instead of manually writin
 pnpm commit
 ```
 
-or:
-
-```bash
-pnpm cz
-```
-
 Example commit:
 
 ```text
@@ -248,10 +245,39 @@ postgres://careerpilot:careerpilot_dev_password@localhost:5432/careerpilot
 Start only PostgreSQL:
 
 ```bash
-docker compose up postgres
+docker compose up -d postgres
 ```
 
-Later phases will add migrations. Phase 0 only creates the migration folder.
+Docker creates the `careerpilot` database automatically the first time the PostgreSQL volume is
+initialized. Docker does not create application tables. Sequelize migrations create the `users`,
+`refresh_tokens`, and migration metadata tables.
+
+Run all pending migrations:
+
+```bash
+pnpm --filter @careerpilot/backend migrate:up
+```
+
+Roll back the most recent migration:
+
+```bash
+pnpm --filter @careerpilot/backend migrate:down
+```
+
+The migration command loads `.env` from the repository root even though the backend package runs
+from `apps/backend`.
+
+Optional pgAdmin connection:
+
+```text
+Host: localhost
+Port: 5432
+Maintenance database: careerpilot
+Username: careerpilot
+Password: careerpilot_dev_password
+```
+
+Use the values from your `.env` if you changed the defaults.
 
 ## 9. Environment Variables
 
@@ -271,6 +297,22 @@ Do not commit `.env`.
 
 The repository commits `.env.example` so every developer knows which variables are required.
 
+The backend validates its environment with Zod at startup. Missing `DATABASE_URL`, JWT secrets, or
+invalid values fail fast instead of producing a partially configured server.
+
+Generate strong local JWT secrets. For example, with Node.js:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+```
+
+Run it twice and use different values for `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET`.
+
+See the comments in `.env.example` for every supported variable. The most important distinction is:
+
+- Host commands use `DATABASE_URL` with host `localhost`.
+- The Docker backend receives a Compose-generated URL with host `postgres`, the service name.
+
 ## 10. Running CareerPilot
 
 Install dependencies:
@@ -279,17 +321,34 @@ Install dependencies:
 pnpm install
 ```
 
-Run frontend and backend locally:
+Start PostgreSQL and apply migrations:
+
+```bash
+docker compose up -d postgres
+pnpm --filter @careerpilot/backend migrate:up
+```
+
+Run frontend and backend together on the host:
 
 ```bash
 pnpm dev
 ```
 
-Or run the full Docker setup:
+Or run them in separate terminals:
+
+```bash
+pnpm --filter @careerpilot/backend dev
+pnpm --filter @careerpilot/frontend dev
+```
+
+Run the complete development stack in Docker:
 
 ```bash
 docker compose up --build
 ```
+
+The development containers install workspace dependencies at image-build time and bind-mount
+source files for hot reload. You do not need to install dependencies inside each container.
 
 Open the frontend:
 
@@ -316,6 +375,9 @@ Expected API response:
 }
 ```
 
+Register a user through the Angular UI at `http://localhost:4200/auth/register`. The browser must
+accept the refresh cookie from `http://localhost:3000`.
+
 ## 11. Quality Commands
 
 Run these before opening a pull request:
@@ -340,6 +402,13 @@ What they do:
 | `pnpm build`            | Builds frontend and backend            |
 | `docker compose config` | Validates Docker Compose configuration |
 
+Run one workspace only:
+
+```bash
+pnpm --filter @careerpilot/backend test
+pnpm --filter @careerpilot/frontend test
+```
+
 ## 12. Troubleshooting
 
 If `pnpm` is missing:
@@ -360,6 +429,39 @@ If port `5432` is already in use:
 - Stop your local PostgreSQL service, or
 - Change `POSTGRES_PORT` in `.env`.
 
+If migrations cannot connect:
+
+- Confirm PostgreSQL is healthy with `docker compose ps`.
+- Confirm host-run migrations use `localhost`, not `postgres`, in `DATABASE_URL`.
+- Confirm the database credentials match the PostgreSQL volume. Changing `POSTGRES_*` after the
+  volume was created does not rewrite the existing database user. Use `docker compose down -v`
+  only when you intentionally want to delete local data and recreate the database.
+
+If auth startup returns `401` before login:
+
+- This is normal when no valid refresh cookie exists.
+- Angular resolves the session as anonymous and allows the login/register routes.
+
+If login succeeds but the cookie is missing:
+
+- Use `http://localhost:4200` and `http://localhost:3000` consistently rather than mixing
+  `localhost` and `127.0.0.1`.
+- Keep `COOKIE_SECURE=false` for local HTTP.
+- Confirm `BACKEND_CORS_ORIGIN=http://localhost:4200`.
+- Inspect the browser Network and Application/Storage panels.
+
+If the frontend cannot call the backend:
+
+- Confirm the backend is available at `http://localhost:3000/api/v1/health`.
+- Confirm `NG_APP_API_BASE_URL=http://localhost:3000/api/v1`.
+- Restart the frontend after changing frontend environment configuration.
+
+If backend environment validation fails:
+
+- Confirm `.env` exists at the repository root.
+- Compare it with `.env.example`.
+- Ensure both JWT secrets contain at least 32 characters.
+
 If frontend tests fail because Chrome cannot start:
 
 - Make sure Google Chrome is installed.
@@ -373,3 +475,13 @@ pnpm install
 ```
 
 Husky hooks are installed through the root `prepare` script.
+
+If Docker dependencies such as `tsx` or `ng` are missing:
+
+```bash
+docker compose down
+docker compose build --no-cache backend frontend
+docker compose up
+```
+
+Do not add host `node_modules` bind mounts. They can mask dependencies installed in the image.

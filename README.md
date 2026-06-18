@@ -2,7 +2,9 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 0 contains the technical foundation only. Authentication, database models, and business features start in later phases.
+Phase 1 authentication is implemented. CareerPilot currently includes registration, login,
+logout, refresh-token rotation, session restoration, route protection, and authentication tests.
+Job-search business features begin in Phase 2.
 
 ## Architecture
 
@@ -10,7 +12,7 @@ Phase 0 contains the technical foundation only. Authentication, database models,
 apps/frontend         Angular 20 standalone frontend
 apps/backend          Node.js 22, Express, TypeScript API
 docker                Development and production container definitions
-docs                  Architecture notes and technical decisions
+docs                  Setup, API, security, architecture, and decision records
 ```
 
 ## Prerequisites
@@ -29,7 +31,9 @@ For a detailed beginner-friendly setup guide, see [Local Development Setup](docs
 ```bash
 pnpm install
 cp .env.example .env
-docker compose up --build
+docker compose up -d postgres
+pnpm --filter @careerpilot/backend migrate:up
+pnpm dev
 ```
 
 Frontend:
@@ -55,8 +59,21 @@ pnpm typecheck
 pnpm format:check
 pnpm --filter @careerpilot/backend migrate:up
 pnpm commit
-pnpm cz
 ```
+
+## Authentication
+
+CareerPilot uses short-lived JWT access tokens held only in frontend memory and rotating refresh
+tokens delivered through HTTP-only cookies. PostgreSQL stores only refresh-token hashes.
+
+Read these documents before changing authentication:
+
+- [Authentication decision record](docs/decisions/0005-authentication-token-strategy.md)
+- [Security notes](docs/security.md)
+- [Authentication API](docs/api.md)
+- [Environment variables](docs/environment.md)
+
+The project intentionally does not store tokens in `localStorage` or `sessionStorage`.
 
 ## Commit Convention
 
@@ -70,4 +87,4 @@ test(auth): add refresh token tests
 docs(readme): update setup guide
 ```
 
-Use `pnpm commit` or `pnpm cz` to create commits interactively.
+Use `pnpm commit` to create commits interactively with Commitizen.
