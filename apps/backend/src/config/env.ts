@@ -18,7 +18,10 @@ const envSchema = z.object({
     .int()
     .positive()
     .default(60 * 60 * 24 * 30),
-  COOKIE_SECURE: z.coerce.boolean().optional(),
+  COOKIE_SECURE: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .optional(),
 });
 
 export const env = envSchema.parse({
