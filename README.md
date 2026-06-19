@@ -61,6 +61,24 @@ pnpm --filter @careerpilot/backend migrate:up
 pnpm commit
 ```
 
+## Database Commands
+
+Start PostgreSQL before running database commands:
+
+```bash
+docker compose up -d postgres
+```
+
+```bash
+pnpm --filter @careerpilot/backend migrate:up
+pnpm --filter @careerpilot/backend migrate:down
+pnpm --filter @careerpilot/backend seed
+```
+
+- `migrate:up` applies pending migrations.
+- `migrate:down` rolls back the most recent migration.
+- `seed` runs the development seed strategy.
+
 ## Authentication
 
 CareerPilot uses short-lived JWT access tokens held only in frontend memory and rotating refresh
