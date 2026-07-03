@@ -9,6 +9,7 @@ import { notFoundHandler } from './middleware/not-found-handler.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { AuthRepository } from './modules/auth/auth.repository.js';
+import { createCompaniesRouter } from './modules/companies/companies.routes.js';
 import { ok } from './shared/responses/api-response.js';
 
 type CreateAppOptions = {
@@ -34,6 +35,7 @@ export function createApp(options: CreateAppOptions = {}) {
   });
 
   app.use('/api/v1/auth', createAuthRouter(options));
+  app.use('/api/v1/companies', createCompaniesRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);
