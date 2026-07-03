@@ -2,6 +2,8 @@ import { Sequelize } from 'sequelize';
 
 import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
+import { CompanyModel } from './models/company.model.js';
+import { ContactModel } from './models/contact.model.js';
 import { RefreshTokenModel } from './models/refresh-token.model.js';
 import { UserModel } from './models/user.model.js';
 
@@ -12,6 +14,8 @@ export const sequelize = new Sequelize(env.DATABASE_URL, {
 
 UserModel.initialize(sequelize);
 RefreshTokenModel.initialize(sequelize);
+CompanyModel.initialize(sequelize);
+ContactModel.initialize(sequelize);
 
 UserModel.hasMany(RefreshTokenModel, {
   foreignKey: 'userId',
@@ -26,4 +30,24 @@ RefreshTokenModel.belongsTo(UserModel, {
 RefreshTokenModel.belongsTo(RefreshTokenModel, {
   foreignKey: 'replacedByTokenId',
   as: 'replacementToken',
+});
+
+UserModel.hasMany(CompanyModel, {
+  foreignKey: 'userId',
+  as: 'companies',
+});
+
+CompanyModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user',
+});
+
+CompanyModel.hasMany(ContactModel, {
+  foreignKey: 'companyId',
+  as: 'contacts',
+});
+
+ContactModel.belongsTo(CompanyModel, {
+  foreignKey: 'companyId',
+  as: 'company',
 });
