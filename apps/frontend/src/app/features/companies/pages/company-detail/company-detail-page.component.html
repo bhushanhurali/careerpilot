@@ -1,0 +1,55 @@
+<a mat-button routerLink="/companies">Back to companies</a>
+
+@if (companyStore.selectedLoading()) {
+  <div class="state-panel">Loading company...</div>
+} @else if (companyStore.selectedCompany(); as company) {
+  <section class="detail-header">
+    <div>
+      <h1>{{ company.name }}</h1>
+      <p>{{ company.industry || 'No industry' }} · {{ company.location || 'No location' }}</p>
+    </div>
+    <div class="detail-actions">
+      <a mat-flat-button color="primary" [routerLink]="['/companies', company.id, 'edit']">
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </a>
+      <button mat-button type="button" (click)="deleteCompany()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="detail-grid" aria-label="Company details">
+    <div>
+      <span>Website</span>
+      @if (company.website) {
+        <a [href]="company.website" target="_blank" rel="noreferrer">{{ company.website }}</a>
+      } @else {
+        <p>-</p>
+      }
+    </div>
+    <div>
+      <span>Created</span>
+      <p>{{ company.createdAt | date: 'medium' }}</p>
+    </div>
+    <div>
+      <span>Updated</span>
+      <p>{{ company.updatedAt | date: 'medium' }}</p>
+    </div>
+    <div class="detail-grid__wide">
+      <span>Notes</span>
+      <p>{{ company.notes || '-' }}</p>
+    </div>
+  </section>
+
+  <section class="state-panel">
+    <h2>Contacts</h2>
+    <p>Contact management will be added in the next frontend step.</p>
+  </section>
+} @else {
+  <div class="state-panel">
+    <p>{{ companyStore.error() || 'Company was not found.' }}</p>
+    <a mat-button routerLink="/companies">Return to companies</a>
+  </div>
+}

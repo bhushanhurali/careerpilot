@@ -1,0 +1,59 @@
+<form class="company-form" [formGroup]="form" (ngSubmit)="submit()">
+  <mat-form-field appearance="outline">
+    <mat-label>Company name</mat-label>
+    <input matInput formControlName="name" autocomplete="organization" />
+    @if (fieldError('name')) {
+      <mat-error>{{ fieldError('name') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Website</mat-label>
+    <input matInput formControlName="website" autocomplete="url" />
+    @if (fieldError('website')) {
+      <mat-error>{{ fieldError('website') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="company-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Industry</mat-label>
+      <input matInput formControlName="industry" autocomplete="off" />
+      @if (fieldError('industry')) {
+        <mat-error>{{ fieldError('industry') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Location</mat-label>
+      <input matInput formControlName="location" autocomplete="address-level2" />
+      @if (fieldError('location')) {
+        <mat-error>{{ fieldError('location') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Notes</mat-label>
+    <textarea matInput formControlName="notes" rows="5"></textarea>
+    @if (fieldError('notes')) {
+      <mat-error>{{ fieldError('notes') }}</mat-error>
+    }
+  </mat-form-field>
+
+  @if (errorMessage) {
+    <p class="form-error">{{ errorMessage }}</p>
+  }
+
+  <div class="company-form__actions">
+    <button mat-button type="button" [disabled]="isSaving" (click)="cancelForm.emit()">
+      Cancel
+    </button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+      @if (isSaving) {
+        <mat-progress-spinner diameter="18" mode="indeterminate" />
+      }
+      <span>{{ submitLabel }}</span>
+    </button>
+  </div>
+</form>

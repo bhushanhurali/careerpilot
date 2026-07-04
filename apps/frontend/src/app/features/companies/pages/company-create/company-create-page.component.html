@@ -1,0 +1,11 @@
+<section class="form-page">
+  <a mat-button routerLink="/companies">Back to companies</a>
+  <h1>Create company</h1>
+  <cp-company-form
+    submitLabel="Create company"
+    [isSaving]="companyStore.saving()"
+    [errorMessage]="companyStore.formError()?.message ?? null"
+    (saveCompany)="save($event)"
+    (cancelForm)="cancel()"
+  />
+</section>
