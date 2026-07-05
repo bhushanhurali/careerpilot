@@ -168,33 +168,37 @@ describe('companies API', () => {
     expect(response.status).toBe(201);
   });
 
-  it('lists only the authenticated user companies with search, filters, pagination, and deterministic sorting', async () => {
+  it('lists only the authenticated user companies with search, partial filters, pagination, and deterministic sorting', async () => {
     const user = await createTestUser('owner@example.com');
     const otherUser = await createTestUser('other@example.com');
 
     await createCompany(user.id, 'Acme GmbH', {
-      industry: 'Software',
-      location: 'Berlin',
+      industry: 'Cloud Software',
+      location: 'Munich, Germany',
     });
     await createCompany(user.id, 'Acme Labs', {
-      industry: 'Software',
-      location: 'Berlin',
+      industry: 'Enterprise Software',
+      location: 'Munich, Germany',
     });
     await createCompany(user.id, 'Beta AG', {
       industry: 'Software',
-      location: 'Berlin',
+      location: 'Munich, Germany',
+    });
+    await createCompany(user.id, 'Acme Finance', {
+      industry: 'Financial Services',
+      location: 'Germany',
     });
     await createCompany(otherUser.id, 'Acme Other', {
-      industry: 'Software',
-      location: 'Berlin',
+      industry: 'Enterprise Software',
+      location: 'Munich, Germany',
     });
 
     const response = await request(app)
       .get('/api/v1/companies')
       .query({
         search: 'acme',
-        industry: 'software',
-        location: 'berlin',
+        industry: 'SOFT',
+        location: 'mun',
         sortBy: 'name',
         sortDirection: 'desc',
         page: 1,
@@ -212,6 +216,26 @@ describe('companies API', () => {
       total: 2,
       totalPages: 2,
     });
+
+    const germanyResponse = await request(app)
+      .get('/api/v1/companies')
+      .query({
+        search: 'acme',
+        industry: 'software',
+        location: 'Germany',
+        sortBy: 'name',
+        sortDirection: 'asc',
+        page: 1,
+        pageSize: 10,
+      })
+      .set(authorize(user.accessToken));
+    const germanyBody = germanyResponse.body as ApiResponse<CompaniesResponse>;
+
+    expect(germanyResponse.status).toBe(200);
+    expect(germanyBody.data?.companies.map((company) => company.name)).toEqual([
+      'Acme GmbH',
+      'Acme Labs',
+    ]);
   });
 
   it('returns owned company details and conceals cross-user companies as not found', async () => {

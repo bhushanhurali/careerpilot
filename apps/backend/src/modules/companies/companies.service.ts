@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { Op, UniqueConstraintError, WhereOptions, col, fn, where } from 'sequelize';
+import { Op, UniqueConstraintError, WhereOptions } from 'sequelize';
 
 import { CompanyModel } from '../../db/models/company.model.js';
 import { ContactModel } from '../../db/models/contact.model.js';
@@ -71,11 +71,19 @@ function buildCompanyWhere(userId: string, query: ListCompaniesQuery): WhereOpti
   }
 
   if (query.industry) {
-    filters.push(where(fn('lower', col('industry')), query.industry.toLowerCase()));
+    filters.push({
+      industry: {
+        [Op.iLike]: `%${query.industry}%`,
+      },
+    });
   }
 
   if (query.location) {
-    filters.push(where(fn('lower', col('location')), query.location.toLowerCase()));
+    filters.push({
+      location: {
+        [Op.iLike]: `%${query.location}%`,
+      },
+    });
   }
 
   return {
