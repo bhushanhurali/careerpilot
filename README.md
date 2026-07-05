@@ -2,10 +2,10 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 2 companies and contacts are implemented. CareerPilot currently includes registration,
-login, logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
-management, soft deletion, route protection, and frontend/backend tests for the completed feature
-set.
+Phase 3 job applications are implemented. CareerPilot currently includes registration, login,
+logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
+management, protected job application CRUD, soft deletion, route protection, and frontend/backend
+tests for the completed feature set.
 
 ## Architecture
 
@@ -15,6 +15,16 @@ apps/backend          Node.js 22, Express, TypeScript API
 docker                Development and production container definitions
 docs                  Setup, API, security, architecture, and decision records
 ```
+
+## Roadmap Status
+
+| Phase   | Status   | Scope                                                                          |
+| ------- | -------- | ------------------------------------------------------------------------------ |
+| Phase 0 | Complete | Monorepo, tooling, Docker, CI foundation                                       |
+| Phase 1 | Complete | Authentication, token flow, frontend auth foundation, auth tests, docs         |
+| Phase 2 | Complete | Companies, nested contacts, ownership, soft deletion, frontend workflows, docs |
+| Phase 3 | Complete | Job application model, API, frontend workflows, tests, docs                    |
+| Phase 4 | Next     | Status history and immutable application status timeline                       |
 
 ## Prerequisites
 
@@ -114,6 +124,30 @@ Read these documents before changing Phase 2 behavior:
 - [Database plan](docs/database.md)
 - [API documentation](docs/api.md)
 - [Company/contact ownership ADR](docs/decisions/0006-company-contact-ownership.md)
+
+## Job Applications
+
+Authenticated users can manage job applications linked to one owned company and, optionally, one
+contact from that company. Applications use top-level routes because they are now the central
+pipeline resource:
+
+```text
+/applications
+/applications/new
+/applications/:applicationId
+/applications/:applicationId/edit
+```
+
+The backend enforces ownership with `job_applications.user_id` and validates that the selected
+company belongs to the current user. When a contact is supplied, it must belong to the selected
+company. Cross-user application access returns `404`.
+
+Read these documents before changing Phase 3 behavior:
+
+- [Architecture](docs/architecture.md)
+- [Database plan](docs/database.md)
+- [API documentation](docs/api.md)
+- [Application ownership ADR](docs/decisions/0007-job-application-ownership.md)
 
 ## Commit Convention
 

@@ -250,7 +250,7 @@ docker compose up -d postgres
 
 Docker creates the `careerpilot` database automatically the first time the PostgreSQL volume is
 initialized. Docker does not create application tables. Sequelize migrations create the `users`,
-`refresh_tokens`, `companies`, `contacts`, and migration metadata tables.
+`refresh_tokens`, `companies`, `contacts`, `job_applications`, and migration metadata tables.
 
 Run all pending migrations:
 

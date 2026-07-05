@@ -573,3 +573,231 @@ Success: `200 OK`
   "meta": {}
 }
 ```
+
+## Application Conventions
+
+All application endpoints require a bearer access token.
+
+Applications are exposed as top-level resources because they are the user's job-search pipeline.
+They still validate their relationships:
+
+- Every application belongs directly to the authenticated user through `userId`.
+- `companyId` is required and must reference an active company owned by the authenticated user.
+- `contactId` is optional. When supplied, it must reference an active contact belonging to the
+  selected company.
+- Cross-user application access returns `404`, the same as a nonexistent application.
+- Request bodies must not include IDs, `userId`, timestamps, or deletion fields.
+- Empty optional strings are stored as `null`.
+
+Allowed status values:
+
+```text
+draft, applied, screening, interviewing, offer, rejected, withdrawn, accepted
+```
+
+Allowed priority values:
+
+```text
+low, medium, high
+```
+
+## GET `/applications`
+
+Lists the authenticated user's active job applications.
+
+Authentication: bearer access token required.
+
+Query parameters:
+
+| Name             | Default     | Notes                                                                                  |
+| ---------------- | ----------- | -------------------------------------------------------------------------------------- |
+| `page`           | `1`         | Integer from 1 to 10000                                                                |
+| `pageSize`       | `20`        | Integer from 1 to 100                                                                  |
+| `search`         | none        | Searches job title, source, location, and company name                                 |
+| `status`         | none        | One allowed status value                                                               |
+| `priority`       | none        | `low`, `medium`, or `high`                                                             |
+| `companyId`      | none        | UUID of an owned company                                                               |
+| `contactId`      | none        | UUID of a contact linked to applications                                               |
+| `source`         | none        | Case-insensitive source substring filter                                               |
+| `location`       | none        | Case-insensitive location substring filter                                             |
+| `employmentType` | none        | Exact employment-type filter                                                           |
+| `workMode`       | none        | Exact work-mode filter                                                                 |
+| `sortBy`         | `updatedAt` | `jobTitle`, `status`, `priority`, `companyName`, `appliedAt`, `createdAt`, `updatedAt` |
+| `sortDirection`  | `desc`      | `asc` or `desc`                                                                        |
+
+Success: `200 OK`
+
+```json
+{
+  "success": true,
+  "data": {
+    "applications": [
+      {
+        "id": "1b92a414-29d6-4625-96cc-f4c036d78a0a",
+        "userId": "f3641248-51a8-4fc3-a65a-e99daac7cb14",
+        "companyId": "56e1a95a-35fa-4e0e-a2f2-0268ca7f58cf",
+        "contactId": "292f9b7e-b573-4a84-8970-f90a2eed26bd",
+        "jobTitle": "Senior Angular Developer",
+        "jobUrl": "https://acme.example/jobs/angular",
+        "source": "LinkedIn",
+        "status": "applied",
+        "priority": "high",
+        "salaryMin": 65000,
+        "salaryMax": 80000,
+        "salaryCurrency": "EUR",
+        "location": "Munich, Germany",
+        "employmentType": "full_time",
+        "workMode": "hybrid",
+        "appliedAt": "2026-07-05",
+        "notes": "Strong frontend role.",
+        "company": {
+          "id": "56e1a95a-35fa-4e0e-a2f2-0268ca7f58cf",
+          "name": "Acme GmbH"
+        },
+        "contact": {
+          "id": "292f9b7e-b573-4a84-8970-f90a2eed26bd",
+          "firstName": "Ada",
+          "lastName": "Lovelace",
+          "email": "ada@example.com"
+        },
+        "createdAt": "2026-07-05T10:00:00.000Z",
+        "updatedAt": "2026-07-05T10:00:00.000Z"
+      }
+    ]
+  },
+  "error": null,
+  "meta": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+## POST `/applications`
+
+Creates an application for an owned company.
+
+Authentication: bearer access token required.
+
+Request:
+
+```json
+{
+  "companyId": "56e1a95a-35fa-4e0e-a2f2-0268ca7f58cf",
+  "contactId": "292f9b7e-b573-4a84-8970-f90a2eed26bd",
+  "jobTitle": "Senior Angular Developer",
+  "jobUrl": "https://acme.example/jobs/angular",
+  "source": "LinkedIn",
+  "status": "applied",
+  "priority": "high",
+  "salaryMin": 65000,
+  "salaryMax": 80000,
+  "salaryCurrency": "EUR",
+  "location": "Munich, Germany",
+  "employmentType": "full_time",
+  "workMode": "hybrid",
+  "appliedAt": "2026-07-05",
+  "notes": "Strong frontend role."
+}
+```
+
+Validation:
+
+- `companyId`: required UUID of an active company owned by the authenticated user.
+- `contactId`: optional UUID or `null`; must belong to `companyId` when supplied.
+- `jobTitle`: required, trimmed, 1 to 160 characters.
+- `jobUrl`: optional valid URL, maximum 2048 characters.
+- `source`: optional, maximum 120 characters.
+- `status`: optional; defaults to `draft`.
+- `priority`: optional; defaults to `medium`.
+- `salaryMin` and `salaryMax`: optional non-negative integers.
+- `salaryCurrency`: required when either salary value is supplied; normalized to uppercase
+  3-letter format.
+- `salaryMin <= salaryMax` when both salary values are present.
+- `location`: optional, maximum 160 characters.
+- `employmentType` and `workMode`: optional, maximum 80 characters.
+- `appliedAt`: optional `YYYY-MM-DD` date-only value.
+- `notes`: optional, maximum 10000 characters.
+- Additional fields are rejected.
+
+Success: `201 Created`
+
+Response body contains `{ "application": ... }` using the application shape from the list endpoint.
+
+Errors:
+
+| Status | Code                       | Meaning                                                          |
+| ------ | -------------------------- | ---------------------------------------------------------------- |
+| `400`  | `VALIDATION_ERROR`         | Body or query does not match the schema                          |
+| `400`  | `CONTACT_COMPANY_MISMATCH` | Owned contact exists but belongs to a different selected company |
+| `400`  | `INVALID_SALARY_RANGE`     | Salary rules are not satisfied                                   |
+| `401`  | `AUTH_TOKEN_MISSING`       | Bearer token was not supplied                                    |
+| `404`  | `COMPANY_NOT_FOUND`        | Company does not exist or belongs elsewhere                      |
+| `404`  | `CONTACT_NOT_FOUND`        | Contact does not exist or belongs elsewhere                      |
+| `500`  | `INTERNAL_SERVER_ERROR`    | Unexpected server failure                                        |
+
+## GET `/applications/:applicationId`
+
+Returns one owned active application.
+
+Authentication: bearer access token required.
+
+Success: `200 OK`
+
+Response body contains `{ "application": ... }`.
+
+Errors:
+
+| Status | Code                    | Meaning                                         |
+| ------ | ----------------------- | ----------------------------------------------- |
+| `400`  | `VALIDATION_ERROR`      | `applicationId` is not a UUID                   |
+| `401`  | `AUTH_TOKEN_MISSING`    | Bearer token was not supplied                   |
+| `404`  | `APPLICATION_NOT_FOUND` | Application does not exist or belongs elsewhere |
+| `500`  | `INTERNAL_SERVER_ERROR` | Unexpected server failure                       |
+
+## PATCH `/applications/:applicationId`
+
+Updates one owned active application.
+
+Authentication: bearer access token required.
+
+Request body: any non-empty subset of the create-application fields. If `companyId` changes, the
+existing or supplied `contactId` must still belong to the resulting company. Send `contactId: null`
+to clear the selected contact.
+
+Success: `200 OK`
+
+Response body contains `{ "application": ... }`.
+
+Errors use the same codes as `POST /applications`, plus `APPLICATION_NOT_FOUND` when the target
+application does not exist or belongs to another user.
+
+## DELETE `/applications/:applicationId`
+
+Soft-deletes one owned active application.
+
+Authentication: bearer access token required.
+
+Success: `200 OK`
+
+```json
+{
+  "success": true,
+  "data": {
+    "deleted": true
+  },
+  "error": null,
+  "meta": {}
+}
+```
+
+Errors:
+
+| Status | Code                    | Meaning                                         |
+| ------ | ----------------------- | ----------------------------------------------- |
+| `400`  | `VALIDATION_ERROR`      | `applicationId` is not a UUID                   |
+| `401`  | `AUTH_TOKEN_MISSING`    | Bearer token was not supplied                   |
+| `404`  | `APPLICATION_NOT_FOUND` | Application does not exist or belongs elsewhere |
+| `500`  | `INTERNAL_SERVER_ERROR` | Unexpected server failure                       |

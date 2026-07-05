@@ -24,6 +24,9 @@ apps/backend/src/db/seeds
   timestamp.
 - `contacts`: recruiter or hiring contacts that belong to one company, optional communication
   fields, timestamps, and soft-delete timestamp.
+- `job_applications`: authenticated user's application pipeline entries linked to one company and
+  optionally one contact, with status, priority, salary, applied-date, notes, timestamps, and
+  soft-delete timestamp.
 - `SequelizeMeta`: migration names applied by Umzug's Sequelize storage.
 
 The application does not use `sequelize.sync()`. Migrations are the only supported way to change
@@ -53,6 +56,12 @@ pnpm --filter @careerpilot/backend migrate:down
 - Use Sequelize paranoid soft deletion for companies and contacts.
 - Implement company/contact soft-delete propagation explicitly in the service layer inside a
   transaction, not with a PostgreSQL trigger.
+- Store `job_applications.user_id` directly because applications are queried through top-level
+  pipeline routes.
+- Require every job application to reference an owned company. Optional contacts must belong to the
+  selected company.
+- Use Sequelize paranoid soft deletion for job applications.
+- Defer status history until Phase 4; Phase 3 stores only the current application status.
 
 ## Companies
 
@@ -108,6 +117,67 @@ Important constraints and indexes:
 - `contacts_company_id_idx` supports nested route lookups.
 - `contacts_company_id_name_idx` supports deterministic name sorting within a company.
 - `contacts_company_id_email_idx` supports email lookup/search within a company.
+
+## Job Applications
+
+`job_applications` stores the user's current application pipeline. It is intentionally top-level in
+the API and frontend, but it still validates links to owned companies and their contacts.
+
+| Column            | Type          | Required | Notes                                                   |
+| ----------------- | ------------- | -------- | ------------------------------------------------------- |
+| `id`              | UUID          | Yes      | Primary key                                             |
+| `user_id`         | UUID          | Yes      | FK to `users.id`; direct owner of the application       |
+| `company_id`      | UUID          | Yes      | FK to `companies.id`; selected company                  |
+| `contact_id`      | UUID          | No       | FK to `contacts.id`; set to null if hard-deleted        |
+| `job_title`       | varchar(160)  | Yes      | Trimmed, non-empty                                      |
+| `job_url`         | varchar(2048) | No       | Validated by the API as a URL                           |
+| `source`          | varchar(120)  | No       | Application source, such as LinkedIn or referral        |
+| `status`          | varchar(40)   | Yes      | Defaults to `draft`; constrained to allowed statuses    |
+| `priority`        | varchar(20)   | Yes      | Defaults to `medium`; constrained to allowed priorities |
+| `salary_min`      | integer       | No       | Must be non-negative                                    |
+| `salary_max`      | integer       | No       | Must be non-negative and `>= salary_min` when both set  |
+| `salary_currency` | char(3)       | No       | Required when salary is provided; uppercase ISO-like    |
+| `location`        | varchar(160)  | No       | Optional filter field                                   |
+| `employment_type` | varchar(80)   | No       | Optional filter field                                   |
+| `work_mode`       | varchar(80)   | No       | Optional filter field                                   |
+| `applied_at`      | date          | No       | Date-only value, not a timestamp                        |
+| `notes`           | text          | No       | User notes                                              |
+| `created_at`      | timestamp     | Yes      | Managed by Sequelize                                    |
+| `updated_at`      | timestamp     | Yes      | Managed by Sequelize                                    |
+| `deleted_at`      | timestamp     | No       | Set by Sequelize paranoid soft deletion                 |
+
+Allowed status values:
+
+```text
+draft, applied, screening, interviewing, offer, rejected, withdrawn, accepted
+```
+
+Allowed priority values:
+
+```text
+low, medium, high
+```
+
+Important constraints and indexes:
+
+- `job_applications_job_title_trimmed_not_empty_check` prevents whitespace-only titles.
+- `job_applications_status_check` constrains status values.
+- `job_applications_priority_check` constrains priority values.
+- `job_applications_salary_non_negative_check` prevents negative salary values.
+- `job_applications_salary_range_check` enforces `salary_min <= salary_max` when both are present.
+- `job_applications_salary_currency_required_check` requires currency when salary is provided.
+- `job_applications_salary_currency_format_check` requires uppercase 3-letter currency when set.
+- `job_applications_user_id_idx` supports ownership-scoped queries.
+- `job_applications_user_id_status_idx` supports status filtering.
+- `job_applications_user_id_company_id_idx` supports company filtering.
+- `job_applications_user_id_contact_id_idx` supports contact filtering.
+- `job_applications_user_id_applied_at_idx` supports applied-date sorting and future reporting.
+- `job_applications_user_id_updated_at_idx` supports default list sorting.
+- `job_applications_user_id_job_title_idx` supports deterministic title sorting.
+
+There is no duplicate-application uniqueness rule in Phase 3. Users may track multiple
+applications with the same title and company because real hiring processes can contain repeated or
+similar roles.
 
 ## Test Database Safety
 
