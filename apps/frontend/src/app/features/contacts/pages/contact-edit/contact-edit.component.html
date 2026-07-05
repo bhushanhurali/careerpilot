@@ -1,0 +1,22 @@
+<a mat-button [routerLink]="['/companies', companyId, 'contacts', contactId]">Back to contact</a>
+
+@if (contactStore.selectedLoading()) {
+  <div class="state-panel">Loading contact...</div>
+} @else if (contactStore.selectedContact(); as contact) {
+  <section class="form-page">
+    <h1>Edit contact</h1>
+    <cp-contact-form
+      submitLabel="Save contact"
+      [contact]="contact"
+      [isSaving]="contactStore.saving()"
+      [errorMessage]="contactStore.formError()?.message ?? null"
+      (saveContact)="save($event)"
+      (cancelForm)="cancel()"
+    />
+  </section>
+} @else {
+  <div class="state-panel">
+    <p>{{ contactStore.error() || 'Contact was not found.' }}</p>
+    <a mat-button [routerLink]="['/companies', companyId]">Return to company</a>
+  </div>
+}

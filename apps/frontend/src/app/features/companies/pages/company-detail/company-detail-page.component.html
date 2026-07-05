@@ -43,10 +43,7 @@
     </div>
   </section>
 
-  <section class="state-panel">
-    <h2>Contacts</h2>
-    <p>Contact management will be added in the next frontend step.</p>
-  </section>
+  <cp-contact-list [companyId]="company.id" [companyName]="company.name" />
 } @else {
   <div class="state-panel">
     <p>{{ companyStore.error() || 'Company was not found.' }}</p>

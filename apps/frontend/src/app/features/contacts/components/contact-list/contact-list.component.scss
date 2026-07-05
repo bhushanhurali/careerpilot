@@ -1,0 +1,62 @@
+.contacts-section {
+  display: grid;
+  gap: 16px;
+}
+
+.contacts-section__header,
+.contact-filters {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.contacts-section__header h2,
+.contacts-section__header p {
+  margin: 0;
+}
+
+.contacts-section__header p {
+  margin-top: 4px;
+  color: #52616f;
+}
+
+.contact-filters {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+}
+
+.table-shell {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+}
+
+.state-panel {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  padding: 24px;
+  text-align: center;
+  background: #ffffff;
+  border: 1px solid #d8e0e8;
+  border-radius: 8px;
+}
+
+.state-panel h3 {
+  margin: 0;
+}
+
+@media (width <= 720px) {
+  .contacts-section__header,
+  .contact-filters {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

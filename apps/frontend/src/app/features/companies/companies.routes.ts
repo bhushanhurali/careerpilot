@@ -16,6 +16,10 @@ export const companyRoutes: Routes = [
       ),
   },
   {
+    path: ':companyId/contacts',
+    loadChildren: () => import('../contacts/contacts.routes').then((m) => m.contactRoutes),
+  },
+  {
     path: ':companyId',
     loadComponent: () =>
       import('./pages/company-detail/company-detail-page.component').then(

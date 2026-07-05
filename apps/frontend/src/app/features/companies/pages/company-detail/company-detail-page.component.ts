@@ -6,12 +6,20 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { CompanyStore } from '../../data-access/company.store';
+import { ContactListComponent } from '../../../contacts/components/contact-list/contact-list.component';
 import { CompanyDeleteDialogComponent } from '../../components/company-delete-dialog/company-delete-dialog.component';
+import { CompanyStore } from '../../data-access/company.store';
 
 @Component({
   selector: 'cp-company-detail-page',
-  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ContactListComponent,
+    MatButtonModule,
+    MatIconModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './company-detail-page.component.html',
   styleUrl: './company-detail-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
