@@ -1,5 +1,8 @@
 <mat-toolbar color="primary">
-  <span>CareerPilot</span>
+  <a class="brand-link" routerLink="/companies">CareerPilot</a>
+  <nav class="primary-nav" aria-label="Primary navigation">
+    <a mat-button routerLink="/companies" routerLinkActive="active-link">Companies</a>
+  </nav>
   <span class="toolbar-spacer"></span>
   @switch (authStore.status()) {
     @case ('authenticated') {
@@ -15,6 +18,5 @@
 </mat-toolbar>
 
 <main class="app-shell__content">
-  <h1>CareerPilot foundation is ready.</h1>
-  <p>Your authenticated workspace is ready for the next feature phase.</p>
+  <router-outlet />
 </main>

@@ -1,0 +1,76 @@
+<a mat-button [routerLink]="['/companies', companyId]">Back to company</a>
+
+@if (contactStore.selectedLoading()) {
+  <div class="state-panel">Loading contact...</div>
+} @else if (contactStore.selectedContact(); as contact) {
+  <section class="detail-header">
+    <div>
+      <h1>{{ fullName(contact) }}</h1>
+      <p>{{ contact.roleTitle || 'No role title' }}</p>
+    </div>
+    <div class="detail-actions">
+      <a
+        mat-flat-button
+        color="primary"
+        [routerLink]="['/companies', companyId, 'contacts', contact.id, 'edit']"
+      >
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </a>
+      <button mat-button type="button" (click)="deleteContact()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="detail-grid" aria-label="Contact details">
+    <div>
+      <span>Email</span>
+      @if (contact.email) {
+        <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+      } @else {
+        <p>-</p>
+      }
+    </div>
+    <div>
+      <span>Phone</span>
+      @if (contact.phone) {
+        <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
+      } @else {
+        <p>-</p>
+      }
+    </div>
+    <div>
+      <span>LinkedIn</span>
+      @if (contact.linkedInUrl) {
+        <a [href]="contact.linkedInUrl" target="_blank" rel="noreferrer">
+          {{ contact.linkedInUrl }}
+        </a>
+      } @else {
+        <p>-</p>
+      }
+    </div>
+    <div>
+      <span>Created</span>
+      <p>{{ contact.createdAt | date: 'medium' }}</p>
+    </div>
+    <div>
+      <span>Updated</span>
+      <p>{{ contact.updatedAt | date: 'medium' }}</p>
+    </div>
+    <div>
+      <span>Company</span>
+      <a [routerLink]="['/companies', companyId]">View parent company</a>
+    </div>
+    <div class="detail-grid__wide">
+      <span>Notes</span>
+      <p>{{ contact.notes || '-' }}</p>
+    </div>
+  </section>
+} @else {
+  <div class="state-panel">
+    <p>{{ contactStore.error() || 'Contact was not found.' }}</p>
+    <a mat-button [routerLink]="['/companies', companyId]">Return to company</a>
+  </div>
+}

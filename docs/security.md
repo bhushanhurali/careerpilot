@@ -78,6 +78,21 @@ The Express `authenticate` middleware is the security boundary. It requires a be
 and attaches the verified user ID and role to the request. Future role checks can use the existing
 `requireRole` middleware, but no admin feature is exposed in Phase 1.
 
+## Business Data Authorization
+
+Phase 2 adds authenticated company and contact data.
+
+- Every company query is scoped by both company ID and authenticated user ID.
+- Cross-user company reads, updates, and deletes return `404`, not `403`, so the API does not
+  reveal whether another user's record exists.
+- Contact routes are nested under companies. The service first verifies the parent company belongs
+  to the authenticated user, then scopes the contact query by `company_id` and contact ID.
+- Request bodies never accept `userId`, `companyId`, IDs, timestamps, or deletion fields.
+- Company deletion soft-deletes the owned company and its active contacts in one transaction.
+
+Frontend route guards improve navigation only. They do not enforce ownership. The backend service
+layer is the authorization boundary for companies and contacts.
+
 ## Validation and Error Handling
 
 - Zod validates and normalizes authentication request bodies.

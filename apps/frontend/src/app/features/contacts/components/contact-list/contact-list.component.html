@@ -1,0 +1,123 @@
+<section class="contacts-section" aria-labelledby="contacts-heading">
+  <div class="contacts-section__header">
+    <div>
+      <h2 id="contacts-heading">Contacts</h2>
+      <p>Recruiters and hiring contacts linked to {{ companyName }}.</p>
+    </div>
+    <a mat-flat-button color="primary" [routerLink]="['/companies', companyId, 'contacts', 'new']">
+      <mat-icon>person_add</mat-icon>
+      <span>Add contact</span>
+    </a>
+  </div>
+
+  <form class="contact-filters" [formGroup]="filtersForm">
+    <mat-form-field appearance="outline">
+      <mat-label>Search contacts</mat-label>
+      <input matInput formControlName="search" />
+    </mat-form-field>
+    <button mat-button type="button" (click)="clearSearch()">Clear</button>
+  </form>
+
+  @if (contactStore.loading()) {
+    <div class="state-panel">
+      <mat-progress-spinner mode="indeterminate" diameter="36" />
+    </div>
+  } @else if (contactStore.error()) {
+    <div class="state-panel">
+      <p>{{ contactStore.error() }}</p>
+      <button mat-button type="button" (click)="retry()">Retry</button>
+    </div>
+  } @else if (!contactStore.hasContacts()) {
+    <div class="state-panel">
+      <h3>No contacts yet</h3>
+      <p>Add the recruiter, hiring manager, or HR contact for this company.</p>
+      <a
+        mat-flat-button
+        color="primary"
+        [routerLink]="['/companies', companyId, 'contacts', 'new']"
+      >
+        Add contact
+      </a>
+    </div>
+  } @else {
+    <div class="table-shell">
+      <table
+        mat-table
+        matSort
+        [dataSource]="contactStore.contacts()"
+        [matSortActive]="contactStore.query().sortBy"
+        [matSortDirection]="contactStore.query().sortDirection"
+        (matSortChange)="sortChanged($event)"
+      >
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="firstName">Name</th>
+          <td mat-cell *matCellDef="let contact">
+            <a [routerLink]="['/companies', companyId, 'contacts', contact.id]">
+              {{ fullName(contact) }}
+            </a>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="roleTitle">
+          <th mat-header-cell *matHeaderCellDef>Role</th>
+          <td mat-cell *matCellDef="let contact">{{ contact.roleTitle || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let contact">
+            @if (contact.email) {
+              <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+            } @else {
+              -
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="updatedAt">Updated</th>
+          <td mat-cell *matCellDef="let contact">{{ contact.updatedAt | date: 'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let contact">
+            <a
+              mat-icon-button
+              [routerLink]="['/companies', companyId, 'contacts', contact.id]"
+              aria-label="View contact"
+            >
+              <mat-icon>visibility</mat-icon>
+            </a>
+            <a
+              mat-icon-button
+              [routerLink]="['/companies', companyId, 'contacts', contact.id, 'edit']"
+              aria-label="Edit contact"
+            >
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button
+              mat-icon-button
+              type="button"
+              aria-label="Delete contact"
+              (click)="deleteContact(contact)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
+      <mat-paginator
+        [length]="contactStore.meta().total"
+        [pageIndex]="contactStore.meta().page - 1"
+        [pageSize]="contactStore.meta().pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="pageChanged($event)"
+      />
+    </div>
+  }
+</section>

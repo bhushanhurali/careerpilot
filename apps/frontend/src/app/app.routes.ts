@@ -14,6 +14,18 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () =>
       import('./core/layout/app-shell.component').then((m) => m.AppShellComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'companies',
+      },
+      {
+        path: 'companies',
+        loadChildren: () =>
+          import('./features/companies/companies.routes').then((m) => m.companyRoutes),
+      },
+    ],
   },
   {
     path: '**',

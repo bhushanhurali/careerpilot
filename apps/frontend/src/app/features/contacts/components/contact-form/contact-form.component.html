@@ -1,0 +1,77 @@
+<form class="contact-form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="contact-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>First name</mat-label>
+      <input matInput formControlName="firstName" autocomplete="given-name" />
+      @if (fieldError('firstName')) {
+        <mat-error>{{ fieldError('firstName') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Last name</mat-label>
+      <input matInput formControlName="lastName" autocomplete="family-name" />
+      @if (fieldError('lastName')) {
+        <mat-error>{{ fieldError('lastName') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="contact-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="email" />
+      @if (fieldError('email')) {
+        <mat-error>{{ fieldError('email') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Phone</mat-label>
+      <input matInput formControlName="phone" autocomplete="tel" />
+      @if (fieldError('phone')) {
+        <mat-error>{{ fieldError('phone') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Role title</mat-label>
+    <input matInput formControlName="roleTitle" autocomplete="organization-title" />
+    @if (fieldError('roleTitle')) {
+      <mat-error>{{ fieldError('roleTitle') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>LinkedIn URL</mat-label>
+    <input matInput formControlName="linkedInUrl" autocomplete="url" />
+    @if (fieldError('linkedInUrl')) {
+      <mat-error>{{ fieldError('linkedInUrl') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Notes</mat-label>
+    <textarea matInput formControlName="notes" rows="5"></textarea>
+    @if (fieldError('notes')) {
+      <mat-error>{{ fieldError('notes') }}</mat-error>
+    }
+  </mat-form-field>
+
+  @if (errorMessage) {
+    <p class="form-error">{{ errorMessage }}</p>
+  }
+
+  <div class="contact-form__actions">
+    <button mat-button type="button" [disabled]="isSaving" (click)="cancelForm.emit()">
+      Cancel
+    </button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+      @if (isSaving) {
+        <mat-progress-spinner diameter="18" mode="indeterminate" />
+      }
+      <span>{{ submitLabel }}</span>
+    </button>
+  </div>
+</form>
