@@ -2,7 +2,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { CompanyApiService } from '../../../companies/data-access/company-api.service';
 import { ContactApiService } from '../../../contacts/data-access/contact-api.service';
@@ -138,11 +138,64 @@ describe('ApplicationFormComponent', () => {
     expect(componentApi().form.controls.contactId.value).toBe('');
   });
 
+  it('keeps an existing contact when it still belongs to the selected company', () => {
+    component.application = {
+      id: 'application-1',
+      userId: 'user-1',
+      companyId: 'company-1',
+      contactId: 'contact-1',
+      jobTitle: 'Angular Developer',
+      jobUrl: null,
+      source: null,
+      status: 'applied',
+      priority: 'high',
+      salaryMin: null,
+      salaryMax: null,
+      salaryCurrency: null,
+      location: null,
+      employmentType: null,
+      workMode: null,
+      appliedAt: null,
+      notes: null,
+      company: { id: 'company-1', name: 'Acme GmbH' },
+      contact: {
+        id: 'contact-1',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        email: 'ada@example.com',
+      },
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    };
+
+    component.ngOnChanges({
+      application: {
+        currentValue: component.application,
+        previousValue: null,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+
+    expect(componentApi().form.controls.contactId.value).toBe('contact-1');
+  });
+
+  it('shows an options error and stops loading when contact loading fails', () => {
+    contactApi.listContacts.and.returnValue(throwError(() => new Error('Network failed')));
+
+    componentApi().form.controls.companyId.setValue('company-1');
+
+    expect(componentApi().optionsError).toBe('Could not load contacts for the selected company.');
+    expect(componentApi().loadingContacts).toBeFalse();
+  });
+
   function componentApi() {
     return component as unknown as {
       form: ApplicationFormComponent['form'];
       submit: () => void;
       salaryError: () => string | null;
+      optionsError: string | null;
+      loadingContacts: boolean;
     };
   }
 });

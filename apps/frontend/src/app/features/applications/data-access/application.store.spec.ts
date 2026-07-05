@@ -101,6 +101,37 @@ describe('ApplicationStore', () => {
     expect(store.formError()?.code).toBe('VALIDATION_ERROR');
   });
 
+  it('clears selected application and stores an error when detail loading fails', async () => {
+    api.getApplication.and.returnValue(of(application));
+    await firstValueFrom(store.loadApplication(application.id));
+
+    api.getApplication.and.returnValue(
+      throwError(() => new ApplicationApiError('Application not found.', 'NOT_FOUND', 404)),
+    );
+
+    await firstValueFrom(store.loadApplication('missing-application')).catch(() => undefined);
+
+    expect(store.selectedApplication()).toBeNull();
+    expect(store.error()).toBe('Application not found.');
+    expect(store.selectedLoading()).toBeFalse();
+  });
+
+  it('stores form errors from update operations and clears them on demand', async () => {
+    api.updateApplication.and.returnValue(
+      throwError(() => new ApplicationApiError('Validation failed', 'VALIDATION_ERROR', 400)),
+    );
+
+    await firstValueFrom(store.updateApplication(application.id, formValue())).catch(
+      () => undefined,
+    );
+    expect(store.formError()?.code).toBe('VALIDATION_ERROR');
+
+    store.clearFormError();
+
+    expect(store.formError()).toBeNull();
+    expect(store.saving()).toBeFalse();
+  });
+
   function formValue() {
     return {
       companyId: 'company-1',

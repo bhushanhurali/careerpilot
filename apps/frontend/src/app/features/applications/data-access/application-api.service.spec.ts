@@ -58,8 +58,11 @@ describe('ApplicationApiService', () => {
         status: 'applied',
         priority: 'high',
         companyId: 'company-1',
+        contactId: 'contact-1',
         source: 'LinkedIn',
         location: 'Munich',
+        employmentType: 'Permanent',
+        workMode: 'Hybrid',
         sortBy: 'companyName',
         sortDirection: 'asc',
       })
@@ -73,8 +76,15 @@ describe('ApplicationApiService', () => {
         candidate.url === `${API_BASE_URL}/applications` &&
         candidate.params.get('search') === 'angular' &&
         candidate.params.get('status') === 'applied' &&
+        candidate.params.get('priority') === 'high' &&
         candidate.params.get('companyId') === 'company-1' &&
+        candidate.params.get('contactId') === 'contact-1' &&
+        candidate.params.get('source') === 'LinkedIn' &&
+        candidate.params.get('location') === 'Munich' &&
+        candidate.params.get('employmentType') === 'Permanent' &&
+        candidate.params.get('workMode') === 'Hybrid' &&
         candidate.params.get('sortBy') === 'companyName' &&
+        candidate.params.get('sortDirection') === 'asc' &&
         candidate.params.get('page') === '2',
     );
     expect(request.request.method).toBe('GET');
@@ -127,6 +137,27 @@ describe('ApplicationApiService', () => {
     );
     expect(deleteRequest.request.method).toBe('DELETE');
     deleteRequest.flush(success({ deleted: true }));
+  });
+
+  it('throws an application API error when the response envelope fails', () => {
+    service.getApplication(application.id).subscribe({
+      next: () => fail('Expected request to fail.'),
+      error: (error: unknown) => {
+        expect(error).toEqual(
+          jasmine.objectContaining({
+            code: 'NOT_FOUND',
+            message: 'Application not found.',
+          }),
+        );
+      },
+    });
+
+    httpTestingController.expectOne(`${API_BASE_URL}/applications/${application.id}`).flush({
+      success: false,
+      data: null,
+      error: { code: 'NOT_FOUND', message: 'Application not found.' },
+      meta: {},
+    });
   });
 
   function success<T>(data: T, meta: Record<string, unknown> = {}): ApplicationApiResponse<T> {

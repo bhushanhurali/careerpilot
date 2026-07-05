@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -12,7 +12,14 @@ import { ApplicationStore } from '../../data-access/application.store';
 
 @Component({
   selector: 'cp-application-detail-page',
-  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatSnackBarModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    MatButtonModule,
+    MatDialogModule,
+    MatIconModule,
+    MatSnackBarModule,
+  ],
   templateUrl: './application-detail-page.component.html',
   styleUrl: './application-detail-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

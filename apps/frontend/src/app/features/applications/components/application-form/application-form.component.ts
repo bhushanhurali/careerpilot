@@ -18,7 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, finalize, of, switchMap, tap } from 'rxjs';
 
 import { Company } from '../../../companies/data-access/company.models';
 import { CompanyApiService } from '../../../companies/data-access/company-api.service';
@@ -241,7 +241,7 @@ export class ApplicationFormComponent implements OnInit, OnChanges {
 
           return of(null);
         }),
-        tap(() => (this.loadingContacts = false)),
+        finalize(() => (this.loadingContacts = false)),
       );
   }
 
