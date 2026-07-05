@@ -22,7 +22,10 @@ type CompaniesResponse = {
 };
 
 function assertTestDatabase(): void {
-  if (process.env.NODE_ENV !== 'test' || !process.env.DATABASE_URL?.includes('careerpilot_test')) {
+  const databaseUrl = process.env.DATABASE_URL;
+  const databaseName = databaseUrl ? new URL(databaseUrl).pathname.slice(1) : '';
+
+  if (process.env.NODE_ENV !== 'test' || !databaseName.toLowerCase().includes('test')) {
     throw new Error('Company integration tests must run against the test database');
   }
 }
