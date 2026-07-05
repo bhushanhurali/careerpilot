@@ -2,9 +2,10 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 1 authentication is implemented. CareerPilot currently includes registration, login,
-logout, refresh-token rotation, session restoration, route protection, and authentication tests.
-Job-search business features begin in Phase 2.
+Phase 2 companies and contacts are implemented. CareerPilot currently includes registration,
+login, logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
+management, soft deletion, route protection, and frontend/backend tests for the completed feature
+set.
 
 ## Architecture
 
@@ -92,6 +93,27 @@ Read these documents before changing authentication:
 - [Environment variables](docs/environment.md)
 
 The project intentionally does not store tokens in `localStorage` or `sessionStorage`.
+
+## Companies and Contacts
+
+Authenticated users can manage their own companies and the recruiter or hiring contacts linked to
+each company. Contacts are intentionally nested under companies:
+
+```text
+/companies/:companyId/contacts/...
+```
+
+The backend enforces ownership on every company query by using the authenticated user ID. Contacts
+inherit ownership through their parent company, so contact operations first verify the parent
+company belongs to the current user. Cross-user access returns the same `404` shape as a missing
+resource.
+
+Read these documents before changing Phase 2 behavior:
+
+- [Architecture](docs/architecture.md)
+- [Database plan](docs/database.md)
+- [API documentation](docs/api.md)
+- [Company/contact ownership ADR](docs/decisions/0006-company-contact-ownership.md)
 
 ## Commit Convention
 

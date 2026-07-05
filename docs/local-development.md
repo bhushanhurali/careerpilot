@@ -250,7 +250,7 @@ docker compose up -d postgres
 
 Docker creates the `careerpilot` database automatically the first time the PostgreSQL volume is
 initialized. Docker does not create application tables. Sequelize migrations create the `users`,
-`refresh_tokens`, and migration metadata tables.
+`refresh_tokens`, `companies`, `contacts`, and migration metadata tables.
 
 Run all pending migrations:
 
@@ -408,6 +408,10 @@ Run one workspace only:
 pnpm --filter @careerpilot/backend test
 pnpm --filter @careerpilot/frontend test
 ```
+
+Backend integration tests use destructive cleanup. The test setup forces `NODE_ENV=test`, resolves
+the final `DATABASE_URL`, and refuses to run unless the database name contains `test`. If you
+provide an explicit test URL, use a dedicated database such as `careerpilot_test`.
 
 ## 12. Troubleshooting
 
