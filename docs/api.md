@@ -275,15 +275,15 @@ Authentication: bearer access token required.
 
 Query parameters:
 
-| Name            | Default | Notes                                                       |
-| --------------- | ------- | ----------------------------------------------------------- |
-| `page`          | `1`     | Integer from 1 to 10000                                     |
-| `pageSize`      | `20`    | Integer from 1 to 100                                       |
-| `search`        | none    | Case-insensitive company-name search, 1 to 160 characters   |
-| `industry`      | none    | Case-insensitive industry filter, 1 to 120 characters       |
-| `location`      | none    | Case-insensitive location filter, 1 to 160 characters       |
-| `sortBy`        | `name`  | `name`, `industry`, `location`, `createdAt`, or `updatedAt` |
-| `sortDirection` | `asc`   | `asc` or `desc`                                             |
+| Name            | Default | Notes                                                           |
+| --------------- | ------- | --------------------------------------------------------------- |
+| `page`          | `1`     | Integer from 1 to 10000                                         |
+| `pageSize`      | `20`    | Integer from 1 to 100                                           |
+| `search`        | none    | Case-insensitive company-name search, 1 to 160 characters       |
+| `industry`      | none    | Case-insensitive industry substring filter, 1 to 120 characters |
+| `location`      | none    | Case-insensitive location substring filter, 1 to 160 characters |
+| `sortBy`        | `name`  | `name`, `industry`, `location`, `createdAt`, or `updatedAt`     |
+| `sortDirection` | `asc`   | `asc` or `desc`                                                 |
 
 Success: `200 OK`
 
