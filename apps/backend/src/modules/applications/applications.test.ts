@@ -283,6 +283,27 @@ describe('applications API', () => {
     expect(body.error?.code).toBe('CONTACT_COMPANY_MISMATCH');
   });
 
+  it('conceals cross-user contacts during application creation', async () => {
+    const user = await createTestUser('owner@example.com');
+    const otherUser = await createTestUser('other@example.com');
+    const company = await createCompany(user.id, 'Acme GmbH');
+    const otherCompany = await createCompany(otherUser.id, 'Other GmbH');
+    const otherContact = await createContact(otherCompany.id, 'Grace');
+
+    const response = await request(app)
+      .post('/api/v1/applications')
+      .set(authorize(user.accessToken))
+      .send({
+        companyId: company.id,
+        contactId: otherContact.id,
+        jobTitle: 'Angular Developer',
+      });
+    const body = response.body as ApiResponse<never>;
+
+    expect(response.status).toBe(404);
+    expect(body.error?.code).toBe('CONTACT_NOT_FOUND');
+  });
+
   it('lists only owned applications with search, filters, pagination, and sorting', async () => {
     const user = await createTestUser('owner@example.com');
     const otherUser = await createTestUser('other@example.com');

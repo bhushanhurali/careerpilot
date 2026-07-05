@@ -221,7 +221,7 @@ export class ApplicationsService {
     input: CreateApplicationBody,
   ): Promise<JobApplicationDto> {
     await this.findOwnedActiveCompany(userId, input.companyId);
-    await this.verifyContactBelongsToCompany(input.companyId, input.contactId ?? null);
+    await this.verifyContactBelongsToCompany(userId, input.companyId, input.contactId ?? null);
     this.assertValidSalaryState(
       input.salaryMin ?? null,
       input.salaryMax ?? null,
@@ -276,7 +276,7 @@ export class ApplicationsService {
       changes.companyId = input.companyId;
     }
 
-    await this.verifyContactBelongsToCompany(nextCompanyId, nextContactId ?? null);
+    await this.verifyContactBelongsToCompany(userId, nextCompanyId, nextContactId ?? null);
     this.assertValidSalaryState(
       nextSalaryMin ?? null,
       nextSalaryMax ?? null,
@@ -415,6 +415,7 @@ export class ApplicationsService {
   }
 
   private async verifyContactBelongsToCompany(
+    userId: string,
     companyId: string,
     contactId: string | null,
   ): Promise<void> {
@@ -422,7 +423,17 @@ export class ApplicationsService {
       return;
     }
 
-    const contact = await ContactModel.findByPk(contactId);
+    const contact = await ContactModel.findOne({
+      where: { id: contactId },
+      include: [
+        {
+          model: CompanyModel,
+          as: 'company',
+          required: true,
+          where: { userId },
+        },
+      ],
+    });
 
     if (!contact) {
       throw contactNotFoundError();
