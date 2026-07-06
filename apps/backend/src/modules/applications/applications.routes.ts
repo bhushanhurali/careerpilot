@@ -3,7 +3,11 @@ import { Router } from 'express';
 import { authenticate } from '../../middleware/authenticate.js';
 import { validateBody } from '../../shared/validation/validate-request.js';
 import { ApplicationsController } from './applications.controller.js';
-import { createApplicationSchema, updateApplicationSchema } from './applications.schemas.js';
+import {
+  createApplicationSchema,
+  createStatusTransitionSchema,
+  updateApplicationSchema,
+} from './applications.schemas.js';
 import { ApplicationsService } from './applications.service.js';
 
 export function createApplicationsRouter(): Router {
@@ -14,6 +18,12 @@ export function createApplicationsRouter(): Router {
 
   router.get('/', applicationsController.list);
   router.post('/', validateBody(createApplicationSchema), applicationsController.create);
+  router.get('/:applicationId/status-history', applicationsController.listStatusHistory);
+  router.post(
+    '/:applicationId/status-transitions',
+    validateBody(createStatusTransitionSchema),
+    applicationsController.createStatusTransition,
+  );
   router.get('/:applicationId', applicationsController.get);
   router.patch(
     '/:applicationId',

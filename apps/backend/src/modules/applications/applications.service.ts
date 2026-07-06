@@ -1,17 +1,24 @@
 import crypto from 'node:crypto';
 
-import { Op, Order, WhereOptions } from 'sequelize';
+import { FindOptions, Op, Order, Transaction, WhereOptions } from 'sequelize';
 
+import { ApplicationStatusHistoryModel } from '../../db/models/application-status-history.model.js';
 import { CompanyModel } from '../../db/models/company.model.js';
 import { ContactModel } from '../../db/models/contact.model.js';
 import { JobApplicationModel } from '../../db/models/job-application.model.js';
+import { sequelize } from '../../db/sequelize.js';
 import { HttpError } from '../../shared/errors/http-error.js';
 import {
   CreateApplicationBody,
+  CreateStatusTransitionBody,
   ListApplicationsQuery,
   UpdateApplicationBody,
 } from './applications.schemas.js';
-import { ApplicationListMeta, JobApplicationDto } from './applications.types.js';
+import {
+  ApplicationListMeta,
+  ApplicationStatusHistoryDto,
+  JobApplicationDto,
+} from './applications.types.js';
 
 type ApplicationListResult = {
   applications: JobApplicationDto[];
@@ -24,7 +31,6 @@ type ApplicationChanges = {
   jobTitle?: string;
   jobUrl?: string | null;
   source?: string | null;
-  status?: JobApplicationModel['status'];
   priority?: JobApplicationModel['priority'];
   salaryMin?: number | null;
   salaryMax?: number | null;
@@ -73,6 +79,10 @@ function invalidSalaryError(): HttpError {
   );
 }
 
+function statusUnchangedError(): HttpError {
+  return new HttpError(400, 'STATUS_UNCHANGED', 'Application already has that status');
+}
+
 function toApplicationDto(application: JobApplicationModel): JobApplicationDto {
   const company = application.get('company') as CompanyModel;
   const contact = application.get('contact') as ContactModel | null;
@@ -109,6 +119,19 @@ function toApplicationDto(application: JobApplicationModel): JobApplicationDto {
       : null,
     createdAt: application.createdAt.toISOString(),
     updatedAt: application.updatedAt.toISOString(),
+  };
+}
+
+function toStatusHistoryDto(history: ApplicationStatusHistoryModel): ApplicationStatusHistoryDto {
+  return {
+    id: history.id,
+    applicationId: history.applicationId,
+    fromStatus: history.fromStatus ?? null,
+    toStatus: history.toStatus,
+    changedAt: history.changedAt.toISOString(),
+    note: history.note ?? null,
+    createdAt: history.createdAt.toISOString(),
+    updatedAt: history.updatedAt.toISOString(),
   };
 }
 
@@ -228,24 +251,43 @@ export class ApplicationsService {
       input.salaryCurrency ?? null,
     );
 
-    const application = await JobApplicationModel.create({
-      id: crypto.randomUUID(),
-      userId,
-      companyId: input.companyId,
-      contactId: input.contactId ?? null,
-      jobTitle: input.jobTitle,
-      jobUrl: input.jobUrl,
-      source: input.source,
-      status: input.status,
-      priority: input.priority,
-      salaryMin: input.salaryMin,
-      salaryMax: input.salaryMax,
-      salaryCurrency: input.salaryCurrency,
-      location: input.location,
-      employmentType: input.employmentType,
-      workMode: input.workMode,
-      appliedAt: input.appliedAt,
-      notes: input.notes,
+    const application = await sequelize.transaction(async (transaction) => {
+      const createdApplication = await JobApplicationModel.create(
+        {
+          id: crypto.randomUUID(),
+          userId,
+          companyId: input.companyId,
+          contactId: input.contactId ?? null,
+          jobTitle: input.jobTitle,
+          jobUrl: input.jobUrl,
+          source: input.source,
+          status: input.status,
+          priority: input.priority,
+          salaryMin: input.salaryMin,
+          salaryMax: input.salaryMax,
+          salaryCurrency: input.salaryCurrency,
+          location: input.location,
+          employmentType: input.employmentType,
+          workMode: input.workMode,
+          appliedAt: input.appliedAt,
+          notes: input.notes,
+        },
+        { transaction },
+      );
+
+      await ApplicationStatusHistoryModel.create(
+        {
+          id: crypto.randomUUID(),
+          applicationId: createdApplication.id,
+          fromStatus: null,
+          toStatus: createdApplication.status,
+          changedAt: createdApplication.createdAt,
+          note: null,
+        },
+        { transaction },
+      );
+
+      return createdApplication;
     });
 
     return this.getApplication(userId, application.id);
@@ -299,10 +341,6 @@ export class ApplicationsService {
       changes.source = input.source;
     }
 
-    if (input.status !== undefined) {
-      changes.status = input.status;
-    }
-
     if (input.priority !== undefined) {
       changes.priority = input.priority;
     }
@@ -345,6 +383,69 @@ export class ApplicationsService {
     return this.getApplication(userId, application.id);
   }
 
+  async listStatusHistory(
+    userId: string,
+    applicationId: string,
+  ): Promise<ApplicationStatusHistoryDto[]> {
+    await this.findOwnedActiveApplication(userId, applicationId);
+
+    const historyEntries = await ApplicationStatusHistoryModel.findAll({
+      where: { applicationId },
+      order: [
+        ['changedAt', 'ASC'],
+        ['id', 'ASC'],
+      ],
+    });
+
+    return historyEntries.map(toStatusHistoryDto);
+  }
+
+  async createStatusTransition(
+    userId: string,
+    applicationId: string,
+    input: CreateStatusTransitionBody,
+  ): Promise<{ application: JobApplicationDto; historyEntry: ApplicationStatusHistoryDto }> {
+    const result = await sequelize.transaction(async (transaction) => {
+      const application = await this.findOwnedActiveApplicationForUpdate(
+        userId,
+        applicationId,
+        transaction,
+      );
+
+      if (application.status === input.status) {
+        throw statusUnchangedError();
+      }
+
+      const previousStatus = application.status;
+      const changedAt = new Date();
+
+      application.status = input.status;
+      await application.save({ transaction });
+
+      const historyEntry = await ApplicationStatusHistoryModel.create(
+        {
+          id: crypto.randomUUID(),
+          applicationId: application.id,
+          fromStatus: previousStatus,
+          toStatus: input.status,
+          changedAt,
+          note: input.note,
+        },
+        { transaction },
+      );
+
+      return {
+        applicationId: application.id,
+        historyEntry: toStatusHistoryDto(historyEntry),
+      };
+    });
+
+    return {
+      application: await this.getApplication(userId, result.applicationId),
+      historyEntry: result.historyEntry,
+    };
+  }
+
   async deleteApplication(userId: string, applicationId: string): Promise<void> {
     const application = await JobApplicationModel.findOne({
       where: {
@@ -372,7 +473,7 @@ export class ApplicationsService {
     userId: string,
     applicationId: string,
   ): Promise<JobApplicationModel> {
-    const application = await JobApplicationModel.findOne({
+    const findOptions: FindOptions<JobApplicationModel> = {
       where: {
         id: applicationId,
         userId,
@@ -390,6 +491,37 @@ export class ApplicationsService {
           required: false,
         },
       ],
+    };
+
+    const application = await JobApplicationModel.findOne(findOptions);
+
+    if (!application) {
+      throw applicationNotFoundError();
+    }
+
+    return application;
+  }
+
+  private async findOwnedActiveApplicationForUpdate(
+    userId: string,
+    applicationId: string,
+    transaction: Transaction,
+  ): Promise<JobApplicationModel> {
+    const application = await JobApplicationModel.findOne({
+      where: {
+        id: applicationId,
+        userId,
+      },
+      include: [
+        {
+          model: CompanyModel,
+          as: 'company',
+          required: true,
+          where: { userId },
+        },
+      ],
+      transaction,
+      lock: transaction.LOCK.UPDATE,
     });
 
     if (!application) {
