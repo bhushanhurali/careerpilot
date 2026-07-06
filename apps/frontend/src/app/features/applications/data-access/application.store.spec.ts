@@ -124,6 +124,16 @@ describe('ApplicationStore', () => {
 
   it('creates status transitions and refreshes selected application state', async () => {
     const updatedApplication: JobApplication = { ...application, status: 'interviewing' };
+    const existingHistoryEntry: ApplicationStatusHistoryEntry = {
+      id: 'history-0',
+      applicationId: application.id,
+      fromStatus: null,
+      toStatus: 'draft',
+      changedAt: '2026-07-07T09:00:00.000Z',
+      note: null,
+      createdAt: '2026-07-07T09:00:00.000Z',
+      updatedAt: '2026-07-07T09:00:00.000Z',
+    };
     const historyEntry: ApplicationStatusHistoryEntry = {
       id: 'history-1',
       applicationId: application.id,
@@ -135,11 +145,13 @@ describe('ApplicationStore', () => {
       updatedAt: '2026-07-07T10:00:00.000Z',
     };
     api.getApplication.and.returnValue(of(application));
+    api.listStatusHistory.and.returnValue(of([existingHistoryEntry]));
     api.createStatusTransition.and.returnValue(
       of({ application: updatedApplication, historyEntry }),
     );
 
     await firstValueFrom(store.loadApplication(application.id));
+    await firstValueFrom(store.loadStatusHistory(application.id));
     await firstValueFrom(
       store.createStatusTransition(application.id, {
         status: 'interviewing',
@@ -148,7 +160,7 @@ describe('ApplicationStore', () => {
     );
 
     expect(store.selectedApplication()?.status).toBe('interviewing');
-    expect(store.statusHistory()).toEqual([historyEntry]);
+    expect(store.statusHistory()).toEqual([existingHistoryEntry, historyEntry]);
     expect(store.statusTransitionSaving()).toBeFalse();
   });
 

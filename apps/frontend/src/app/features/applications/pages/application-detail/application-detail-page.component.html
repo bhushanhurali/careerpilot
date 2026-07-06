@@ -92,9 +92,9 @@
     </div>
 
     @if (applicationStore.statusHistoryLoading()) {
-      <div class="state-panel">Loading status timeline...</div>
+      <div class="state-panel" role="status" aria-live="polite">Loading status timeline...</div>
     } @else if (applicationStore.statusHistoryError()) {
-      <div class="state-panel">
+      <div class="state-panel" role="alert">
         <p>{{ applicationStore.statusHistoryError() }}</p>
         <button mat-button type="button" (click)="retryStatusHistory()">Retry</button>
       </div>

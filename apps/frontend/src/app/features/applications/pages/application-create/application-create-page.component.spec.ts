@@ -2,6 +2,7 @@
 
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -59,7 +60,7 @@ describe('ApplicationCreatePageComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ApplicationCreatePageComponent],
+      imports: [ApplicationCreatePageComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
         { provide: ApplicationStore, useValue: store },
@@ -78,6 +79,12 @@ describe('ApplicationCreatePageComponent', () => {
 
     expect(store.createApplication).toHaveBeenCalledWith(formValue());
     expect(navigateSpy).toHaveBeenCalledWith(['/applications', application.id]);
+  });
+
+  it('keeps initial status selectable during creation', () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Status');
   });
 
   it('returns to the application list when cancelled', () => {
