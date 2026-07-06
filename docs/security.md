@@ -80,18 +80,24 @@ and attaches the verified user ID and role to the request. Future role checks ca
 
 ## Business Data Authorization
 
-Phase 2 adds authenticated company and contact data.
+Phase 2 adds authenticated company and contact data. Phase 3 adds authenticated job application
+data.
 
 - Every company query is scoped by both company ID and authenticated user ID.
 - Cross-user company reads, updates, and deletes return `404`, not `403`, so the API does not
   reveal whether another user's record exists.
 - Contact routes are nested under companies. The service first verifies the parent company belongs
   to the authenticated user, then scopes the contact query by `company_id` and contact ID.
-- Request bodies never accept `userId`, `companyId`, IDs, timestamps, or deletion fields.
+- Applications store direct `user_id` ownership and every application query is scoped by the
+  authenticated user ID.
+- Application create/update validates that `companyId` belongs to the authenticated user.
+- Application `contactId` is optional, but when supplied it must belong to the selected company.
+- Request bodies never accept client-controlled IDs, `userId`, timestamps, or deletion fields.
 - Company deletion soft-deletes the owned company and its active contacts in one transaction.
+- Application deletion soft-deletes the owned application.
 
 Frontend route guards improve navigation only. They do not enforce ownership. The backend service
-layer is the authorization boundary for companies and contacts.
+layer is the authorization boundary for companies, contacts, and applications.
 
 ## Validation and Error Handling
 

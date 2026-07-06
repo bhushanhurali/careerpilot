@@ -1,0 +1,22 @@
+<a mat-button [routerLink]="['/applications', applicationId]">Back to application</a>
+
+@if (applicationStore.selectedLoading()) {
+  <div class="state-panel">Loading application...</div>
+} @else if (applicationStore.selectedApplication(); as application) {
+  <section class="form-page">
+    <h1>Edit application</h1>
+    <cp-application-form
+      submitLabel="Save application"
+      [application]="application"
+      [isSaving]="applicationStore.saving()"
+      [errorMessage]="applicationStore.formError()?.message ?? null"
+      (saveApplication)="save($event)"
+      (cancelForm)="cancel()"
+    />
+  </section>
+} @else {
+  <div class="state-panel">
+    <p>{{ applicationStore.error() || 'Application was not found.' }}</p>
+    <a mat-button routerLink="/applications">Return to applications</a>
+  </div>
+}

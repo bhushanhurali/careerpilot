@@ -1,0 +1,160 @@
+<form class="application-form" [formGroup]="form" (ngSubmit)="submit()">
+  @if (optionsError) {
+    <p class="form-error">{{ optionsError }}</p>
+  }
+
+  <div class="application-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Company</mat-label>
+      <mat-select formControlName="companyId">
+        @for (company of companies; track company.id) {
+          <mat-option [value]="company.id">{{ company.name }}</mat-option>
+        }
+      </mat-select>
+      @if (fieldError('companyId')) {
+        <mat-error>{{ fieldError('companyId') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Contact</mat-label>
+      <mat-select formControlName="contactId">
+        <mat-option value="">No contact</mat-option>
+        @for (contact of contacts; track contact.id) {
+          <mat-option [value]="contact.id">{{ contactLabel(contact) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Job title</mat-label>
+    <input matInput formControlName="jobTitle" autocomplete="organization-title" />
+    @if (fieldError('jobTitle')) {
+      <mat-error>{{ fieldError('jobTitle') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Job URL</mat-label>
+    <input matInput formControlName="jobUrl" autocomplete="url" />
+    @if (fieldError('jobUrl')) {
+      <mat-error>{{ fieldError('jobUrl') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <div class="application-form__grid application-form__grid--three">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        @for (status of statusOptions; track status.value) {
+          <mat-option [value]="status.value">{{ status.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        @for (priority of priorityOptions; track priority.value) {
+          <mat-option [value]="priority.value">{{ priority.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Applied date</mat-label>
+      <input matInput type="date" formControlName="appliedAt" />
+    </mat-form-field>
+  </div>
+
+  <div class="application-form__grid application-form__grid--three">
+    <mat-form-field appearance="outline">
+      <mat-label>Salary min</mat-label>
+      <input matInput type="number" formControlName="salaryMin" />
+      @if (fieldError('salaryMin')) {
+        <mat-error>{{ fieldError('salaryMin') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Salary max</mat-label>
+      <input matInput type="number" formControlName="salaryMax" />
+      @if (fieldError('salaryMax')) {
+        <mat-error>{{ fieldError('salaryMax') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Currency</mat-label>
+      <input matInput formControlName="salaryCurrency" maxlength="3" />
+      @if (fieldError('salaryCurrency')) {
+        <mat-error>{{ fieldError('salaryCurrency') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  @if (salaryError()) {
+    <p class="form-error">{{ salaryError() }}</p>
+  }
+
+  <div class="application-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Source</mat-label>
+      <input matInput formControlName="source" />
+      @if (fieldError('source')) {
+        <mat-error>{{ fieldError('source') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Location</mat-label>
+      <input matInput formControlName="location" autocomplete="address-level2" />
+      @if (fieldError('location')) {
+        <mat-error>{{ fieldError('location') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <div class="application-form__grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Employment type</mat-label>
+      <input matInput formControlName="employmentType" />
+      @if (fieldError('employmentType')) {
+        <mat-error>{{ fieldError('employmentType') }}</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Work mode</mat-label>
+      <input matInput formControlName="workMode" />
+      @if (fieldError('workMode')) {
+        <mat-error>{{ fieldError('workMode') }}</mat-error>
+      }
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Notes</mat-label>
+    <textarea matInput formControlName="notes" rows="5"></textarea>
+    @if (fieldError('notes')) {
+      <mat-error>{{ fieldError('notes') }}</mat-error>
+    }
+  </mat-form-field>
+
+  @if (errorMessage) {
+    <p class="form-error">{{ errorMessage }}</p>
+  }
+
+  <div class="application-form__actions">
+    <button mat-button type="button" [disabled]="isSaving" (click)="cancelForm.emit()">
+      Cancel
+    </button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+      @if (isSaving) {
+        <mat-progress-spinner diameter="18" mode="indeterminate" />
+      }
+      <span>{{ submitLabel }}</span>
+    </button>
+  </div>
+</form>

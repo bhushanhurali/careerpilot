@@ -1,0 +1,88 @@
+<a mat-button routerLink="/applications">Back to applications</a>
+
+@if (applicationStore.selectedLoading()) {
+  <div class="state-panel">Loading application...</div>
+} @else if (applicationStore.selectedApplication(); as application) {
+  <section class="detail-header">
+    <div>
+      <h1>{{ application.jobTitle }}</h1>
+      <p>{{ application.company.name }} · {{ application.status }}</p>
+    </div>
+    <div class="detail-actions">
+      <a mat-flat-button color="primary" [routerLink]="['/applications', application.id, 'edit']">
+        <mat-icon>edit</mat-icon>
+        <span>Edit</span>
+      </a>
+      <button mat-button type="button" (click)="deleteApplication()">
+        <mat-icon>delete</mat-icon>
+        <span>Delete</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="detail-grid" aria-label="Application details">
+    <div>
+      <span>Company</span>
+      <a [routerLink]="['/companies', application.companyId]">{{ application.company.name }}</a>
+    </div>
+    <div>
+      <span>Contact</span>
+      <p>{{ contactName(application) }}</p>
+    </div>
+    <div>
+      <span>Priority</span>
+      <p>{{ application.priority }}</p>
+    </div>
+    <div>
+      <span>Source</span>
+      <p>{{ application.source || '-' }}</p>
+    </div>
+    <div>
+      <span>Location</span>
+      <p>{{ application.location || '-' }}</p>
+    </div>
+    <div>
+      <span>Applied</span>
+      <p>{{ application.appliedAt || '-' }}</p>
+    </div>
+    <div>
+      <span>Salary</span>
+      <p>{{ salary(application) }}</p>
+    </div>
+    <div>
+      <span>Employment</span>
+      <p>{{ application.employmentType || '-' }}</p>
+    </div>
+    <div>
+      <span>Work mode</span>
+      <p>{{ application.workMode || '-' }}</p>
+    </div>
+    <div class="detail-grid__wide">
+      <span>Job URL</span>
+      @if (application.jobUrl) {
+        <a [href]="application.jobUrl" target="_blank" rel="noreferrer">
+          {{ application.jobUrl }}
+        </a>
+      } @else {
+        <p>-</p>
+      }
+    </div>
+    <div>
+      <span>Created</span>
+      <p>{{ application.createdAt | date: 'medium' }}</p>
+    </div>
+    <div>
+      <span>Updated</span>
+      <p>{{ application.updatedAt | date: 'medium' }}</p>
+    </div>
+    <div class="detail-grid__wide">
+      <span>Notes</span>
+      <p>{{ application.notes || '-' }}</p>
+    </div>
+  </section>
+} @else {
+  <div class="state-panel">
+    <p>{{ applicationStore.error() || 'Application was not found.' }}</p>
+    <a mat-button routerLink="/applications">Return to applications</a>
+  </div>
+}
