@@ -9,6 +9,10 @@
       <p>{{ application.company.name }} · {{ application.status }}</p>
     </div>
     <div class="detail-actions">
+      <button mat-stroked-button type="button" (click)="changeStatus()">
+        <mat-icon>swap_horiz</mat-icon>
+        <span>Change status</span>
+      </button>
       <a mat-flat-button color="primary" [routerLink]="['/applications', application.id, 'edit']">
         <mat-icon>edit</mat-icon>
         <span>Edit</span>
@@ -79,6 +83,45 @@
       <span>Notes</span>
       <p>{{ application.notes || '-' }}</p>
     </div>
+  </section>
+
+  <section class="status-history" aria-label="Application status history">
+    <div class="status-history__header">
+      <h2>Status timeline</h2>
+      <p>{{ statusLabel(application.status) }}</p>
+    </div>
+
+    @if (applicationStore.statusHistoryLoading()) {
+      <div class="state-panel">Loading status timeline...</div>
+    } @else if (applicationStore.statusHistoryError()) {
+      <div class="state-panel">
+        <p>{{ applicationStore.statusHistoryError() }}</p>
+        <button mat-button type="button" (click)="retryStatusHistory()">Retry</button>
+      </div>
+    } @else if (applicationStore.statusHistory().length === 0) {
+      <div class="state-panel">No status history yet.</div>
+    } @else {
+      <ol class="status-timeline">
+        @for (entry of applicationStore.statusHistory(); track entry.id) {
+          <li>
+            <div class="status-timeline__marker" aria-hidden="true"></div>
+            <div>
+              <h3>
+                @if (entry.fromStatus) {
+                  {{ statusLabel(entry.fromStatus) }} to {{ statusLabel(entry.toStatus) }}
+                } @else {
+                  {{ statusLabel(entry.toStatus) }}
+                }
+              </h3>
+              <p>{{ entry.changedAt | date: 'medium' }}</p>
+              @if (entry.note) {
+                <p class="status-timeline__note">{{ entry.note }}</p>
+              }
+            </div>
+          </li>
+        }
+      </ol>
+    }
   </section>
 } @else {
   <div class="state-panel">

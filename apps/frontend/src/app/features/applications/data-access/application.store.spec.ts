@@ -4,7 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, of, throwError } from 'rxjs';
 
 import { ApplicationApiError, ApplicationApiService } from './application-api.service';
-import { JobApplication } from './application.models';
+import { ApplicationStatusHistoryEntry, JobApplication } from './application.models';
 import { ApplicationStore } from './application.store';
 
 describe('ApplicationStore', () => {
@@ -41,6 +41,8 @@ describe('ApplicationStore', () => {
       'getApplication',
       'createApplication',
       'updateApplication',
+      'listStatusHistory',
+      'createStatusTransition',
       'deleteApplication',
     ]);
 
@@ -89,6 +91,81 @@ describe('ApplicationStore', () => {
     expect(store.selectedApplication()).toBeNull();
     expect(store.saving()).toBeFalse();
     expect(store.deleting()).toBeFalse();
+  });
+
+  it('loads status history and stores history failures', async () => {
+    const historyEntry: ApplicationStatusHistoryEntry = {
+      id: 'history-1',
+      applicationId: application.id,
+      fromStatus: null,
+      toStatus: 'draft',
+      changedAt: '2026-07-07T10:00:00.000Z',
+      note: null,
+      createdAt: '2026-07-07T10:00:00.000Z',
+      updatedAt: '2026-07-07T10:00:00.000Z',
+    };
+
+    api.listStatusHistory.and.returnValue(of([historyEntry]));
+
+    await firstValueFrom(store.loadStatusHistory(application.id));
+
+    expect(store.statusHistory()).toEqual([historyEntry]);
+    expect(store.statusHistoryLoading()).toBeFalse();
+
+    api.listStatusHistory.and.returnValue(
+      throwError(() => new ApplicationApiError('History failed', 'HTTP_ERROR', 500)),
+    );
+
+    await firstValueFrom(store.loadStatusHistory(application.id)).catch(() => undefined);
+
+    expect(store.statusHistory()).toEqual([]);
+    expect(store.statusHistoryError()).toBe('History failed');
+  });
+
+  it('creates status transitions and refreshes selected application state', async () => {
+    const updatedApplication: JobApplication = { ...application, status: 'interviewing' };
+    const historyEntry: ApplicationStatusHistoryEntry = {
+      id: 'history-1',
+      applicationId: application.id,
+      fromStatus: 'draft',
+      toStatus: 'interviewing',
+      changedAt: '2026-07-07T10:00:00.000Z',
+      note: 'Technical interview',
+      createdAt: '2026-07-07T10:00:00.000Z',
+      updatedAt: '2026-07-07T10:00:00.000Z',
+    };
+    api.getApplication.and.returnValue(of(application));
+    api.createStatusTransition.and.returnValue(
+      of({ application: updatedApplication, historyEntry }),
+    );
+
+    await firstValueFrom(store.loadApplication(application.id));
+    await firstValueFrom(
+      store.createStatusTransition(application.id, {
+        status: 'interviewing',
+        note: 'Technical interview',
+      }),
+    );
+
+    expect(store.selectedApplication()?.status).toBe('interviewing');
+    expect(store.statusHistory()).toEqual([historyEntry]);
+    expect(store.statusTransitionSaving()).toBeFalse();
+  });
+
+  it('stores status transition errors and clears them on demand', async () => {
+    api.createStatusTransition.and.returnValue(
+      throwError(() => new ApplicationApiError('Status unchanged', 'STATUS_UNCHANGED', 400)),
+    );
+
+    await firstValueFrom(
+      store.createStatusTransition(application.id, { status: 'draft', note: null }),
+    ).catch(() => undefined);
+
+    expect(store.statusTransitionError()?.code).toBe('STATUS_UNCHANGED');
+
+    store.clearStatusTransitionError();
+
+    expect(store.statusTransitionError()).toBeNull();
   });
 
   it('stores form errors from create operations', async () => {

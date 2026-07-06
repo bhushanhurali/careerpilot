@@ -64,6 +64,24 @@ export type ApplicationFormValue = {
   notes: string | null;
 };
 
+export type ApplicationUpdateValue = Omit<ApplicationFormValue, 'status'>;
+
+export type ApplicationStatusHistoryEntry = {
+  id: string;
+  applicationId: string;
+  fromStatus: ApplicationStatus | null;
+  toStatus: ApplicationStatus;
+  changedAt: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApplicationStatusTransitionValue = {
+  status: ApplicationStatus;
+  note: string | null;
+};
+
 export type ApplicationListQuery = {
   page: number;
   pageSize: number;

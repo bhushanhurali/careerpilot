@@ -8,6 +8,7 @@
     <cp-application-form
       submitLabel="Save application"
       [application]="application"
+      [showStatusField]="false"
       [isSaving]="applicationStore.saving()"
       [errorMessage]="applicationStore.formError()?.message ?? null"
       (saveApplication)="save($event)"

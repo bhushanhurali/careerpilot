@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>Change status</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="status-dialog__content">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        @for (status of statusOptions; track status.value) {
+          <mat-option [value]="status.value">{{ status.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Note</mat-label>
+      <textarea matInput formControlName="note" rows="4"></textarea>
+      @if (fieldError()) {
+        <mat-error>{{ fieldError() }}</mat-error>
+      }
+    </mat-form-field>
+
+    @if (errorMessage) {
+      <p class="status-dialog__error">{{ errorMessage }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="isSaving" (click)="cancel()">Cancel</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+      @if (isSaving) {
+        <mat-progress-spinner diameter="18" mode="indeterminate" />
+      }
+      <span>Save status</span>
+    </button>
+  </mat-dialog-actions>
+</form>

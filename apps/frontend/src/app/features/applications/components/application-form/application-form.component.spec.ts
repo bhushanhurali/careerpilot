@@ -127,6 +127,15 @@ describe('ApplicationFormComponent', () => {
     });
   });
 
+  it('keeps status selectable by default and can hide it for edit flows', () => {
+    expect(fixture.nativeElement.textContent).toContain('Status');
+
+    component.showStatusField = false;
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Status');
+  });
+
   it('loads contacts when company changes and clears stale contacts', () => {
     componentApi().form.controls.contactId.setValue('stale-contact');
     componentApi().form.controls.companyId.setValue('company-1');

@@ -8,6 +8,9 @@ import {
   ApplicationFormValue,
   ApplicationListQuery,
   ApplicationPaginationMeta,
+  ApplicationStatusHistoryEntry,
+  ApplicationStatusTransitionValue,
+  ApplicationUpdateValue,
   JobApplication,
 } from './application.models';
 
@@ -17,6 +20,15 @@ type ApplicationListResponse = {
 
 type ApplicationResponse = {
   application: JobApplication;
+};
+
+type StatusHistoryResponse = {
+  statusHistory: ApplicationStatusHistoryEntry[];
+};
+
+type StatusTransitionResponse = {
+  application: JobApplication;
+  historyEntry: ApplicationStatusHistoryEntry;
 };
 
 export class ApplicationApiError extends Error {
@@ -64,13 +76,32 @@ export class ApplicationApiService {
 
   updateApplication(
     applicationId: string,
-    payload: ApplicationFormValue,
+    payload: ApplicationUpdateValue,
   ): Observable<JobApplication> {
     return this.http
       .patch<
         ApplicationApiResponse<ApplicationResponse>
       >(`${this.applicationsUrl}/${applicationId}`, payload)
       .pipe(map((response) => this.unwrap(response).application));
+  }
+
+  listStatusHistory(applicationId: string): Observable<ApplicationStatusHistoryEntry[]> {
+    return this.http
+      .get<
+        ApplicationApiResponse<StatusHistoryResponse>
+      >(`${this.applicationsUrl}/${applicationId}/status-history`)
+      .pipe(map((response) => this.unwrap(response).statusHistory));
+  }
+
+  createStatusTransition(
+    applicationId: string,
+    payload: ApplicationStatusTransitionValue,
+  ): Observable<StatusTransitionResponse> {
+    return this.http
+      .post<
+        ApplicationApiResponse<StatusTransitionResponse>
+      >(`${this.applicationsUrl}/${applicationId}/status-transitions`, payload)
+      .pipe(map((response) => this.unwrap(response)));
   }
 
   deleteApplication(applicationId: string): Observable<void> {

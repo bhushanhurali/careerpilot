@@ -97,8 +97,10 @@ describe('ApplicationEditPageComponent', () => {
 
   it('updates an application and navigates to the detail page', () => {
     componentApi().save(formValue());
+    const updatePayload = store.updateApplication.calls.mostRecent().args[1];
 
-    expect(store.updateApplication).toHaveBeenCalledWith(application.id, formValue());
+    expect(store.updateApplication).toHaveBeenCalled();
+    expect(updatePayload).not.toEqual(jasmine.objectContaining({ status: jasmine.anything() }));
     expect(navigateSpy).toHaveBeenCalledWith(['/applications', application.id]);
   });
 

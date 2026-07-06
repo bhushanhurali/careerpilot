@@ -53,6 +53,7 @@ export class ApplicationFormComponent implements OnInit, OnChanges {
   @Input() isSaving = false;
   @Input() submitLabel = 'Save application';
   @Input() errorMessage: string | null = null;
+  @Input() showStatusField = true;
 
   @Output() saveApplication = new EventEmitter<ApplicationFormValue>();
   @Output() cancelForm = new EventEmitter<void>();
