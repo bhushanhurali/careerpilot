@@ -2,10 +2,11 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 3 job applications are implemented. CareerPilot currently includes registration, login,
+Phase 4 application status history is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
-management, protected job application CRUD, soft deletion, route protection, and frontend/backend
-tests for the completed feature set.
+management, protected job application CRUD, append-only application status history, transactional
+status transitions, soft deletion, route protection, and frontend/backend tests for the completed
+feature set.
 
 ## Architecture
 
@@ -24,7 +25,8 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 1 | Complete | Authentication, token flow, frontend auth foundation, auth tests, docs         |
 | Phase 2 | Complete | Companies, nested contacts, ownership, soft deletion, frontend workflows, docs |
 | Phase 3 | Complete | Job application model, API, frontend workflows, tests, docs                    |
-| Phase 4 | Next     | Status history and immutable application status timeline                       |
+| Phase 4 | Complete | Status history, transactional status transitions, frontend timeline, tests     |
+| Phase 5 | Next     | Interview management, reminders, dashboard statistics, and follow-up workflow  |
 
 ## Prerequisites
 
@@ -128,8 +130,9 @@ Read these documents before changing Phase 2 behavior:
 ## Job Applications
 
 Authenticated users can manage job applications linked to one owned company and, optionally, one
-contact from that company. Applications use top-level routes because they are now the central
-pipeline resource:
+contact from that company. Applications keep the current status on the application row for fast
+pipeline filtering and also record append-only status history entries for lifecycle auditing.
+Applications use top-level routes because they are now the central pipeline resource:
 
 ```text
 /applications
@@ -140,14 +143,17 @@ pipeline resource:
 
 The backend enforces ownership with `job_applications.user_id` and validates that the selected
 company belongs to the current user. When a contact is supplied, it must belong to the selected
-company. Cross-user application access returns `404`.
+company. Status changes go through a dedicated transition endpoint that updates the current
+application status and inserts a history row in one database transaction. Cross-user application
+and status-history access returns `404`.
 
-Read these documents before changing Phase 3 behavior:
+Read these documents before changing application behavior:
 
 - [Architecture](docs/architecture.md)
 - [Database plan](docs/database.md)
 - [API documentation](docs/api.md)
 - [Application ownership ADR](docs/decisions/0007-job-application-ownership.md)
+- [Application status history ADR](docs/decisions/0008-application-status-history.md)
 
 ## Commit Convention
 

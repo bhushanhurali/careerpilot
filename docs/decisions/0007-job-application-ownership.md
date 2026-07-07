@@ -29,7 +29,7 @@ Applications use top-level API and frontend routes:
 ```
 
 Applications use Sequelize paranoid soft deletion. Phase 3 stores only the current status on the
-application record; immutable status history is deferred to Phase 4.
+application record. Phase 4 status history is covered by ADR 0008.
 
 Cross-user access returns `404` instead of `403`.
 
@@ -41,7 +41,7 @@ Cross-user access returns `404` instead of `403`.
   company/contact consistency.
 - The schema supports future dashboard queries through ownership, status, company, contact,
   applied-date, updated-date, and title indexes.
-- Status history can be added later without changing the meaning of the current status column.
+- Status history was added later without changing the meaning of the current status column.
 - Company deletion behavior for existing applications remains a future product decision.
 
 ## Alternatives Considered
@@ -65,7 +65,7 @@ The database could prevent duplicate role/company combinations. Phase 3 intentio
 because users may apply to similar roles at the same company, reapply later, or track separate job
 postings with the same title.
 
-### Implement status history immediately
+### Implement status history in Phase 3
 
-Status history is valuable, but it is a separate lifecycle feature. Phase 3 keeps CRUD focused and
-leaves immutable status transitions for Phase 4.
+Status history is valuable, but it is a separate lifecycle feature. Phase 3 kept CRUD focused, and
+Phase 4 added immutable status transitions without changing the application ownership model.

@@ -58,9 +58,13 @@ the contact list, but company state and contact state stay separate.
 
 ### Job Applications
 
-Job applications are the central Phase 3 pipeline resource. Each application belongs directly to
-one authenticated user, requires one owned company, and can optionally reference one contact from
-that company.
+Job applications are the central pipeline resource. Each application belongs directly to one
+authenticated user, requires one owned company, and can optionally reference one contact from that
+company.
+
+Phase 4 adds append-only application status history. `job_applications.status` remains the current
+status for efficient list filtering and sorting, while `application_status_history` stores the
+timeline. Status transitions update both records in one backend transaction.
 
 Backend application code lives in:
 
@@ -99,6 +103,10 @@ Application frontend routes are:
 /applications/:applicationId/edit
 ```
 
+The application detail page renders the status timeline and opens a status-transition dialog. The
+create workflow still allows choosing an initial status. The edit workflow no longer edits status;
+status changes go through the dedicated transition workflow.
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.
@@ -108,11 +116,15 @@ The authenticated user ID is the security boundary for business data.
 - Contact ownership is derived by verifying the parent company belongs to the authenticated user.
 - `job_applications.user_id` stores direct ownership because applications are queried as a
   top-level pipeline resource.
+- `application_status_history.application_id` stores the parent application relationship.
+- Status-history ownership is derived through the parent application; history rows do not duplicate
+  `user_id`.
 - Application company ownership is verified before create/update operations.
 - Application contacts are optional and must belong to the selected company.
 - Backend services never fetch, update, or delete a company by ID alone.
 - Contact services verify the owned parent company before reading or mutating a contact.
 - Application services scope every list/detail/update/delete operation by authenticated user ID.
+- Status-history list and transition operations first verify an active owned parent application.
 - Cross-user access returns `404`, matching nonexistent resources, so resource existence is not
   revealed.
 
@@ -128,6 +140,10 @@ Companies and contacts use Sequelize paranoid models with `deleted_at`.
 - Deleting a company runs in one backend transaction and soft-deletes the company plus its active
   contacts.
 - Deleting an application soft-deletes that application.
+- Soft-deleting an application leaves its status history rows in the database.
+- Normal status-history API access requires an active owned parent application, so soft-deleted
+  application history is hidden from normal routes.
+- Hard-deleting an application physically cascades status history rows.
 - Company deletion does not yet soft-delete or otherwise modify applications; that behavior should
   be decided when application lifecycle rules are expanded.
 - PostgreSQL foreign-key cascade is not used for ordinary soft deletion because no physical delete
@@ -145,8 +161,10 @@ supports:
   loading, empty, and error states.
 - Create: typed reactive form with company selector and optional contact selector.
 - Detail: application summary, company link, optional contact display, salary formatting, notes,
-  edit, and delete action.
-- Edit: loads the selected application and reuses the form component.
+  status timeline, change-status action, edit, and delete action.
+- Status transition: dialog with target status and optional note; success refreshes current
+  application state and appends the new timeline entry.
+- Edit: loads the selected application and reuses the form component, excluding status editing.
 - Delete: confirmation dialog and soft-delete API call.
 
 The contact selector is loaded from the selected company. When the company changes, the form clears
@@ -154,14 +172,16 @@ the selected contact unless that contact still belongs to the new company.
 
 ## Testing Coverage
 
-Phase 3 has backend integration coverage for authentication requirements, create/update/delete,
-ownership scoping, cross-user `404` behavior, company validation, contact/company mismatch,
-validation failures, search, filters, sorting, pagination, company-name search/sort, and soft
-deletion.
+Backend integration coverage includes authentication requirements, create/update/delete, ownership
+scoping, cross-user `404` behavior, company validation, contact/company mismatch, validation
+failures, search, filters, sorting, pagination, company-name search/sort, soft deletion, initial
+status-history creation, history listing, same-status transition rejection, and transactional
+status transitions.
 
 Frontend coverage includes the Applications API service, signal store, typed form validation and
 normalization, company/contact selector behavior, list filters/sorting/pagination, create/edit
-navigation workflows, detail rendering, and delete-dialog wiring.
+navigation workflows, detail rendering, delete-dialog wiring, status-history timeline states,
+status-transition dialog validation/error handling, and status-free edit submissions.
 
 ## Decisions
 
