@@ -3,7 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ApplicationFormComponent } from '../../components/application-form/application-form.component';
-import { ApplicationFormValue } from '../../data-access/application.models';
+import { ApplicationFormValue, ApplicationUpdateValue } from '../../data-access/application.models';
 import { ApplicationStore } from '../../data-access/application.store';
 
 @Component({
@@ -25,7 +25,9 @@ export class ApplicationEditPageComponent implements OnInit {
   }
 
   protected save(payload: ApplicationFormValue): void {
-    this.applicationStore.updateApplication(this.applicationId, payload).subscribe({
+    const updatePayload = this.toUpdatePayload(payload);
+
+    this.applicationStore.updateApplication(this.applicationId, updatePayload).subscribe({
       next: (application) => void this.router.navigate(['/applications', application.id]),
       error: () => undefined,
     });
@@ -33,5 +35,24 @@ export class ApplicationEditPageComponent implements OnInit {
 
   protected cancel(): void {
     void this.router.navigate(['/applications', this.applicationId]);
+  }
+
+  private toUpdatePayload(payload: ApplicationFormValue): ApplicationUpdateValue {
+    return {
+      companyId: payload.companyId,
+      contactId: payload.contactId,
+      jobTitle: payload.jobTitle,
+      jobUrl: payload.jobUrl,
+      source: payload.source,
+      priority: payload.priority,
+      salaryMin: payload.salaryMin,
+      salaryMax: payload.salaryMax,
+      salaryCurrency: payload.salaryCurrency,
+      location: payload.location,
+      employmentType: payload.employmentType,
+      workMode: payload.workMode,
+      appliedAt: payload.appliedAt,
+      notes: payload.notes,
+    };
   }
 }

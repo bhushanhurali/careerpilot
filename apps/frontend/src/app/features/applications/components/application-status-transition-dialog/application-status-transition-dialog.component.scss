@@ -1,0 +1,16 @@
+.status-dialog__content {
+  display: grid;
+  gap: 12px;
+  min-width: min(420px, 80vw);
+}
+
+.status-dialog__error {
+  margin: 0;
+  color: #b42318;
+}
+
+button mat-progress-spinner {
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}

@@ -109,7 +109,6 @@ export const updateApplicationSchema = z
     jobTitle: applicationFieldsSchema.jobTitle.optional(),
     jobUrl: applicationFieldsSchema.jobUrl,
     source: applicationFieldsSchema.source,
-    status: z.enum(applicationStatuses).optional(),
     priority: z.enum(applicationPriorities).optional(),
     salaryMin: applicationFieldsSchema.salaryMin,
     salaryMax: applicationFieldsSchema.salaryMax,
@@ -164,7 +163,15 @@ export const listApplicationsQuerySchema = z
   })
   .strict();
 
+export const createStatusTransitionSchema = z
+  .object({
+    status: z.enum(applicationStatuses),
+    note: optionalText(10_000),
+  })
+  .strict();
+
 export type ApplicationIdParams = z.infer<typeof applicationIdParamsSchema>;
 export type CreateApplicationBody = z.infer<typeof createApplicationSchema>;
 export type UpdateApplicationBody = z.infer<typeof updateApplicationSchema>;
 export type ListApplicationsQuery = z.infer<typeof listApplicationsQuerySchema>;
+export type CreateStatusTransitionBody = z.infer<typeof createStatusTransitionSchema>;

@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 
 import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
+import { ApplicationStatusHistoryModel } from './models/application-status-history.model.js';
 import { CompanyModel } from './models/company.model.js';
 import { ContactModel } from './models/contact.model.js';
 import { JobApplicationModel } from './models/job-application.model.js';
@@ -18,6 +19,7 @@ RefreshTokenModel.initialize(sequelize);
 CompanyModel.initialize(sequelize);
 ContactModel.initialize(sequelize);
 JobApplicationModel.initialize(sequelize);
+ApplicationStatusHistoryModel.initialize(sequelize);
 
 UserModel.hasMany(RefreshTokenModel, {
   foreignKey: 'userId',
@@ -82,4 +84,14 @@ ContactModel.hasMany(JobApplicationModel, {
 JobApplicationModel.belongsTo(ContactModel, {
   foreignKey: 'contactId',
   as: 'contact',
+});
+
+JobApplicationModel.hasMany(ApplicationStatusHistoryModel, {
+  foreignKey: 'applicationId',
+  as: 'statusHistory',
+});
+
+ApplicationStatusHistoryModel.belongsTo(JobApplicationModel, {
+  foreignKey: 'applicationId',
+  as: 'application',
 });

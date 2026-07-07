@@ -7,7 +7,13 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { ApplicationDeleteDialogComponent } from '../../components/application-delete-dialog/application-delete-dialog.component';
-import { JobApplication } from '../../data-access/application.models';
+import { ApplicationStatusTransitionDialogComponent } from '../../components/application-status-transition-dialog/application-status-transition-dialog.component';
+import {
+  ApplicationStatus,
+  ApplicationStatusTransitionValue,
+  applicationStatusOptions,
+  JobApplication,
+} from '../../data-access/application.models';
 import { ApplicationStore } from '../../data-access/application.store';
 
 @Component({
@@ -35,6 +41,13 @@ export class ApplicationDetailPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.applicationStore.loadApplication(this.applicationId).subscribe({ error: () => undefined });
+    this.applicationStore
+      .loadStatusHistory(this.applicationId)
+      .subscribe({ error: () => undefined });
+  }
+
+  protected statusLabel(status: ApplicationStatus): string {
+    return applicationStatusOptions.find((option) => option.value === status)?.label ?? status;
   }
 
   protected contactName(application: JobApplication): string {
@@ -81,5 +94,36 @@ export class ApplicationDetailPageComponent implements OnInit {
           void this.router.navigate(['/applications']);
         }
       });
+  }
+
+  protected changeStatus(): void {
+    const application = this.applicationStore.selectedApplication();
+
+    if (!application) {
+      return;
+    }
+
+    this.applicationStore.clearStatusTransitionError();
+    this.dialog
+      .open(ApplicationStatusTransitionDialogComponent, {
+        width: '460px',
+        data: {
+          currentStatus: application.status,
+          transitionAction: (payload: ApplicationStatusTransitionValue) =>
+            this.applicationStore.createStatusTransition(application.id, payload),
+        },
+      })
+      .afterClosed()
+      .subscribe((changed) => {
+        if (changed) {
+          this.snackBar.open('Status updated.', 'Dismiss', { duration: 3000 });
+        }
+      });
+  }
+
+  protected retryStatusHistory(): void {
+    this.applicationStore
+      .loadStatusHistory(this.applicationId)
+      .subscribe({ error: () => undefined });
   }
 }

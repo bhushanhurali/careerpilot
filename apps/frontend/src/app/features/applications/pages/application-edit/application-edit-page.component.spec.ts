@@ -2,6 +2,7 @@
 
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -67,7 +68,7 @@ describe('ApplicationEditPageComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [ApplicationEditPageComponent],
+      imports: [ApplicationEditPageComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
         { provide: ApplicationStore, useValue: store },
@@ -97,9 +98,17 @@ describe('ApplicationEditPageComponent', () => {
 
   it('updates an application and navigates to the detail page', () => {
     componentApi().save(formValue());
+    const updatePayload = store.updateApplication.calls.mostRecent().args[1];
 
-    expect(store.updateApplication).toHaveBeenCalledWith(application.id, formValue());
+    expect(store.updateApplication).toHaveBeenCalled();
+    expect(updatePayload).not.toEqual(jasmine.objectContaining({ status: jasmine.anything() }));
     expect(navigateSpy).toHaveBeenCalledWith(['/applications', application.id]);
+  });
+
+  it('does not expose status editing in the edit form', () => {
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain('Status');
   });
 
   it('returns to the application detail page when cancelled', () => {

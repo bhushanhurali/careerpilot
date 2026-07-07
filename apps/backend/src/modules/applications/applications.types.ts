@@ -39,6 +39,17 @@ export type JobApplicationDto = {
   updatedAt: string;
 };
 
+export type ApplicationStatusHistoryDto = {
+  id: string;
+  applicationId: string;
+  fromStatus: JobApplicationStatus | null;
+  toStatus: JobApplicationStatus;
+  changedAt: string;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ApplicationListMeta = {
   page: number;
   pageSize: number;

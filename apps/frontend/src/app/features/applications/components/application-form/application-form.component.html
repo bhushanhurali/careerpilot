@@ -44,14 +44,16 @@
   </mat-form-field>
 
   <div class="application-form__grid application-form__grid--three">
-    <mat-form-field appearance="outline">
-      <mat-label>Status</mat-label>
-      <mat-select formControlName="status">
-        @for (status of statusOptions; track status.value) {
-          <mat-option [value]="status.value">{{ status.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    @if (showStatusField) {
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statusOptions; track status.value) {
+            <mat-option [value]="status.value">{{ status.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
 
     <mat-form-field appearance="outline">
       <mat-label>Priority</mat-label>

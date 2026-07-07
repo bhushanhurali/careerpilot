@@ -10,6 +10,7 @@ import { ApplicationsService } from './applications.service.js';
 import {
   applicationIdParamsSchema,
   createApplicationSchema,
+  createStatusTransitionSchema,
   listApplicationsQuerySchema,
   updateApplicationSchema,
 } from './applications.schemas.js';
@@ -51,6 +52,38 @@ export class ApplicationsController {
       );
 
       response.status(200).json(ok({ application }));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  listStatusHistory: RequestHandler = async (request, response, next) => {
+    try {
+      const auth = this.getAuth(request);
+      const params = parseRequestParams(applicationIdParamsSchema, request.params);
+      const statusHistory = await this.applicationsService.listStatusHistory(
+        auth.userId,
+        params.applicationId,
+      );
+
+      response.status(200).json(ok({ statusHistory }));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  createStatusTransition: RequestHandler = async (request, response, next) => {
+    try {
+      const auth = this.getAuth(request);
+      const params = parseRequestParams(applicationIdParamsSchema, request.params);
+      const body = parseRequestBody(createStatusTransitionSchema, request.body);
+      const result = await this.applicationsService.createStatusTransition(
+        auth.userId,
+        params.applicationId,
+        body,
+      );
+
+      response.status(201).json(ok(result));
     } catch (error) {
       next(error);
     }

@@ -5,6 +5,7 @@ import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import { createApp } from '../../app.js';
 import { createMigrator } from '../../db/migrator.js';
+import { ApplicationStatusHistoryModel } from '../../db/models/application-status-history.model.js';
 import { CompanyModel } from '../../db/models/company.model.js';
 import { ContactModel } from '../../db/models/contact.model.js';
 import { JobApplicationModel } from '../../db/models/job-application.model.js';
@@ -12,7 +13,7 @@ import { UserModel } from '../../db/models/user.model.js';
 import { sequelize } from '../../db/sequelize.js';
 import { ApiResponse } from '../../shared/responses/api-response.js';
 import { signAccessToken } from '../../shared/security/jwt.js';
-import { JobApplicationDto } from './applications.types.js';
+import { ApplicationStatusHistoryDto, JobApplicationDto } from './applications.types.js';
 
 type ApplicationResponse = {
   application: JobApplicationDto;
@@ -20,6 +21,15 @@ type ApplicationResponse = {
 
 type ApplicationsResponse = {
   applications: JobApplicationDto[];
+};
+
+type StatusHistoryResponse = {
+  statusHistory: ApplicationStatusHistoryDto[];
+};
+
+type StatusTransitionResponse = {
+  application: JobApplicationDto;
+  historyEntry: ApplicationStatusHistoryDto;
 };
 
 function assertTestDatabase(): void {
@@ -33,7 +43,7 @@ function assertTestDatabase(): void {
 
 async function truncateBusinessTables(): Promise<void> {
   await sequelize.query(
-    'TRUNCATE TABLE job_applications, contacts, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
+    'TRUNCATE TABLE application_status_history, job_applications, contacts, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
   );
 }
 
@@ -117,6 +127,14 @@ function applicationUrl(applicationId: string): string {
   return `/api/v1/applications/${applicationId}`;
 }
 
+function statusHistoryUrl(applicationId: string): string {
+  return `${applicationUrl(applicationId)}/status-history`;
+}
+
+function statusTransitionsUrl(applicationId: string): string {
+  return `${applicationUrl(applicationId)}/status-transitions`;
+}
+
 describe('applications API', () => {
   const app = createApp({ disableRateLimits: true });
 
@@ -136,6 +154,8 @@ describe('applications API', () => {
       request(app).get('/api/v1/applications'),
       request(app).post('/api/v1/applications').send({}),
       request(app).get(applicationUrl(applicationId)),
+      request(app).get(statusHistoryUrl(applicationId)),
+      request(app).post(statusTransitionsUrl(applicationId)).send({ status: 'applied' }),
       request(app).patch(applicationUrl(applicationId)).send({ jobTitle: 'Changed' }),
       request(app).delete(applicationUrl(applicationId)),
     ]);
@@ -182,6 +202,15 @@ describe('applications API', () => {
     expect(body.data?.application.jobTitle).toBe('Senior Angular Developer');
     expect(body.data?.application.salaryCurrency).toBe('EUR');
     expect(body.data?.application.appliedAt).toBe('2026-07-05');
+
+    const historyEntries = await ApplicationStatusHistoryModel.findAll({
+      where: { applicationId: body.data?.application.id },
+    });
+
+    expect(historyEntries).toHaveLength(1);
+    expect(historyEntries[0]?.fromStatus).toBeNull();
+    expect(historyEntries[0]?.toStatus).toBe('applied');
+    expect(historyEntries[0]?.changedAt.toISOString()).toBe(body.data?.application.createdAt);
   });
 
   it('rejects invalid application payloads and client-controlled fields', async () => {
@@ -430,21 +459,137 @@ describe('applications API', () => {
         contactId: null,
         jobTitle: ' Principal Angular Developer ',
         jobUrl: '',
-        status: 'interviewing',
         salaryCurrency: 'eur',
         notes: '',
       });
+    const statusPatchResponse = await request(app)
+      .patch(applicationUrl(application.id))
+      .set(authorize(user.accessToken))
+      .send({ status: 'interviewing' });
     const updateBody = updateResponse.body as ApiResponse<ApplicationResponse>;
 
     expect(inconsistentCompanyChange.status).toBe(400);
     expect(invalidFinalSalary.status).toBe(400);
+    expect(statusPatchResponse.status).toBe(400);
     expect(updateResponse.status).toBe(200);
     expect(updateBody.data?.application.contactId).toBeNull();
     expect(updateBody.data?.application.jobTitle).toBe('Principal Angular Developer');
     expect(updateBody.data?.application.jobUrl).toBeNull();
-    expect(updateBody.data?.application.status).toBe('interviewing');
+    expect(updateBody.data?.application.status).toBe('draft');
     expect(updateBody.data?.application.salaryCurrency).toBe('EUR');
     expect(updateBody.data?.application.notes).toBeNull();
+  });
+
+  it('lists application status history oldest-first for owned applications', async () => {
+    const user = await createTestUser('owner@example.com');
+    const otherUser = await createTestUser('other@example.com');
+    const company = await createCompany(user.id, 'Acme GmbH');
+    const otherCompany = await createCompany(otherUser.id, 'Other GmbH');
+    const application = await createApplication(user.id, company.id);
+    const otherApplication = await createApplication(otherUser.id, otherCompany.id);
+
+    await ApplicationStatusHistoryModel.bulkCreate([
+      {
+        id: crypto.randomUUID(),
+        applicationId: application.id,
+        fromStatus: 'applied',
+        toStatus: 'screening',
+        changedAt: new Date('2026-07-07T12:00:00.000Z'),
+        note: 'Recruiter screen',
+      },
+      {
+        id: crypto.randomUUID(),
+        applicationId: application.id,
+        fromStatus: null,
+        toStatus: 'applied',
+        changedAt: new Date('2026-07-07T10:00:00.000Z'),
+        note: null,
+      },
+      {
+        id: crypto.randomUUID(),
+        applicationId: otherApplication.id,
+        fromStatus: null,
+        toStatus: 'draft',
+        changedAt: new Date('2026-07-07T09:00:00.000Z'),
+        note: null,
+      },
+    ]);
+
+    const response = await request(app)
+      .get(statusHistoryUrl(application.id))
+      .set(authorize(user.accessToken));
+    const crossUserResponse = await request(app)
+      .get(statusHistoryUrl(application.id))
+      .set(authorize(otherUser.accessToken));
+    const body = response.body as ApiResponse<StatusHistoryResponse>;
+
+    expect(response.status).toBe(200);
+    expect(body.data?.statusHistory.map((entry) => entry.toStatus)).toEqual([
+      'applied',
+      'screening',
+    ]);
+    expect(body.data?.statusHistory[0]?.fromStatus).toBeNull();
+    expect(body.data?.statusHistory[1]?.note).toBe('Recruiter screen');
+    expect(crossUserResponse.status).toBe(404);
+  });
+
+  it('creates status transitions transactionally and rejects same-status transitions', async () => {
+    const user = await createTestUser('owner@example.com');
+    const company = await createCompany(user.id, 'Acme GmbH');
+    const application = await createApplication(user.id, company.id, { status: 'applied' });
+
+    const response = await request(app)
+      .post(statusTransitionsUrl(application.id))
+      .set(authorize(user.accessToken))
+      .send({ status: 'interviewing', note: ' Technical interview scheduled ' });
+    const body = response.body as ApiResponse<StatusTransitionResponse>;
+    const reloadedApplication = await JobApplicationModel.findByPk(application.id);
+    const historyEntries = await ApplicationStatusHistoryModel.findAll({
+      where: { applicationId: application.id },
+    });
+    const sameStatusResponse = await request(app)
+      .post(statusTransitionsUrl(application.id))
+      .set(authorize(user.accessToken))
+      .send({ status: 'interviewing' });
+    const sameStatusBody = sameStatusResponse.body as ApiResponse<never>;
+
+    expect(response.status).toBe(201);
+    expect(body.data?.application.status).toBe('interviewing');
+    expect(body.data?.historyEntry.applicationId).toBe(application.id);
+    expect(body.data?.historyEntry.fromStatus).toBe('applied');
+    expect(body.data?.historyEntry.toStatus).toBe('interviewing');
+    expect(body.data?.historyEntry.note).toBe('Technical interview scheduled');
+    expect(new Date(body.data?.historyEntry.changedAt ?? '').getTime()).not.toBeNaN();
+    expect(reloadedApplication?.status).toBe('interviewing');
+    expect(historyEntries).toHaveLength(1);
+    expect(historyEntries[0]?.fromStatus).toBe('applied');
+    expect(historyEntries[0]?.toStatus).toBe('interviewing');
+    expect(sameStatusResponse.status).toBe(400);
+    expect(sameStatusBody.error?.code).toBe('STATUS_UNCHANGED');
+  });
+
+  it('validates status transition payloads and conceals cross-user applications', async () => {
+    const owner = await createTestUser('owner@example.com');
+    const otherUser = await createTestUser('other@example.com');
+    const company = await createCompany(owner.id, 'Acme GmbH');
+    const application = await createApplication(owner.id, company.id);
+
+    const invalidStatusResponse = await request(app)
+      .post(statusTransitionsUrl(application.id))
+      .set(authorize(owner.accessToken))
+      .send({ status: 'sent' });
+    const clientControlledChangedAtResponse = await request(app)
+      .post(statusTransitionsUrl(application.id))
+      .set(authorize(owner.accessToken))
+      .send({ status: 'applied', changedAt: '2026-07-07T10:00:00.000Z' });
+    const crossUserResponse = await request(app)
+      .post(statusTransitionsUrl(application.id))
+      .set(authorize(otherUser.accessToken))
+      .send({ status: 'applied' });
+
+    expect(invalidStatusResponse.status).toBe(400);
+    expect(clientControlledChangedAtResponse.status).toBe(400);
+    expect(crossUserResponse.status).toBe(404);
   });
 
   it('soft-deletes owned applications', async () => {

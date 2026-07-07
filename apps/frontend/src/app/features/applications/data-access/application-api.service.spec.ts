@@ -5,7 +5,11 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 
 import { API_BASE_URL } from '../../../core/config/api.config';
-import { ApplicationApiResponse, JobApplication } from './application.models';
+import {
+  ApplicationApiResponse,
+  ApplicationStatusHistoryEntry,
+  JobApplication,
+} from './application.models';
 import { ApplicationApiService } from './application-api.service';
 
 describe('ApplicationApiService', () => {
@@ -123,7 +127,22 @@ describe('ApplicationApiService', () => {
       .flush(success({ application }));
 
     service
-      .updateApplication(application.id, payload)
+      .updateApplication(application.id, {
+        companyId: payload.companyId,
+        contactId: payload.contactId,
+        jobTitle: payload.jobTitle,
+        jobUrl: payload.jobUrl,
+        source: payload.source,
+        priority: payload.priority,
+        salaryMin: payload.salaryMin,
+        salaryMax: payload.salaryMax,
+        salaryCurrency: payload.salaryCurrency,
+        location: payload.location,
+        employmentType: payload.employmentType,
+        workMode: payload.workMode,
+        appliedAt: payload.appliedAt,
+        notes: payload.notes,
+      })
       .subscribe((result) => expect(result).toEqual(application));
     const updateRequest = httpTestingController.expectOne(
       `${API_BASE_URL}/applications/${application.id}`,
@@ -137,6 +156,47 @@ describe('ApplicationApiService', () => {
     );
     expect(deleteRequest.request.method).toBe('DELETE');
     deleteRequest.flush(success({ deleted: true }));
+  });
+
+  it('loads status history and creates status transitions', () => {
+    const historyEntry: ApplicationStatusHistoryEntry = {
+      id: 'history-1',
+      applicationId: application.id,
+      fromStatus: 'applied',
+      toStatus: 'interviewing',
+      changedAt: '2026-07-07T10:00:00.000Z',
+      note: 'Technical interview',
+      createdAt: '2026-07-07T10:00:00.000Z',
+      updatedAt: '2026-07-07T10:00:00.000Z',
+    };
+
+    service
+      .listStatusHistory(application.id)
+      .subscribe((result) => expect(result).toEqual([historyEntry]));
+    const listRequest = httpTestingController.expectOne(
+      `${API_BASE_URL}/applications/${application.id}/status-history`,
+    );
+    expect(listRequest.request.method).toBe('GET');
+    listRequest.flush(success({ statusHistory: [historyEntry] }));
+
+    service
+      .createStatusTransition(application.id, {
+        status: 'interviewing',
+        note: 'Technical interview',
+      })
+      .subscribe((result) => {
+        expect(result.application).toEqual(application);
+        expect(result.historyEntry).toEqual(historyEntry);
+      });
+    const transitionRequest = httpTestingController.expectOne(
+      `${API_BASE_URL}/applications/${application.id}/status-transitions`,
+    );
+    expect(transitionRequest.request.method).toBe('POST');
+    expect(transitionRequest.request.body).toEqual({
+      status: 'interviewing',
+      note: 'Technical interview',
+    });
+    transitionRequest.flush(success({ application, historyEntry }));
   });
 
   it('throws an application API error when the response envelope fails', () => {

@@ -81,7 +81,7 @@ and attaches the verified user ID and role to the request. Future role checks ca
 ## Business Data Authorization
 
 Phase 2 adds authenticated company and contact data. Phase 3 adds authenticated job application
-data.
+data. Phase 4 adds application status history.
 
 - Every company query is scoped by both company ID and authenticated user ID.
 - Cross-user company reads, updates, and deletes return `404`, not `403`, so the API does not
@@ -92,9 +92,16 @@ data.
   authenticated user ID.
 - Application create/update validates that `companyId` belongs to the authenticated user.
 - Application `contactId` is optional, but when supplied it must belong to the selected company.
+- Application status history does not store `user_id`; authorization is derived by first verifying
+  the parent application belongs to the authenticated user.
+- Application status changes use a dedicated transition endpoint. The backend updates
+  `job_applications.status` and inserts the append-only history entry in one database transaction.
 - Request bodies never accept client-controlled IDs, `userId`, timestamps, or deletion fields.
+- Status-transition request bodies never accept client-controlled `changedAt`; the backend
+  generates it.
 - Company deletion soft-deletes the owned company and its active contacts in one transaction.
-- Application deletion soft-deletes the owned application.
+- Application deletion soft-deletes the owned application. Its status history remains in the
+  database but is inaccessible through normal application-scoped API routes.
 
 Frontend route guards improve navigation only. They do not enforce ownership. The backend service
 layer is the authorization boundary for companies, contacts, and applications.

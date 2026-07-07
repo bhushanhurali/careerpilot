@@ -10,6 +10,9 @@ import {
   ApplicationFormValue,
   ApplicationListQuery,
   ApplicationPaginationMeta,
+  ApplicationStatusHistoryEntry,
+  ApplicationStatusTransitionValue,
+  ApplicationUpdateValue,
   JobApplication,
 } from './application.models';
 
@@ -33,24 +36,34 @@ export class ApplicationStore {
 
   private readonly applicationsSignal = signal<JobApplication[]>([]);
   private readonly selectedApplicationSignal = signal<JobApplication | null>(null);
+  private readonly statusHistorySignal = signal<ApplicationStatusHistoryEntry[]>([]);
   private readonly querySignal = signal<ApplicationListQuery>(defaultQuery);
   private readonly metaSignal = signal<ApplicationPaginationMeta>(emptyMeta);
   private readonly loadingSignal = signal(false);
   private readonly selectedLoadingSignal = signal(false);
+  private readonly statusHistoryLoadingSignal = signal(false);
+  private readonly statusTransitionSavingSignal = signal(false);
   private readonly savingSignal = signal(false);
   private readonly deletingSignal = signal(false);
   private readonly errorSignal = signal<string | null>(null);
+  private readonly statusHistoryErrorSignal = signal<string | null>(null);
+  private readonly statusTransitionErrorSignal = signal<ApplicationApiError | null>(null);
   private readonly formErrorSignal = signal<ApplicationApiError | null>(null);
 
   readonly applications = this.applicationsSignal.asReadonly();
   readonly selectedApplication = this.selectedApplicationSignal.asReadonly();
+  readonly statusHistory = this.statusHistorySignal.asReadonly();
   readonly query = this.querySignal.asReadonly();
   readonly meta = this.metaSignal.asReadonly();
   readonly loading = this.loadingSignal.asReadonly();
   readonly selectedLoading = this.selectedLoadingSignal.asReadonly();
+  readonly statusHistoryLoading = this.statusHistoryLoadingSignal.asReadonly();
+  readonly statusTransitionSaving = this.statusTransitionSavingSignal.asReadonly();
   readonly saving = this.savingSignal.asReadonly();
   readonly deleting = this.deletingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
+  readonly statusHistoryError = this.statusHistoryErrorSignal.asReadonly();
+  readonly statusTransitionError = this.statusTransitionErrorSignal.asReadonly();
   readonly formError = this.formErrorSignal.asReadonly();
   readonly hasApplications = computed(() => this.applicationsSignal().length > 0);
 
@@ -79,6 +92,8 @@ export class ApplicationStore {
   loadApplication(applicationId: string): Observable<JobApplication> {
     this.selectedLoadingSignal.set(true);
     this.errorSignal.set(null);
+    this.statusHistorySignal.set([]);
+    this.statusHistoryErrorSignal.set(null);
 
     return this.applicationApi.getApplication(applicationId).pipe(
       tap((application) => this.selectedApplicationSignal.set(application)),
@@ -90,6 +105,23 @@ export class ApplicationStore {
         return throwError(() => apiError);
       }),
       finalize(() => this.selectedLoadingSignal.set(false)),
+    );
+  }
+
+  loadStatusHistory(applicationId: string): Observable<ApplicationStatusHistoryEntry[]> {
+    this.statusHistoryLoadingSignal.set(true);
+    this.statusHistoryErrorSignal.set(null);
+
+    return this.applicationApi.listStatusHistory(applicationId).pipe(
+      tap((statusHistory) => this.statusHistorySignal.set(statusHistory)),
+      catchError((error: unknown) => {
+        const apiError = toApplicationApiError(error);
+        this.statusHistorySignal.set([]);
+        this.statusHistoryErrorSignal.set(apiError.message);
+
+        return throwError(() => apiError);
+      }),
+      finalize(() => this.statusHistoryLoadingSignal.set(false)),
     );
   }
 
@@ -110,7 +142,7 @@ export class ApplicationStore {
 
   updateApplication(
     applicationId: string,
-    payload: ApplicationFormValue,
+    payload: ApplicationUpdateValue,
   ): Observable<JobApplication> {
     this.savingSignal.set(true);
     this.formErrorSignal.set(null);
@@ -124,6 +156,34 @@ export class ApplicationStore {
         return throwError(() => apiError);
       }),
       finalize(() => this.savingSignal.set(false)),
+    );
+  }
+
+  createStatusTransition(
+    applicationId: string,
+    payload: ApplicationStatusTransitionValue,
+  ): Observable<JobApplication> {
+    this.statusTransitionSavingSignal.set(true);
+    this.statusTransitionErrorSignal.set(null);
+
+    return this.applicationApi.createStatusTransition(applicationId, payload).pipe(
+      tap((result) => {
+        this.selectedApplicationSignal.set(result.application);
+        this.statusHistorySignal.update((statusHistory) => [...statusHistory, result.historyEntry]);
+        this.applicationsSignal.update((applications) =>
+          applications.map((application) =>
+            application.id === result.application.id ? result.application : application,
+          ),
+        );
+      }),
+      map((result) => result.application),
+      catchError((error: unknown) => {
+        const apiError = toApplicationApiError(error);
+        this.statusTransitionErrorSignal.set(apiError);
+
+        return throwError(() => apiError);
+      }),
+      finalize(() => this.statusTransitionSavingSignal.set(false)),
     );
   }
 
@@ -152,5 +212,9 @@ export class ApplicationStore {
 
   clearFormError(): void {
     this.formErrorSignal.set(null);
+  }
+
+  clearStatusTransitionError(): void {
+    this.statusTransitionErrorSignal.set(null);
   }
 }
