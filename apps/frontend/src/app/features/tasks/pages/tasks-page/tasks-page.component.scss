@@ -1,0 +1,13 @@
+h1 {
+  margin: 0 0 16px;
+}
+
+.task-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 0 12px;
+}
+
+mat-paginator {
+  margin-top: 12px;
+}

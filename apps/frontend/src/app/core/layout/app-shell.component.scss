@@ -38,3 +38,18 @@
     display: none;
   }
 }
+
+@media (width <= 480px) {
+  mat-toolbar {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+  }
+
+  .primary-nav {
+    flex: 1 0 100%;
+    order: 1;
+    flex-wrap: wrap;
+    margin: 0 0 4px;
+  }
+}

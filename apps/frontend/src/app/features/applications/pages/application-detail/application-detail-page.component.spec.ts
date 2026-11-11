@@ -7,6 +7,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 
 import { InterviewApiService } from '../../../interviews/data-access/interview-api.service';
+import { TaskApiService } from '../../../tasks/data-access/task-api.service';
 import {
   ApplicationStatusHistoryEntry,
   JobApplication,
@@ -22,6 +23,7 @@ describe('ApplicationDetailPageComponent', () => {
   let statusHistoryLoadingSignal: WritableSignal<boolean>;
   let statusHistoryErrorSignal: WritableSignal<string | null>;
   let interviewApi: jasmine.SpyObj<InterviewApiService>;
+  let taskApi: jasmine.SpyObj<TaskApiService>;
 
   const application: JobApplication = {
     id: 'application-1',
@@ -95,12 +97,15 @@ describe('ApplicationDetailPageComponent', () => {
       'listInterviews',
     ]);
     interviewApi.listInterviews.and.returnValue(of([]));
+    taskApi = jasmine.createSpyObj<TaskApiService>('TaskApiService', ['listApplicationTasks']);
+    taskApi.listApplicationTasks.and.returnValue(of({ tasks: [], total: 0 }));
 
     await TestBed.configureTestingModule({
       imports: [ApplicationDetailPageComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
         { provide: InterviewApiService, useValue: interviewApi },
+        { provide: TaskApiService, useValue: taskApi },
         { provide: ApplicationStore, useValue: store },
         {
           provide: ActivatedRoute,
@@ -123,6 +128,7 @@ describe('ApplicationDetailPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Angular Developer');
     expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
     expect(fixture.nativeElement.querySelector('cp-interview-list')).not.toBeNull();
+    expect(taskApi.listApplicationTasks).toHaveBeenCalledWith(application.id);
     expect(interviewApi.listInterviews).toHaveBeenCalledWith(application.id);
     expect(fixture.nativeElement.textContent).toContain('Applied to Interviewing');
     expect(fixture.nativeElement.textContent).toContain('Technical interview scheduled');

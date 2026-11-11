@@ -1,0 +1,52 @@
+<h1>Tasks</h1>
+
+<form class="task-filters" [formGroup]="filters" aria-label="Task filters">
+  <mat-form-field>
+    <mat-label>View</mat-label>
+    <mat-select formControlName="view">
+      @for (view of views; track view.value) {
+        <mat-option [value]="view.value">{{ view.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Priority</mat-label>
+    <mat-select formControlName="priority">
+      <mat-option value="all">All priorities</mat-option>
+      @for (priority of priorities; track priority) {
+        <mat-option [value]="priority">{{ priority | titlecase }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Sort by</mat-label>
+    <mat-select formControlName="sortBy">
+      <mat-option value="dueOn">Due date</mat-option>
+      <mat-option value="priority">Priority</mat-option>
+      <mat-option value="createdAt">Date created</mat-option>
+      <mat-option value="completedAt">Date completed</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Sort direction</mat-label>
+    <mat-select formControlName="sortDirection">
+      <mat-option value="asc">Ascending</mat-option>
+      <mat-option value="desc">Descending</mat-option>
+    </mat-select>
+  </mat-form-field>
+</form>
+
+<section aria-label="Task results">
+  <h2 class="cdk-visually-hidden">Task results</h2>
+  <cp-task-list />
+  @if (store.total() > 0 && !store.error()) {
+    <mat-paginator
+      aria-label="Task results pages"
+      [length]="store.total()"
+      [pageIndex]="pagination().page - 1"
+      [pageSize]="pagination().pageSize"
+      [pageSizeOptions]="[10, 20, 50, 100]"
+      (page)="pageChanged($event)"
+    />
+  }
+</section>

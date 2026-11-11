@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>
+  {{ data.mode === 'delete' ? 'Delete task?' : data.task ? 'Edit task' : 'Add task' }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    @if (data.mode === 'delete') {
+      <p>{{ data.task.title }} will be removed.</p>
+    } @else {
+      <div class="task-fields">
+        <mat-form-field>
+          <mat-label>Title</mat-label>
+          <input matInput required maxlength="160" formControlName="title" />
+          <mat-error>Enter a title of up to 160 characters.</mat-error>
+        </mat-form-field>
+        <mat-form-field floatLabel="always">
+          <mat-label>Due date</mat-label>
+          <input matInput type="date" max="9999-12-31" formControlName="dueOn" />
+          <mat-error>Enter a valid date.</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Priority</mat-label>
+          <mat-select formControlName="priority">
+            @for (priority of priorities; track priority) {
+              <mat-option [value]="priority">{{ priority | titlecase }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Notes</mat-label>
+          <textarea matInput rows="3" maxlength="10000" formControlName="notes"></textarea>
+        </mat-form-field>
+      </div>
+    }
+    @if (error(); as message) {
+      <p class="dialog-error" role="alert">{{ message }}</p>
+    }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="pending()">Cancel</button>
+    <button
+      mat-flat-button
+      type="submit"
+      [color]="data.mode === 'delete' ? 'warn' : 'primary'"
+      [disabled]="pending()"
+    >
+      @if (data.mode === 'delete') {
+        {{ pending() ? 'Deleting...' : 'Delete task' }}
+      } @else {
+        {{ pending() ? 'Saving...' : 'Save task' }}
+      }
+    </button>
+  </mat-dialog-actions>
+</form>
