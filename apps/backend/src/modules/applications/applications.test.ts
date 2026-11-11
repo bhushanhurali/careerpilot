@@ -43,7 +43,7 @@ function assertTestDatabase(): void {
 
 async function truncateBusinessTables(): Promise<void> {
   await sequelize.query(
-    'TRUNCATE TABLE application_status_history, job_applications, contacts, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
+    'TRUNCATE TABLE interviews, application_status_history, job_applications, contacts, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
   );
 }
 
