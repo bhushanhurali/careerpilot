@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>{{ isEditing ? 'Edit interview' : 'Schedule interview' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <div class="interview-fields">
+      <mat-form-field>
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="type" required>
+          @for (option of typeOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status" required>
+          @for (option of statusOptions; track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="interview-fields__wide">
+        <mat-label>Date and time (local)</mat-label>
+        <input matInput type="datetime-local" formControlName="scheduledAt" required />
+        <mat-error>Enter a valid local date and time.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Duration (minutes)</mat-label>
+        <input matInput type="number" min="1" step="1" formControlName="durationMinutes" />
+        <mat-error>Enter a positive whole number within range.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Location</mat-label>
+        <input matInput maxlength="160" formControlName="location" />
+      </mat-form-field>
+
+      <mat-form-field class="interview-fields__wide">
+        <mat-label>Meeting URL</mat-label>
+        <input matInput type="url" maxlength="2048" formControlName="meetingUrl" />
+        <mat-error>Enter an HTTP or HTTPS URL.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="interview-fields__wide">
+        <mat-label>Notes</mat-label>
+        <textarea matInput rows="3" maxlength="10000" formControlName="notes"></textarea>
+      </mat-form-field>
+    </div>
+
+    @if (errorMessage(); as message) {
+      <p class="dialog-error" role="alert">{{ message }}</p>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close [disabled]="isSaving()">Cancel</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="isSaving()">
+      {{ isSaving() ? 'Saving...' : isEditing ? 'Save changes' : 'Schedule interview' }}
+    </button>
+  </mat-dialog-actions>
+</form>

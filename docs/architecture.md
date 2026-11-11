@@ -12,7 +12,7 @@ access token in memory and relies on the refresh-token HTTP-only cookie for sess
 ### Companies
 
 Companies are the first business-domain aggregate. A company belongs directly to one authenticated
-user and is the parent for contacts and future job applications.
+user and is the parent for contacts and job applications.
 
 Backend company code lives in:
 
@@ -107,6 +107,19 @@ The application detail page renders the status timeline and opens a status-trans
 create workflow still allows choosing an initial status. The edit workflow no longer edits status;
 status changes go through the dedicated transition workflow.
 
+### Interviews
+
+Interviews belong to job applications. The backend module in
+`apps/backend/src/modules/interviews` mounts a router under
+`/api/v1/applications/:applicationId/interviews`, behind Applications authentication.
+It verifies the parent application before querying or mutating interviews. Interview status is
+independent of application status; interview writes do not create application history entries.
+
+The Angular feature in `apps/frontend/src/app/features/interviews` has an API service, a
+component-scoped signal store, and list, form, and delete-dialog components. The application detail
+page embeds the list; there are no standalone interview routes. See
+[ADR 0009](decisions/0009-interview-ownership.md).
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.
@@ -125,6 +138,8 @@ The authenticated user ID is the security boundary for business data.
 - Contact services verify the owned parent company before reading or mutating a contact.
 - Application services scope every list/detail/update/delete operation by authenticated user ID.
 - Status-history list and transition operations first verify an active owned parent application.
+- Interview operations require an active owned application with an active owned company. Updates
+  and deletions also scope the interview lookup by the application ID.
 - Cross-user access returns `404`, matching nonexistent resources, so resource existence is not
   revealed.
 
@@ -133,7 +148,8 @@ owned records, contacts hang from companies, and applications are the user's pip
 
 ## Soft Deletion
 
-Companies and contacts use Sequelize paranoid models with `deleted_at`.
+Companies, contacts, job applications, and interviews use Sequelize paranoid models with
+`deleted_at`.
 
 - Normal list/detail queries only return active records.
 - Deleting a contact soft-deletes that contact.
@@ -143,7 +159,9 @@ Companies and contacts use Sequelize paranoid models with `deleted_at`.
 - Soft-deleting an application leaves its status history rows in the database.
 - Normal status-history API access requires an active owned parent application, so soft-deleted
   application history is hidden from normal routes.
-- Hard-deleting an application physically cascades status history rows.
+- Deleting an interview soft-deletes only the interview. Soft-deleting an application retains its
+  interviews but hides them from the nested API.
+- Hard-deleting an application physically cascades status history and interview rows.
 - Company deletion does not yet soft-delete or otherwise modify applications; that behavior should
   be decided when application lifecycle rules are expanded.
 - PostgreSQL foreign-key cascade is not used for ordinary soft deletion because no physical delete
@@ -164,6 +182,9 @@ supports:
   status timeline, change-status action, edit, and delete action.
 - Status transition: dialog with target status and optional note; success refreshes current
   application state and appends the new timeline entry.
+- Interviews: scheduled-time list with loading, empty, error, and retry states; schedule/edit
+  dialog and delete confirmation. Times display in browser local time and are submitted as UTC
+  timestamps. Successful writes refresh the list.
 - Edit: loads the selected application and reuses the form component, excluding status editing.
 - Delete: confirmation dialog and soft-delete API call.
 
@@ -182,6 +203,10 @@ Frontend coverage includes the Applications API service, signal store, typed for
 normalization, company/contact selector behavior, list filters/sorting/pagination, create/edit
 navigation workflows, detail rendering, delete-dialog wiring, status-history timeline states,
 status-transition dialog validation/error handling, and status-free edit submissions.
+
+Interview tests cover database constraints and deletion behavior, nested API authentication and
+ownership, validation and partial updates, and frontend list refresh, retry, scheduling, and
+deletion workflows.
 
 ## Decisions
 

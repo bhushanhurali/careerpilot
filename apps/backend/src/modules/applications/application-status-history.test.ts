@@ -2,6 +2,10 @@ import crypto from 'node:crypto';
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import {
+  down as downStatusHistoryMigration,
+  up as upStatusHistoryMigration,
+} from '../../db/migrations/006-create-application-status-history.js';
 import { createMigrator } from '../../db/migrator.js';
 import { ApplicationStatusHistoryModel } from '../../db/models/application-status-history.model.js';
 import { CompanyModel } from '../../db/models/company.model.js';
@@ -20,7 +24,7 @@ function assertTestDatabase(): void {
 
 async function truncateBusinessTables(): Promise<void> {
   await sequelize.query(
-    'TRUNCATE TABLE application_status_history, job_applications, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
+    'TRUNCATE TABLE interviews, application_status_history, job_applications, companies, refresh_tokens, users RESTART IDENTITY CASCADE;',
   );
 }
 
@@ -136,13 +140,12 @@ describe('application status history database foundation', () => {
     const company = await createCompany(user.id);
     const activeApplication = await createApplication(user.id, company.id);
     const softDeletedApplication = await createApplication(user.id, company.id);
-    const migrator = createMigrator();
 
     await softDeletedApplication.destroy();
-    await migrator.down();
+    await downStatusHistoryMigration(sequelize.getQueryInterface());
 
     try {
-      await migrator.up();
+      await upStatusHistoryMigration(sequelize.getQueryInterface());
 
       const historyEntries = await ApplicationStatusHistoryModel.findAll({
         order: [['applicationId', 'ASC']],
@@ -162,7 +165,7 @@ describe('application status history database foundation', () => {
         expect(entry.changedAt.toISOString()).toBe(sourceApplication.createdAt.toISOString());
       }
     } finally {
-      await migrator.up();
+      await upStatusHistoryMigration(sequelize.getQueryInterface()).catch(() => undefined);
     }
   });
 

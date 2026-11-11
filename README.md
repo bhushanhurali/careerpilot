@@ -2,11 +2,11 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 4 application status history is implemented. CareerPilot currently includes registration, login,
+Phase 5 interview management is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
-status transitions, soft deletion, route protection, and frontend/backend tests for the completed
-feature set.
+status transitions, interview scheduling and management, soft deletion, route protection, and
+frontend/backend tests for the completed feature set.
 
 ## Architecture
 
@@ -26,7 +26,8 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 2 | Complete | Companies, nested contacts, ownership, soft deletion, frontend workflows, docs |
 | Phase 3 | Complete | Job application model, API, frontend workflows, tests, docs                    |
 | Phase 4 | Complete | Status history, transactional status transitions, frontend timeline, tests     |
-| Phase 5 | Next     | Interview management, reminders, dashboard statistics, and follow-up workflow  |
+| Phase 5 | Complete | Interview scheduling and management on application detail, API, tests, docs    |
+| Phase 6 | Proposed | Application tasks, due dates, and follow-ups                                   |
 
 ## Prerequisites
 
@@ -154,6 +155,16 @@ Read these documents before changing application behavior:
 - [API documentation](docs/api.md)
 - [Application ownership ADR](docs/decisions/0007-job-application-ownership.md)
 - [Application status history ADR](docs/decisions/0008-application-status-history.md)
+
+## Interviews
+
+Open an application to view, schedule, edit, or delete its interviews. The detail page displays
+scheduled times in the browser's local timezone. Interviews have no standalone page or top-level
+API; their API is nested under `/api/v1/applications/:applicationId/interviews`. Interview status
+is independent of application status.
+
+See the [Interview API](docs/api.md#interview-conventions) and
+[Interview ownership ADR](docs/decisions/0009-interview-ownership.md) for the contract and lifecycle.
 
 ## Commit Convention
 

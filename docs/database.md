@@ -29,6 +29,8 @@ apps/backend/src/db/seeds
   soft-delete timestamp.
 - `application_status_history`: append-only status timeline entries for job applications, linked
   to their parent application and retained through normal soft deletion.
+- `interviews`: interview schedules, status, optional details, timestamps, and soft deletion.
+  Each interview belongs to one job application.
 - `SequelizeMeta`: migration names applied by Umzug's Sequelize storage.
 
 The application does not use `sequelize.sync()`. Migrations are the only supported way to change
@@ -221,6 +223,35 @@ the application's current `status` as `to_status`, and the application's `create
 Normal application soft deletion does not delete history rows. API access to history still requires
 an active owned parent application, so soft-deleted application history is retained in the database
 but hidden from normal users.
+
+## Interviews
+
+Migration `007-create-interviews` creates the table without backfilling existing applications.
+`interviews.application_id` references `job_applications.id`; interviews do not store `user_id`.
+
+| Column             | Type          | Required | Notes                                      |
+| ------------------ | ------------- | -------- | ------------------------------------------ |
+| `id`               | UUID          | Yes      | Primary key                                |
+| `application_id`   | UUID          | Yes      | FK to `job_applications.id`                |
+| `type`             | varchar(40)   | Yes      | Allowed values in the Interview API        |
+| `status`           | varchar(40)   | Yes      | Allowed values in the Interview API        |
+| `scheduled_at`     | timestamptz   | Yes      | Scheduled instant                          |
+| `duration_minutes` | integer       | No       | Positive if set                            |
+| `location`         | varchar(160)  | No       | Optional location                          |
+| `meeting_url`      | varchar(2048) | No       | Optional HTTP(S) URL, validated by the API |
+| `notes`            | text          | No       | Optional interview notes                   |
+| `created_at`       | timestamptz   | Yes      | Managed by Sequelize                       |
+| `updated_at`       | timestamptz   | Yes      | Managed by Sequelize                       |
+| `deleted_at`       | timestamptz   | No       | Set by Sequelize paranoid soft deletion    |
+
+- `interviews_type_check` and `interviews_status_check` enforce the
+  [allowed values](api.md#interview-conventions).
+- `interviews_duration_minutes_positive_check` allows `null` or a positive duration.
+- `interviews_application_id_idx` supports parent lookups;
+  `interviews_application_id_scheduled_at_idx` supports listing by application and scheduled time.
+- Separate indexes cover `scheduled_at`, `status`, and `type`.
+- The foreign key uses `ON DELETE CASCADE` and `ON UPDATE CASCADE`. Soft deletion of the
+  application retains its interviews; physical deletion removes them, including soft-deleted rows.
 
 ## Test Database Safety
 

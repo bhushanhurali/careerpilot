@@ -6,6 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 
+import { InterviewApiService } from '../../../interviews/data-access/interview-api.service';
 import {
   ApplicationStatusHistoryEntry,
   JobApplication,
@@ -20,6 +21,7 @@ describe('ApplicationDetailPageComponent', () => {
   let statusHistorySignal: WritableSignal<ApplicationStatusHistoryEntry[]>;
   let statusHistoryLoadingSignal: WritableSignal<boolean>;
   let statusHistoryErrorSignal: WritableSignal<string | null>;
+  let interviewApi: jasmine.SpyObj<InterviewApiService>;
 
   const application: JobApplication = {
     id: 'application-1',
@@ -89,11 +91,16 @@ describe('ApplicationDetailPageComponent', () => {
     store.loadStatusHistory.and.returnValue(of([historyEntry]));
     store.createStatusTransition.and.returnValue(of(application));
     store.deleteApplication.and.returnValue(of(undefined));
+    interviewApi = jasmine.createSpyObj<InterviewApiService>('InterviewApiService', [
+      'listInterviews',
+    ]);
+    interviewApi.listInterviews.and.returnValue(of([]));
 
     await TestBed.configureTestingModule({
       imports: [ApplicationDetailPageComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
+        { provide: InterviewApiService, useValue: interviewApi },
         { provide: ApplicationStore, useValue: store },
         {
           provide: ActivatedRoute,
@@ -115,6 +122,8 @@ describe('ApplicationDetailPageComponent', () => {
     expect(store.loadStatusHistory).toHaveBeenCalledWith(application.id);
     expect(fixture.nativeElement.textContent).toContain('Angular Developer');
     expect(fixture.nativeElement.textContent).toContain('Ada Lovelace');
+    expect(fixture.nativeElement.querySelector('cp-interview-list')).not.toBeNull();
+    expect(interviewApi.listInterviews).toHaveBeenCalledWith(application.id);
     expect(fixture.nativeElement.textContent).toContain('Applied to Interviewing');
     expect(fixture.nativeElement.textContent).toContain('Technical interview scheduled');
   });

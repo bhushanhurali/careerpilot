@@ -917,7 +917,8 @@ Errors:
 
 ## DELETE `/applications/:applicationId`
 
-Soft-deletes one owned active application.
+Soft-deletes one owned active application. Its interviews and status history are retained in the
+database but are no longer available through the normal application routes.
 
 Authentication: bearer access token required.
 
@@ -942,3 +943,77 @@ Errors:
 | `401`  | `AUTH_TOKEN_MISSING`    | Bearer token was not supplied                   |
 | `404`  | `APPLICATION_NOT_FOUND` | Application does not exist or belongs elsewhere |
 | `500`  | `INTERNAL_SERVER_ERROR` | Unexpected server failure                       |
+
+## Interview Conventions
+
+All interview endpoints require a bearer access token and an active application and company
+owned by the authenticated user. There is no top-level interviews endpoint. Item operations
+additionally require the interview to be active and to belong to the selected application.
+
+Interview types:
+
+```text
+phone_screen, recruiter_screen, technical, coding, system_design, hiring_manager, onsite, hr, final, other
+```
+
+Interview statuses:
+
+```text
+scheduled, completed, cancelled, rescheduled, no_show
+```
+
+Interview responses include `id`, `applicationId`, `type`, `status`, `scheduledAt`,
+`durationMinutes`, `location`, `meetingUrl`, `notes`, `createdAt`, and `updatedAt`. Timestamps
+are returned as ISO strings in UTC, and unset optional fields are `null`. IDs in the path must
+be UUIDs. Interview changes do not change the application's status or its status history.
+
+| Status | Code                    | Meaning                                                |
+| ------ | ----------------------- | ------------------------------------------------------ |
+| `400`  | `VALIDATION_ERROR`      | Params or body do not match the schema                 |
+| `401`  | `AUTH_TOKEN_MISSING`    | Bearer token was not supplied                          |
+| `404`  | `APPLICATION_NOT_FOUND` | Parent application is missing, hidden, or not owned    |
+| `404`  | `INTERVIEW_NOT_FOUND`   | Interview is missing, deleted, or under another parent |
+| `500`  | `INTERNAL_SERVER_ERROR` | Unexpected server failure                              |
+
+### GET `/applications/:applicationId/interviews`
+
+Returns `200 OK` with `data: { interviews: [...] }` in the standard envelope. The list excludes
+soft-deleted interviews and sorts by `scheduledAt` ascending, then by ID. An active application
+with no interviews returns an empty array. The list is not paginated.
+
+### POST `/applications/:applicationId/interviews`
+
+Returns `201 Created` with `data: { interview: ... }`.
+
+```json
+{
+  "type": "technical",
+  "status": "scheduled",
+  "scheduledAt": "2026-12-03T11:00:00+01:00",
+  "durationMinutes": 45,
+  "location": "Berlin",
+  "meetingUrl": "https://meet.example/interview",
+  "notes": "Bring portfolio examples."
+}
+```
+
+- `type`, `status`, and `scheduledAt` are required. The timestamp must include `Z` or a UTC
+  offset; the example is returned as `2026-12-03T10:00:00.000Z`.
+- `durationMinutes` is an optional positive integer (maximum `2147483647`) or `null`.
+- `location`, `meetingUrl`, and `notes` are optional. Text is trimmed and blank values are
+  stored as `null`. Limits are 160, 2048, and 10,000 characters respectively. A nonblank
+  `meetingUrl` must be an HTTP or HTTPS URL.
+- Unknown fields are rejected. Ownership and parent IDs are not accepted in the body.
+
+### PATCH `/applications/:applicationId/interviews/:interviewId`
+
+Returns `200 OK` with `data: { interview: ... }`. Accepts the same fields as creation, with at
+least one field required. Omitted fields are left unchanged; use `null` to clear nullable
+fields. Interviews cannot be moved to another application. To reschedule, update
+`scheduledAt` and set `status` to `rescheduled` if desired.
+
+### DELETE `/applications/:applicationId/interviews/:interviewId`
+
+Soft-deletes the interview and returns `200 OK` with `data: { deleted: true }`. Subsequent
+updates or deletions of that interview return `404 INTERVIEW_NOT_FOUND` if the parent is still
+accessible.
