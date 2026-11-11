@@ -1,5 +1,13 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  ElementRef,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,6 +43,9 @@ export class TaskDialogComponent {
   private readonly ref = inject<MatDialogRef<TaskDialogComponent, boolean>>(MatDialogRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly fb = inject(FormBuilder).nonNullable;
+  private readonly dueDate = viewChild<unknown, ElementRef<HTMLInputElement>>('dueDate', {
+    read: ElementRef,
+  });
 
   protected readonly pending = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -57,9 +68,14 @@ export class TaskDialogComponent {
     if (this.pending()) return;
 
     const data = this.data;
-    if (data.mode === 'save' && this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
+    if (data.mode === 'save') {
+      if (this.dueDate()?.nativeElement.validity.badInput) {
+        this.form.controls.dueOn.setErrors({ invalidDate: true });
+      }
+      if (this.form.invalid) {
+        this.form.markAllAsTouched();
+        return;
+      }
     }
 
     const value = this.form.getRawValue();

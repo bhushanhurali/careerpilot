@@ -15,7 +15,7 @@
         </mat-form-field>
         <mat-form-field floatLabel="always">
           <mat-label>Due date</mat-label>
-          <input matInput type="date" max="9999-12-31" formControlName="dueOn" />
+          <input #dueDate matInput type="date" max="9999-12-31" formControlName="dueOn" />
           <mat-error>Enter a valid date.</mat-error>
         </mat-form-field>
         <mat-form-field>

@@ -96,6 +96,9 @@ describe('ApplicationTasksComponent', () => {
     fixture.detectChanges();
     expectList([updated]);
 
+    const addButton = host.querySelector<HTMLButtonElement>('.section-header button');
+    if (!addButton) throw new Error('Missing add task button');
+    const focus = spyOn(addButton, 'focus');
     closed = new Subject();
     open.and.returnValue(
       jasmine.createSpyObj('MatDialogRef', { afterClosed: closed.asObservable() }),
@@ -110,5 +113,16 @@ describe('ApplicationTasksComponent', () => {
     fixture.detectChanges();
     expectList([]);
     expect(host.textContent).toContain('Task deleted.');
+    expect(focus).toHaveBeenCalled();
+  });
+
+  it('does not mutate or reload tasks when a delete confirmation is dismissed', () => {
+    expectList([task]);
+    const confirmation = openDialog('button[aria-label="Delete Send follow-up"]');
+    expect(confirmation.mode).toBe('delete');
+    closed.next(false);
+    fixture.detectChanges();
+    http.expectNone(() => true);
+    expect(host.textContent).toContain('Send follow-up');
   });
 });

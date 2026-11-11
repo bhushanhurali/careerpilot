@@ -3,8 +3,10 @@ import {
   Component,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
+  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,6 +33,10 @@ export class ApplicationTasksComponent {
   private readonly store = inject(TaskStore);
   private readonly dialog = inject(MatDialog);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly addButton = viewChild.required<unknown, ElementRef<HTMLButtonElement>>(
+    'addButton',
+    { read: ElementRef },
+  );
 
   constructor() {
     effect((onCleanup) => {
@@ -78,7 +84,10 @@ export class ApplicationTasksComponent {
       .afterClosed()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((changed) => {
-        if (changed) this.store.refresh(message);
+        if (changed) {
+          this.addButton().nativeElement.focus();
+          this.store.refresh(message);
+        }
       });
   }
 }

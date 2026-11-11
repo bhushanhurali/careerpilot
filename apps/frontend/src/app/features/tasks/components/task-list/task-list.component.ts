@@ -1,5 +1,13 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -20,6 +28,19 @@ export class TaskListComponent {
   readonly editTask = output<Task>();
   readonly deleteTask = output<Task>();
   protected readonly store = inject(TaskStore);
+  private readonly results = viewChild.required<ElementRef<HTMLElement>>('results');
+
+  protected retry(): void {
+    this.results().nativeElement.focus();
+    this.store.refresh();
+  }
+
+  protected toggleCompletion(task: Task): void {
+    if (this.store.pending() !== null) return;
+
+    this.results().nativeElement.focus();
+    this.store.toggleCompletion(task);
+  }
 
   protected dueLabel(task: Task): string | null {
     if (!task.dueOn || task.completedAt) return null;
