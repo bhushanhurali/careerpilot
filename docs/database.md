@@ -32,6 +32,7 @@ apps/backend/src/db/seeds
 - `interviews`: interview schedules, status, optional details, timestamps, and soft deletion.
   Each interview belongs to one job application.
 - `SequelizeMeta`: migration names applied by Umzug's Sequelize storage.
+- `tasks`: application follow-ups with optional due dates, priority, completion, and soft deletion.
 
 The application does not use `sequelize.sync()`. Migrations are the only supported way to change
 the schema.
@@ -252,6 +253,32 @@ Migration `007-create-interviews` creates the table without backfilling existing
 - Separate indexes cover `scheduled_at`, `status`, and `type`.
 - The foreign key uses `ON DELETE CASCADE` and `ON UPDATE CASCADE`. Soft deletion of the
   application retains its interviews; physical deletion removes them, including soft-deleted rows.
+
+## Tasks
+
+Migration `008-create-tasks` creates the table with no backfill. In Sequelize, JobApplication has
+many `tasks` and Task belongs to one `application` via `application_id`. Tasks have no
+`user_id`, `interview_id`, or separate status column.
+
+| Column           | Type         | Required | Notes                                         |
+| ---------------- | ------------ | -------- | --------------------------------------------- |
+| `id`             | UUID         | Yes      | Primary key                                   |
+| `application_id` | UUID         | Yes      | FK to `job_applications.id`                   |
+| `title`          | varchar(160) | Yes      | Trimmed and nonempty                          |
+| `notes`          | text         | No       | Optional details                              |
+| `due_on`         | date         | No       | Calendar date, not a timestamp                |
+| `priority`       | varchar(20)  | Yes      | `low`, `medium`, `high`; defaults to `medium` |
+| `completed_at`   | timestamptz  | No       | `null` means open                             |
+| `created_at`     | timestamptz  | Yes      | Managed by Sequelize                          |
+| `updated_at`     | timestamptz  | Yes      | Managed by Sequelize                          |
+| `deleted_at`     | timestamptz  | No       | Set by Sequelize paranoid soft deletion       |
+
+- `tasks_title_trimmed_not_empty_check` rejects empty titles and leading or trailing whitespace.
+- `tasks_priority_check` limits priority to the allowed values.
+- `tasks_application_id_idx` supports parent lookups.
+- `tasks_open_due_on_idx` indexes `(due_on, id)` for non-deleted, open tasks with a due date.
+- The foreign key uses `ON DELETE CASCADE` and `ON UPDATE CASCADE`. Soft-deleting an application
+  retains its tasks; physical deletion removes them, including already soft-deleted tasks.
 
 ## Test Database Safety
 

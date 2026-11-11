@@ -2,10 +2,10 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 5 interview management is implemented. CareerPilot currently includes registration, login,
+Phase 6 Tasks & Follow-ups is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
-status transitions, interview scheduling and management, soft deletion, route protection, and
+status transitions, interview scheduling, application tasks, soft deletion, route protection, and
 frontend/backend tests for the completed feature set.
 
 ## Architecture
@@ -27,7 +27,7 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 3 | Complete | Job application model, API, frontend workflows, tests, docs                    |
 | Phase 4 | Complete | Status history, transactional status transitions, frontend timeline, tests     |
 | Phase 5 | Complete | Interview scheduling and management on application detail, API, tests, docs    |
-| Phase 6 | Proposed | Application tasks, due dates, and follow-ups                                   |
+| Phase 6 | Complete | Application tasks, due-date filters, and cross-application follow-ups          |
 
 ## Prerequisites
 
@@ -165,6 +165,16 @@ is independent of application status.
 
 See the [Interview API](docs/api.md#interview-conventions) and
 [Interview ownership ADR](docs/decisions/0009-interview-ownership.md) for the contract and lifecycle.
+
+## Tasks & Follow-ups
+
+Open an application to create, edit, complete, reopen, or delete its tasks. The Tasks page lists
+tasks across applications with filters, sorting, pagination, and links back to the parent
+application. You can also complete and reopen tasks from that page.
+
+Due dates are optional calendar dates. An open task is overdue after its due date in your
+browser's local calendar. See the [Tasks API](docs/api.md#task-conventions) and
+[Tasks ADR](docs/decisions/0010-application-tasks.md).
 
 ## Commit Convention
 

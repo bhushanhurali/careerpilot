@@ -1017,3 +1017,85 @@ fields. Interviews cannot be moved to another application. To reschedule, update
 Soft-deletes the interview and returns `200 OK` with `data: { deleted: true }`. Subsequent
 updates or deletions of that interview return `404 INTERVIEW_NOT_FOUND` if the parent is still
 accessible.
+
+## Task Conventions
+
+All task endpoints require a bearer access token. Tasks are visible only through an active
+application and active company owned by the caller. Nested item routes also require an active
+task belonging to the application in the path. Both path IDs must be UUIDs.
+
+Task responses include `id`, `applicationId`, `title`, `notes`, `dueOn`, `priority`,
+`completedAt`, `createdAt`, and `updatedAt`. Unset notes, due dates, and completion timestamps
+are `null`. Timestamps are UTC ISO strings; `dueOn` is a `YYYY-MM-DD` calendar date with no
+timezone conversion. An open task has `completedAt: null`.
+
+| Status | Code                    | Meaning                                             |
+| ------ | ----------------------- | --------------------------------------------------- |
+| `400`  | `VALIDATION_ERROR`      | Params, query, or body do not match the schema      |
+| `401`  | `AUTH_TOKEN_MISSING`    | Bearer token was not supplied                       |
+| `404`  | `APPLICATION_NOT_FOUND` | Parent application is missing, hidden, or not owned |
+| `404`  | `TASK_NOT_FOUND`        | Task is missing, deleted, or under another parent   |
+
+### GET `/tasks`
+
+Read-only cross-application list. Returns `200 OK` with `data: { tasks: [...] }` and
+`meta: { page, pageSize, total, totalPages }`. Each task includes an
+`application: { id, jobTitle }` summary. Filtering and sorting run before pagination, and
+tasks under inaccessible applications or companies are omitted.
+
+| Query           | Values and behavior                                           |
+| --------------- | ------------------------------------------------------------- |
+| `status`        | `open` or `completed`; omitted includes both                  |
+| `priority`      | `low`, `medium`, or `high`                                    |
+| `due`           | `overdue`, `today`, `upcoming`, or `undated`; open tasks only |
+| `today`         | Caller-local `YYYY-MM-DD`; required for relative due filters  |
+| `sortBy`        | `dueOn` (default), `priority`, `createdAt`, or `completedAt`  |
+| `sortDirection` | `asc` (default) or `desc`                                     |
+| `page`          | 1 to 10,000; default 1                                        |
+| `pageSize`      | 1 to 100; default 20                                          |
+
+Overdue means `dueOn < today`; today is equality, upcoming means `dueOn > today`, and
+undated means `dueOn` is `null`. Completed tasks are excluded from all due filters.
+Priority sorts by low, medium, high in ascending order. Nulls sort last and ID ascending
+breaks ties. Text search is not supported.
+
+### GET `/applications/:applicationId/tasks`
+
+Returns `200 OK` with `data: { tasks: [...] }` for the selected application. This list is
+not paginated and sorts by due date ascending, nulls last, then ID ascending.
+
+### POST `/applications/:applicationId/tasks`
+
+Returns `201 Created` with `data: { task: ... }`. New tasks are open.
+
+```json
+{
+  "title": "Follow up with the recruiter",
+  "notes": "Ask about next steps",
+  "dueOn": "2026-12-03",
+  "priority": "medium"
+}
+```
+
+Title is required, trimmed, nonempty, and at most 160 characters. Notes are optional and
+trimmed, with a 10,000-character limit; blank notes become `null`. Due dates are optional
+and must be valid calendar dates when present. Priority defaults to `medium`.
+
+### GET `/applications/:applicationId/tasks/:taskId`
+
+Returns `200 OK` with `data: { task: ... }`.
+
+### PATCH `/applications/:applicationId/tasks/:taskId`
+
+Returns `200 OK` with `data: { task: ... }`. Accepts a nonempty subset of the create fields
+and an optional boolean `completed`. Omitted fields are unchanged. Use `null` to clear
+`dueOn` or `notes`. Unknown fields, parent IDs, and server-managed timestamps are rejected.
+
+`{ "completed": true }` sets the server timestamp if the task was open and preserves it
+on repeated completion. `{ "completed": false }` clears it and reopens the task.
+
+### DELETE `/applications/:applicationId/tasks/:taskId`
+
+Soft-deletes the task and returns `200 OK` with `data: { deleted: true }`. It is omitted
+from both lists; subsequent item requests return `404 TASK_NOT_FOUND` if the parent is
+still accessible. Soft-deleting the application or company hides its retained tasks.
