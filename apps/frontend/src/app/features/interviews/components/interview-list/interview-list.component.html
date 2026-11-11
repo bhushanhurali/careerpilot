@@ -1,0 +1,87 @@
+<section class="interviews" aria-label="Interviews">
+  <div class="interviews__header">
+    <h2>Interviews</h2>
+    <button #schedule mat-stroked-button type="button" (click)="openForm()">
+      <mat-icon>add</mat-icon>
+      Schedule interview
+    </button>
+  </div>
+
+  @if (store.loading()) {
+    <p class="interviews__state" role="status">Loading interviews...</p>
+  } @else if (store.error(); as error) {
+    <div class="interviews__state">
+      <p role="alert">{{ error }}</p>
+      <button mat-button type="button" (click)="retry()">Retry</button>
+    </div>
+  } @else if (!store.interviews().length) {
+    <p class="interviews__state">No interviews yet.</p>
+  } @else {
+    <ul class="interview-list" role="list">
+      @for (interview of store.interviews(); track interview.id) {
+        <li class="interview-list__item">
+          <div class="interview-list__details">
+            <h3>{{ typeLabel(interview.type) }}</h3>
+            <p>
+              <time [attr.datetime]="interview.scheduledAt">{{
+                interview.scheduledAt | date: 'medium'
+              }}</time>
+              · {{ statusLabel(interview.status) }}
+              @if (interview.durationMinutes; as minutes) {
+                · {{ minutes }} min
+              }
+            </p>
+            @if (interview.location || interview.meetingUrl) {
+              <p>
+                @if (interview.location) {
+                  {{ interview.location }}
+                }
+                @if (interview.location && interview.meetingUrl) {
+                  ·
+                }
+                @if (interview.meetingUrl) {
+                  <a [href]="interview.meetingUrl" target="_blank" rel="noopener noreferrer">
+                    Meeting link
+                  </a>
+                }
+              </p>
+            }
+            @if (interview.notes) {
+              <p class="interview-list__notes">{{ interview.notes }}</p>
+            }
+          </div>
+          <div class="interview-list__actions">
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Edit interview"
+              [attr.aria-label]="
+                'Edit ' +
+                typeLabel(interview.type) +
+                ' interview on ' +
+                (interview.scheduledAt | date: 'medium')
+              "
+              (click)="openForm(interview)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Delete interview"
+              [attr.aria-label]="
+                'Delete ' +
+                typeLabel(interview.type) +
+                ' interview on ' +
+                (interview.scheduledAt | date: 'medium')
+              "
+              (click)="deleteInterview(interview)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</section>

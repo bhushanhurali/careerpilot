@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>Delete interview?</h2>
+
+<mat-dialog-content>
+  <p>{{ data.typeLabel }} on {{ data.scheduledAt | date: 'medium' }} will be removed.</p>
+  @if (errorMessage(); as message) {
+    <p class="dialog-error" role="alert">{{ message }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close [disabled]="isDeleting()">Cancel</button>
+  <button
+    mat-flat-button
+    color="warn"
+    type="button"
+    [disabled]="isDeleting()"
+    (click)="confirmDelete()"
+  >
+    {{ isDeleting() ? 'Deleting...' : 'Delete interview' }}
+  </button>
+</mat-dialog-actions>
