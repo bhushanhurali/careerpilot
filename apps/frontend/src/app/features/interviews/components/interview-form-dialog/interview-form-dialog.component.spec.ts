@@ -3,7 +3,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { Interview } from '../../data-access/interview.models';
 import {
@@ -100,5 +100,33 @@ describe('InterviewFormDialogComponent', () => {
       jasmine.objectContaining({ scheduledAt: interview.scheduledAt, location: null }),
     );
     expect(dialogRef.close).toHaveBeenCalledWith(true);
+  });
+
+  it('validates meeting links and sends the rescheduled time once while saving', async () => {
+    await setup(interview);
+    const pending = new Subject<Interview>();
+    saveAction.and.returnValue(pending);
+    change('scheduledAt', '2026-12-06T14:25');
+    change('meetingUrl', 'ftp://example.com/meeting');
+    submit();
+    expect(saveAction).not.toHaveBeenCalled();
+    expect(host.querySelector('mat-error')?.textContent).toContain('HTTP or HTTPS');
+
+    change('meetingUrl', ' https://example.com/meeting ');
+    submit();
+    submit();
+    expect(saveAction).toHaveBeenCalledTimes(1);
+    expect(saveAction.calls.mostRecent().args[0]).toEqual(
+      jasmine.objectContaining({
+        scheduledAt: new Date(2026, 11, 6, 14, 25).toISOString(),
+        meetingUrl: 'https://example.com/meeting',
+      }),
+    );
+    expect(host.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBeTrue();
+    expect(dialogRef.disableClose).toBeTrue();
+    expect(dialogRef.close).not.toHaveBeenCalled();
+    pending.next(interview);
+    pending.complete();
+    expect(dialogRef.close).toHaveBeenCalledOnceWith(true);
   });
 });

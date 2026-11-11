@@ -87,10 +87,40 @@ describe('InterviewListComponent', () => {
       'Could not load interviews.',
     );
 
+    const heading = host.querySelector('h2');
+    if (!heading) {
+      throw new Error('Interviews heading not found');
+    }
+    const focusHeading = spyOn(heading, 'focus');
     button('.interviews__state button').click();
     fixture.detectChanges();
+    expect(focusHeading).toHaveBeenCalled();
+    expect(host.querySelector('[role="status"]')?.textContent).toContain('Loading interviews');
     expectList([]);
     expect(host.textContent).toContain('No interviews yet.');
+  });
+
+  it('cancels a pending list request when the application changes', () => {
+    const firstRequest = http.expectOne({ method: 'GET', url });
+    fixture.componentRef.setInput('applicationId', 'application-2');
+    fixture.detectChanges();
+
+    expect(firstRequest.cancelled).toBeTrue();
+    http
+      .expectOne({
+        method: 'GET',
+        url: `${API_BASE_URL}/applications/application-2/interviews`,
+      })
+      .flush({
+        success: true,
+        data: {
+          interviews: [
+            { ...interview, applicationId: 'application-2', notes: 'Second application' },
+          ],
+        },
+      });
+    fixture.detectChanges();
+    expect(host.textContent).toContain('Second application');
   });
 
   it('schedules an interview and displays its details after refreshing', () => {
@@ -146,5 +176,15 @@ describe('InterviewListComponent', () => {
 
     expectList([]);
     expect(host.textContent).toContain('No interviews yet.');
+  });
+
+  it('leaves the interview and list unchanged when deletion is cancelled', () => {
+    expectList([interview]);
+    button('button[aria-label^="Delete Technical"]').click();
+    closed.next(false);
+    fixture.detectChanges();
+
+    http.expectNone(() => true);
+    expect(host.textContent).toContain('Bring portfolio');
   });
 });

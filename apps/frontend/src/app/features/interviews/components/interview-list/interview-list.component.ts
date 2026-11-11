@@ -54,6 +54,7 @@ export class InterviewListComponent {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly heading = viewChild.required<ElementRef<HTMLHeadingElement>>('heading');
   private readonly scheduleButton = viewChild.required<unknown, ElementRef<HTMLButtonElement>>(
     'schedule',
     { read: ElementRef },
@@ -73,6 +74,7 @@ export class InterviewListComponent {
   }
 
   protected retry(): void {
+    this.heading().nativeElement.focus();
     this.reloadCount.update((count) => count + 1);
   }
 
@@ -136,6 +138,6 @@ export class InterviewListComponent {
   private refreshAfterChange(message: string): void {
     this.scheduleButton().nativeElement.focus();
     this.snackBar.open(message, 'Dismiss', { duration: 3000 });
-    this.retry();
+    this.reloadCount.update((count) => count + 1);
   }
 }
