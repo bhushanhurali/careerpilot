@@ -11,6 +11,7 @@ import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { AuthRepository } from './modules/auth/auth.repository.js';
 import { createApplicationsRouter } from './modules/applications/applications.routes.js';
 import { createCompaniesRouter } from './modules/companies/companies.routes.js';
+import { createTasksRouter } from './modules/tasks/tasks.routes.js';
 import { ok } from './shared/responses/api-response.js';
 
 type CreateAppOptions = {
@@ -38,6 +39,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/v1/auth', createAuthRouter(options));
   app.use('/api/v1/applications', createApplicationsRouter());
   app.use('/api/v1/companies', createCompaniesRouter());
+  app.use('/api/v1/tasks', createTasksRouter());
 
   app.use(notFoundHandler);
   app.use(errorHandler);
