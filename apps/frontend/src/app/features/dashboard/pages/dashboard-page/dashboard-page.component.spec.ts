@@ -161,6 +161,9 @@ describe('DashboardPageComponent', () => {
       host.querySelector(`.activity-grid time[datetime="${scheduledAt}"]`)?.textContent?.trim(),
     ).toBe(formatDate(scheduledAt, 'medium', 'en-US'));
     expect(host.querySelectorAll('a[href="/applications/application-1"]').length).toBe(4);
+    expect(
+      host.querySelector('#tasks-heading')?.parentElement?.parentElement?.textContent,
+    ).toContain('Today and next 6 days');
   });
 
   it('displays API errors and replaces them with the retried result', () => {
@@ -175,7 +178,11 @@ describe('DashboardPageComponent', () => {
       'Dashboard is unavailable.',
     );
 
+    const heading = host.querySelector('h1');
+    if (!heading) throw new Error('Expected the dashboard heading');
+    const focus = spyOn(heading, 'focus');
     host.querySelector('button')?.click();
+    expect(focus).toHaveBeenCalled();
     fixture.detectChanges();
     expect(host.querySelector('[role="alert"]')).toBeNull();
     expect(host.querySelector('[role="status"]')?.textContent).toContain('Loading dashboard');

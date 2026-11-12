@@ -5,8 +5,8 @@ export const dashboardQuerySchema = z
     today: z
       .string()
       .date()
-      .refine((value) => !value.startsWith('0000-'), {
-        message: 'Use a calendar year from 0001 to 9999',
+      .refine((value) => value >= '0001-06-01', {
+        message: 'Use a date on or after 0001-06-01 so all six trend months have a calendar year',
       })
       .optional(),
   })

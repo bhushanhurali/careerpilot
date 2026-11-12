@@ -119,6 +119,7 @@ describe('Dashboard API', () => {
     const owner = await createOwner();
     for (const query of [
       { today: '2026-02-30' },
+      { today: '0001-05-31' },
       { today: '2026-02-01T00:00:00Z' },
       { userId: owner.id },
     ]) {
@@ -198,6 +199,16 @@ describe('Dashboard API', () => {
     ]);
   });
 
+  it('returns six valid year-month labels at the earliest accepted calendar date', async () => {
+    const data = await getDashboard(await createOwner(), '0001-06-01');
+    expect(data.submissionTrend).toEqual(
+      ['0001-01', '0001-02', '0001-03', '0001-04', '0001-05', '0001-06'].map((month) => ({
+        month,
+        count: 0,
+      })),
+    );
+  });
+
   it('excludes foreign ownership and deleted applications, companies, interviews, and tasks', async () => {
     const owner = await createOwner();
     const other = await createOwner();
@@ -206,11 +217,20 @@ describe('Dashboard API', () => {
     const visible = await createApplication(company, { status: 'applied', appliedAt: today });
     const hidden = await createApplication(hiddenCompany, { status: 'offer', appliedAt: today });
     const deleted = await createApplication(company, { status: 'offer', appliedAt: today });
-    const foreign = await createApplication(await createCompany(other.id), {
+    const foreignCompany = await createCompany(other.id);
+    const foreign = await createApplication(foreignCompany, {
       status: 'offer',
       appliedAt: today,
     });
-    for (const application of [hidden, deleted, foreign]) {
+    const mismatched = await JobApplicationModel.create({
+      id: crypto.randomUUID(),
+      userId: owner.id,
+      companyId: foreignCompany.id,
+      jobTitle: 'Hidden application',
+      status: 'offer',
+      appliedAt: today,
+    });
+    for (const application of [hidden, deleted, foreign, mismatched]) {
       await createInterview(application.id, asOf);
       await createTask(application.id, '2026-01-31');
       await createTask(application.id, today);
