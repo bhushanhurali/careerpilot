@@ -120,6 +120,20 @@ component-scoped signal store, and list, form, and delete-dialog components. The
 page embeds the list; there are no standalone interview routes. See
 [ADR 0009](decisions/0009-interview-ownership.md).
 
+### Tasks & Follow-ups
+
+The backend module in `apps/backend/src/modules/tasks` provides a read-only cross-application
+list at `/api/v1/tasks` and nested task routes under
+`/api/v1/applications/:applicationId/tasks`. Every write uses the nested routes. Completion is
+derived from `completed_at` and does not change the application's status or history.
+
+The Angular feature in `apps/frontend/src/app/features/tasks` shares an API service, a
+component-scoped signal/RxJS store, and list rendering between Application detail and the dedicated
+`/tasks` page. Application detail owns create, edit, and delete dialogs. Both views can complete
+or reopen tasks and reload the list after successful writes; they do not update optimistically.
+The Tasks page supports server-side filtering, sorting, pagination, and parent navigation.
+See [ADR 0010](decisions/0010-application-tasks.md).
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.
@@ -140,6 +154,8 @@ The authenticated user ID is the security boundary for business data.
 - Status-history list and transition operations first verify an active owned parent application.
 - Interview operations require an active owned application with an active owned company. Updates
   and deletions also scope the interview lookup by the application ID.
+- Task ownership is derived from the active owned application and its active owned company, even
+  on the cross-application list. Nested item lookups also require the task's application ID.
 - Cross-user access returns `404`, matching nonexistent resources, so resource existence is not
   revealed.
 
@@ -148,7 +164,7 @@ owned records, contacts hang from companies, and applications are the user's pip
 
 ## Soft Deletion
 
-Companies, contacts, job applications, and interviews use Sequelize paranoid models with
+Companies, contacts, job applications, interviews, and tasks use Sequelize paranoid models with
 `deleted_at`.
 
 - Normal list/detail queries only return active records.
@@ -162,6 +178,8 @@ Companies, contacts, job applications, and interviews use Sequelize paranoid mod
 - Deleting an interview soft-deletes only the interview. Soft-deleting an application retains its
   interviews but hides them from the nested API.
 - Hard-deleting an application physically cascades status history and interview rows.
+- Deleting a task soft-deletes only that task. Soft-deleting the application or its company
+  hides retained tasks from both task lists. Hard-deleting the application cascades task rows.
 - Company deletion does not yet soft-delete or otherwise modify applications; that behavior should
   be decided when application lifecycle rules are expanded.
 - PostgreSQL foreign-key cascade is not used for ordinary soft deletion because no physical delete
@@ -207,6 +225,10 @@ status-transition dialog validation/error handling, and status-free edit submiss
 Interview tests cover database constraints and deletion behavior, nested API authentication and
 ownership, validation and partial updates, and frontend list refresh, retry, scheduling, and
 deletion workflows.
+
+Task coverage includes database constraints and deletion, nested ownership and completion, date
+filters before pagination, and frontend workflows for failed writes, focus, retries, stale
+requests, and local-calendar boundaries.
 
 ## Decisions
 

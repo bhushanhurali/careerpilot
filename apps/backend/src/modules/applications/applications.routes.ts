@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { authenticate } from '../../middleware/authenticate.js';
 import { validateBody } from '../../shared/validation/validate-request.js';
 import { createInterviewsRouter } from '../interviews/interviews.routes.js';
+import { createApplicationTasksRouter } from '../tasks/tasks.routes.js';
 import { ApplicationsController } from './applications.controller.js';
 import {
   createApplicationSchema,
@@ -20,6 +21,7 @@ export function createApplicationsRouter(): Router {
   router.get('/', applicationsController.list);
   router.post('/', validateBody(createApplicationSchema), applicationsController.create);
   router.use('/:applicationId/interviews', createInterviewsRouter());
+  router.use('/:applicationId/tasks', createApplicationTasksRouter());
   router.get('/:applicationId/status-history', applicationsController.listStatusHistory);
   router.post(
     '/:applicationId/status-transitions',

@@ -7,6 +7,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { InterviewListComponent } from '../../../interviews/components/interview-list/interview-list.component';
+import { ApplicationTasksComponent } from '../../../tasks/components/application-tasks/application-tasks.component';
 import { ApplicationDeleteDialogComponent } from '../../components/application-delete-dialog/application-delete-dialog.component';
 import { ApplicationStatusTransitionDialogComponent } from '../../components/application-status-transition-dialog/application-status-transition-dialog.component';
 import {
@@ -27,6 +28,7 @@ import { ApplicationStore } from '../../data-access/application.store';
     MatIconModule,
     MatSnackBarModule,
     InterviewListComponent,
+    ApplicationTasksComponent,
   ],
   templateUrl: './application-detail-page.component.html',
   styleUrl: './application-detail-page.component.scss',

@@ -1,0 +1,14 @@
+<section class="application-tasks" aria-label="Application tasks">
+  <div class="section-header">
+    <h2>Tasks</h2>
+    <button #addButton mat-stroked-button type="button" (click)="openForm()">
+      <mat-icon>add</mat-icon>
+      Add task
+    </button>
+  </div>
+  <cp-task-list
+    [manageable]="true"
+    (editTask)="openForm($event)"
+    (deleteTask)="confirmDelete($event)"
+  />
+</section>

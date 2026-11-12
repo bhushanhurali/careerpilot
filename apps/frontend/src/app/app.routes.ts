@@ -30,6 +30,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/applications/applications.routes').then((m) => m.applicationRoutes),
       },
+      {
+        path: 'tasks',
+        loadComponent: () =>
+          import('./features/tasks/pages/tasks-page/tasks-page.component').then(
+            (m) => m.TasksPageComponent,
+          ),
+      },
     ],
   },
   {

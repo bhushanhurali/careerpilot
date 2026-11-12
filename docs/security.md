@@ -81,7 +81,7 @@ and attaches the verified user ID and role to the request. Future role checks ca
 ## Business Data Authorization
 
 Phase 2 adds authenticated company and contact data. Phase 3 adds authenticated job application
-data. Phase 4 adds application status history. Phase 5 adds interviews.
+data. Phase 4 adds application status history. Phase 5 adds interviews. Phase 6 adds tasks.
 
 - Every company query is scoped by both company ID and authenticated user ID.
 - Cross-user company reads, updates, and deletes return `404`, not `403`, so the API does not
@@ -103,11 +103,16 @@ data. Phase 4 adds application status history. Phase 5 adds interviews.
   Interview updates and deletions also match the interview ID to the route's application ID.
   Cross-user and wrong-parent requests return `404`, and request bodies cannot change ownership.
 - Company deletion soft-deletes the owned company and its active contacts in one transaction.
-- Application deletion soft-deletes the owned application. Its status history and interviews remain in the
-  database but is inaccessible through normal application-scoped API routes.
+- Task routes, including the read-only cross-application list, require an active owned application
+  and active owned company. Nested item routes also match the task ID to the selected application.
+  Cross-user, wrong-parent, and soft-deleted resources are concealed. Task writes cannot change
+  parent or ownership, and the server controls `completedAt`.
+- Application deletion soft-deletes the owned application. Its status history, interviews, and
+  tasks remain in the database but are hidden from normal API routes. A soft-deleted company
+  also hides tasks linked through its applications.
 
 Frontend route guards improve navigation only. They do not enforce ownership. The backend service
-layer is the authorization boundary for companies, contacts, applications, and interviews.
+layer is the authorization boundary for companies, contacts, applications, interviews, and tasks.
 
 ## Validation and Error Handling
 

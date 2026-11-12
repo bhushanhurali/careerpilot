@@ -8,6 +8,7 @@ import { ContactModel } from './models/contact.model.js';
 import { InterviewModel } from './models/interview.model.js';
 import { JobApplicationModel } from './models/job-application.model.js';
 import { RefreshTokenModel } from './models/refresh-token.model.js';
+import { TaskModel } from './models/task.model.js';
 import { UserModel } from './models/user.model.js';
 
 export const sequelize = new Sequelize(env.DATABASE_URL, {
@@ -22,6 +23,7 @@ ContactModel.initialize(sequelize);
 JobApplicationModel.initialize(sequelize);
 ApplicationStatusHistoryModel.initialize(sequelize);
 InterviewModel.initialize(sequelize);
+TaskModel.initialize(sequelize);
 
 UserModel.hasMany(RefreshTokenModel, {
   foreignKey: 'userId',
@@ -104,6 +106,16 @@ JobApplicationModel.hasMany(InterviewModel, {
 });
 
 InterviewModel.belongsTo(JobApplicationModel, {
+  foreignKey: 'applicationId',
+  as: 'application',
+});
+
+JobApplicationModel.hasMany(TaskModel, {
+  foreignKey: 'applicationId',
+  as: 'tasks',
+});
+
+TaskModel.belongsTo(JobApplicationModel, {
   foreignKey: 'applicationId',
   as: 'application',
 });
