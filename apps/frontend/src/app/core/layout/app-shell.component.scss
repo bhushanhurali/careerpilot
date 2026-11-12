@@ -30,16 +30,10 @@
 }
 
 @media (width <= 640px) {
-  .primary-nav {
-    margin-left: 12px;
-  }
-
   .user-name {
     display: none;
   }
-}
 
-@media (width <= 480px) {
   mat-toolbar {
     flex-wrap: wrap;
     height: auto;
