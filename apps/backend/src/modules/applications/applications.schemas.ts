@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const applicationStatuses = [
+export const applicationStatuses = [
   'draft',
   'applied',
   'screening',
