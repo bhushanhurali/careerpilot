@@ -1099,3 +1099,49 @@ on repeated completion. `{ "completed": false }` clears it and reopens the task.
 Soft-deletes the task and returns `200 OK` with `data: { deleted: true }`. It is omitted
 from both lists; subsequent item requests return `404 TASK_NOT_FOUND` if the parent is
 still accessible. Soft-deleting the application or company hides its retained tasks.
+
+## Dashboard
+
+### GET `/dashboard`
+
+Requires a bearer access token. Returns a read-only snapshot in the standard `200 OK` envelope.
+All sections are scoped to non-deleted applications whose non-deleted company also belongs to the
+caller. Deleted interviews and tasks are excluded.
+
+Optional query parameter `today` is the caller's local calendar date in `YYYY-MM-DD` format.
+It defaults to the server's current UTC date. The earliest supported date is `0001-06-01`,
+so all six trend buckets have a positive calendar year. Invalid dates and unknown query
+parameters return `400 VALIDATION_ERROR`. The server independently captures the current UTC
+instant as `asOf`; the supplied date does not change which interviews are upcoming.
+
+| Data field           | Contents                                                                  |
+| -------------------- | ------------------------------------------------------------------------- |
+| `today`, `asOf`      | Effective calendar date and server UTC ISO timestamp                      |
+| `kpis`               | Five numeric totals defined below                                         |
+| `statusDistribution` | `{ status, count }` for every supported current status, including zeros   |
+| `submissionTrend`    | Six `{ month, count }` entries, oldest first, with `month` as `YYYY-MM`   |
+| `upcomingInterviews` | Next five scheduled interviews, ordered by `scheduledAt` then ID          |
+| `overdueTasks`       | Up to five overdue tasks, ordered by `dueOn` then ID                      |
+| `upcomingTasks`      | Up to five tasks due today through six days after today, ordered likewise |
+| `recentApplications` | Five visible applications ordered by `updatedAt` descending, then ID      |
+
+KPI definitions:
+
+- `activeApplications`: current statuses other than `accepted`, `rejected`, and `withdrawn`;
+  includes drafts. The status distribution also includes the terminal statuses.
+- `applicationsSubmittedThisMonth`: applications with `appliedAt` between the first day of
+  the effective month and `today`, inclusive. Trends use the same date field across the current
+  and preceding five months. Missing and future submission dates do not count.
+- `upcomingInterviews`: interviews with status `scheduled` and `scheduledAt >= asOf`.
+  This total is not limited to the five preview rows.
+- `offersReceived`: distinct visible applications with a recorded `offer` status-history entry,
+  including initial entries and applications whose current status is no longer `offer`.
+  Offer events missing from history cannot be counted.
+- `overdueTasks`: incomplete tasks with `dueOn < today`, without the preview cap.
+  Completed or undated tasks are excluded from both task previews. Due today is not overdue.
+
+Interview previews contain `id`, `type`, `scheduledAt`, `applicationId`, `jobTitle`, and
+`companyName`. Task previews contain `id`, `title`, `dueOn`, `priority`, and the same parent
+fields. Recent applications contain `id`, `jobTitle`, `companyName`, `status`, and `updatedAt`.
+Timestamps are UTC ISO strings; task due dates remain `YYYY-MM-DD` without timezone conversion.
+An account with no visible data gets zero totals, zero-filled charts, and empty previews.

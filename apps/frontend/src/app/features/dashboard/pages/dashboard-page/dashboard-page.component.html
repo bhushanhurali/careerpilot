@@ -1,0 +1,178 @@
+<header class="dashboard-header">
+  <h1 #heading tabindex="-1">Dashboard</h1>
+  @if (store.dashboard(); as dashboard) {
+    <time [attr.datetime]="dashboard.today">
+      {{ dashboard.today + 'T00:00:00Z' | date: 'longDate' : 'UTC' }}
+    </time>
+  }
+</header>
+
+@if (store.loading()) {
+  <div class="dashboard-state" role="status">
+    <p>Loading dashboard...</p>
+    <mat-progress-bar mode="indeterminate" aria-label="Loading dashboard" />
+  </div>
+} @else if (store.error(); as error) {
+  <div class="dashboard-state">
+    <p role="alert">{{ error }}</p>
+    <button mat-stroked-button type="button" (click)="heading.focus(); store.load()">
+      <mat-icon>refresh</mat-icon>
+      Retry
+    </button>
+  </div>
+} @else if (store.dashboard(); as dashboard) {
+  <ul class="metrics" role="list" aria-label="Dashboard totals">
+    @for (metric of metrics; track metric.key) {
+      <li>
+        <mat-card
+          appearance="outlined"
+          [class.metric-overdue]="metric.key === 'overdueTasks' && dashboard.kpis.overdueTasks > 0"
+        >
+          <span>{{ metric.label }}</span>
+          <strong>{{ dashboard.kpis[metric.key] | number }}</strong>
+          <mat-icon aria-hidden="true">{{ metric.icon }}</mat-icon>
+        </mat-card>
+      </li>
+    }
+  </ul>
+
+  <div class="dashboard-grid">
+    <section aria-labelledby="status-heading">
+      <h2 id="status-heading">Application status</h2>
+      @if (statusMax(); as max) {
+        <ul class="status-chart" role="list">
+          @for (item of dashboard.statusDistribution; track item.status) {
+            <li>
+              <span>{{ statusLabel(item.status) }}</span>
+              <div class="bar-track" aria-hidden="true">
+                <div class="bar" [style.width.%]="(item.count / max) * 100"></div>
+              </div>
+              <strong>{{ item.count | number }}</strong>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">No applications yet.</p>
+        <a mat-stroked-button routerLink="/applications/new">Add application</a>
+      }
+    </section>
+
+    <section aria-labelledby="trend-heading">
+      <h2 id="trend-heading">Monthly submissions</h2>
+      @if (trendMax(); as max) {
+        <ul class="trend-chart" role="list">
+          @for (item of dashboard.submissionTrend; track item.month) {
+            <li>
+              <div class="trend-track" aria-hidden="true">
+                <div class="bar" [style.height.%]="(item.count / max) * 100"></div>
+              </div>
+              <time [attr.datetime]="item.month">
+                {{ item.month + '-01T00:00:00Z' | date: 'MMM yy' : 'UTC' }}
+              </time>
+              <strong>{{ item.count | number }}</strong>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">No submissions in the last six months.</p>
+      }
+    </section>
+  </div>
+
+  <div class="dashboard-grid activity-grid">
+    <section aria-labelledby="interview-heading">
+      <h2 id="interview-heading">Upcoming interviews</h2>
+      @if (dashboard.upcomingInterviews.length) {
+        <ul class="activity-list" role="list">
+          @for (interview of dashboard.upcomingInterviews; track interview.id) {
+            <li>
+              <div>
+                <h3>{{ interviewLabel(interview.type) }}</h3>
+                <a [routerLink]="['/applications', interview.applicationId]">{{
+                  interview.jobTitle
+                }}</a>
+                <span class="muted"> · {{ interview.companyName }}</span>
+              </div>
+              <time [attr.datetime]="interview.scheduledAt">{{
+                interview.scheduledAt | date: 'medium'
+              }}</time>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">No scheduled interviews coming up.</p>
+      }
+    </section>
+
+    <section aria-labelledby="tasks-heading">
+      <div class="section-heading">
+        <h2 id="tasks-heading">Tasks</h2>
+        <a mat-button routerLink="/tasks">View tasks</a>
+      </div>
+      @for (
+        group of [
+          { title: 'Overdue', tasks: dashboard.overdueTasks },
+          { title: 'Today and next 6 days', tasks: dashboard.upcomingTasks },
+        ];
+        track group.title
+      ) {
+        <h3 class="task-group">{{ group.title }}</h3>
+        @if (group.tasks.length) {
+          <ul class="activity-list" role="list">
+            @for (task of group.tasks; track task.id) {
+              <li>
+                <div>
+                  <h4>{{ task.title }}</h4>
+                  <a [routerLink]="['/applications', task.applicationId]">{{ task.jobTitle }}</a>
+                  <span class="muted"> · {{ task.companyName }}</span>
+                </div>
+                <div class="task-date">
+                  <time [attr.datetime]="task.dueOn">{{
+                    task.dueOn + 'T00:00:00Z' | date: 'mediumDate' : 'UTC'
+                  }}</time>
+                  <span class="muted">{{ task.priority | titlecase }} priority</span>
+                </div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">
+            {{
+              group.title === 'Overdue'
+                ? 'No overdue tasks.'
+                : 'No tasks due in the next seven days.'
+            }}
+          </p>
+        }
+      }
+    </section>
+  </div>
+
+  <section class="recent" aria-labelledby="recent-heading">
+    <div class="section-heading">
+      <h2 id="recent-heading">Recent application activity</h2>
+      <a mat-button routerLink="/applications">View applications</a>
+    </div>
+    @if (dashboard.recentApplications.length) {
+      <ul class="activity-list" role="list">
+        @for (application of dashboard.recentApplications; track application.id) {
+          <li>
+            <div>
+              <h3>
+                <a [routerLink]="['/applications', application.id]">{{ application.jobTitle }}</a>
+              </h3>
+              <span class="muted"
+                >{{ application.companyName }} · {{ statusLabel(application.status) }}</span
+              >
+            </div>
+            <time [attr.datetime]="application.updatedAt">{{
+              application.updatedAt | date: 'medium'
+            }}</time>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="muted">No recent applications.</p>
+    }
+  </section>
+}

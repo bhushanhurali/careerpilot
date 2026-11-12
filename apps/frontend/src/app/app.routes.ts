@@ -26,6 +26,13 @@ export const routes: Routes = [
           import('./features/companies/companies.routes').then((m) => m.companyRoutes),
       },
       {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/pages/dashboard-page/dashboard-page.component').then(
+            (m) => m.DashboardPageComponent,
+          ),
+      },
+      {
         path: 'applications',
         loadChildren: () =>
           import('./features/applications/applications.routes').then((m) => m.applicationRoutes),

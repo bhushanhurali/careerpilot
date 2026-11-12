@@ -134,6 +134,19 @@ or reopen tasks and reload the list after successful writes; they do not update 
 The Tasks page supports server-side filtering, sorting, pagination, and parent navigation.
 See [ADR 0010](decisions/0010-application-tasks.md).
 
+### Dashboard & Analytics
+
+The read-only Dashboard module exposes `GET /api/v1/dashboard`. One parameterized
+PostgreSQL statement, run through Sequelize, defines a shared visible-application scope and
+uses it for every aggregate and preview. The sections are read from the same database snapshot.
+PostgreSQL fills missing statuses and months with zeros and bounds each preview to five rows.
+There are no new tables, background jobs, or client-side scans of application records.
+
+The authenticated Angular `/dashboard` page uses a feature API service and a component-scoped
+signal/RxJS store. It sends the browser's local calendar date, renders the API's counts with
+labeled CSS bars, and links preview items to Application detail. See
+[ADR 0011](decisions/0011-dashboard-aggregation.md).
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.

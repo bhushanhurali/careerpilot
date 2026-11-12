@@ -2,10 +2,10 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 6 Tasks & Follow-ups is implemented. CareerPilot currently includes registration, login,
+Phase 7 Dashboard & Analytics is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
-status transitions, interview scheduling, application tasks, soft deletion, route protection, and
+status transitions, interview scheduling, application tasks, an analytics dashboard, soft deletion, and
 frontend/backend tests for the completed feature set.
 
 ## Architecture
@@ -28,6 +28,7 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 4 | Complete | Status history, transactional status transitions, frontend timeline, tests     |
 | Phase 5 | Complete | Interview scheduling and management on application detail, API, tests, docs    |
 | Phase 6 | Complete | Application tasks, due-date filters, and cross-application follow-ups          |
+| Phase 7 | Complete | Dashboard KPIs, application trends, upcoming work, and recent activity         |
 
 ## Prerequisites
 
@@ -175,6 +176,16 @@ application. You can also complete and reopen tasks from that page.
 Due dates are optional calendar dates. An open task is overdue after its due date in your
 browser's local calendar. See the [Tasks API](docs/api.md#task-conventions) and
 [Tasks ADR](docs/decisions/0010-application-tasks.md).
+
+## Dashboard & Analytics
+
+Open **Dashboard** in the authenticated navigation for pipeline counts, current status
+distribution, six months of submissions, upcoming interviews, due and overdue tasks, and recent
+application activity. Preview rows link back to their applications.
+
+The backend aggregates metrics and returns bounded previews. The dashboard uses your browser's
+local calendar for submissions and task due dates. See the [Dashboard API](docs/api.md#dashboard)
+for exact metric definitions.
 
 ## Commit Convention
 

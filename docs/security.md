@@ -82,6 +82,7 @@ and attaches the verified user ID and role to the request. Future role checks ca
 
 Phase 2 adds authenticated company and contact data. Phase 3 adds authenticated job application
 data. Phase 4 adds application status history. Phase 5 adds interviews. Phase 6 adds tasks.
+Phase 7 adds a read-only dashboard.
 
 - Every company query is scoped by both company ID and authenticated user ID.
 - Cross-user company reads, updates, and deletes return `404`, not `403`, so the API does not
@@ -110,6 +111,11 @@ data. Phase 4 adds application status history. Phase 5 adds interviews. Phase 6 
 - Application deletion soft-deletes the owned application. Its status history, interviews, and
   tasks remain in the database but are hidden from normal API routes. A soft-deleted company
   also hides tasks linked through its applications.
+- Dashboard requests require a bearer token. The dashboard derives ownership from that token
+  and restricts every count, chart, and preview to non-deleted applications with non-deleted
+  companies owned by the caller. Soft-deleted interviews and tasks are also excluded.
+  The optional, validated `today` parameter changes calendar buckets, never ownership or the
+  server time used to select scheduled interviews.
 
 Frontend route guards improve navigation only. They do not enforce ownership. The backend service
 layer is the authorization boundary for companies, contacts, applications, interviews, and tasks.

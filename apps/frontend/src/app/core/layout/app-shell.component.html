@@ -1,6 +1,13 @@
 <mat-toolbar color="primary">
   <a class="brand-link" routerLink="/companies">CareerPilot</a>
   <nav class="primary-nav" aria-label="Primary navigation">
+    <a
+      mat-button
+      routerLink="/dashboard"
+      routerLinkActive="active-link"
+      ariaCurrentWhenActive="page"
+      >Dashboard</a
+    >
     <a mat-button routerLink="/companies" routerLinkActive="active-link">Companies</a>
     <a mat-button routerLink="/applications" routerLinkActive="active-link">Applications</a>
     <a mat-button routerLink="/tasks" routerLinkActive="active-link">Tasks</a>
