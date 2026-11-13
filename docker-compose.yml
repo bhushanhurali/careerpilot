@@ -31,6 +31,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-careerpilot}:${POSTGRES_PASSWORD:-careerpilot_dev_password}@postgres:5432/${POSTGRES_DB:-careerpilot}
       CORS_ORIGIN: ${BACKEND_CORS_ORIGIN:-http://localhost:4200}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      REMINDER_TIME_ZONE: ${REMINDER_TIME_ZONE:-UTC}
       RESUME_STORAGE_DIR: ${DOCKER_RESUME_STORAGE_DIR:-/var/lib/careerpilot/resumes}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-at-least-32-characters-access-secret}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-replace-with-at-least-32-characters-refresh-secret}

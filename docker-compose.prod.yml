@@ -26,6 +26,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       CORS_ORIGIN: ${BACKEND_CORS_ORIGIN}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      REMINDER_TIME_ZONE: ${REMINDER_TIME_ZONE:-UTC}
     ports:
       - '3000:3000'
 

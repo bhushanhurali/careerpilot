@@ -34,6 +34,13 @@ Allowed `NODE_ENV` values are `development`, `test`, and `production`. Allowed l
   Authenticated uploads and downloads use this storage. Soft deletion
   retains the original file and extracted text; no permanent purge workflow is enabled yet.
 
+## Reminder Timezone
+
+`REMINDER_TIME_ZONE` defaults to `UTC` and accepts a named IANA timezone such as
+`Europe/Berlin`. Both Compose configurations pass it to the backend. All accounts use
+this deployment-wide timezone for date-only Task reminders; keep it consistent across
+backend instances. Interviews use their scheduled instant, independent of this setting.
+
 ## PostgreSQL
 
 | Variable            | Required                 | Example                                                                      | Purpose                                      |
