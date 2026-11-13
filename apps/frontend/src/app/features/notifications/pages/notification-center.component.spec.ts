@@ -128,6 +128,32 @@ describe('notification center and refresh', () => {
     http.verify();
   }));
 
+  it('drops a stale item and recovers when an unread page disappears', fakeAsync(() => {
+    store.openInbox();
+    TestBed.tick();
+    tick();
+    list().flush(response([task], 21, 21));
+    store.setUnread(true);
+    list('1', 'true').flush(response([task], 21, 21));
+    store.setPage(2, 20);
+    list('2', 'true').flush(response([task], 21, 21));
+    store.markAsRead(task.id);
+    http
+      .expectOne({ method: 'PATCH', url: `${url}/${task.id}/read` })
+      .flush(null, { status: 404, statusText: 'Not Found' });
+    expect(store.notifications()).toEqual([]);
+    expect(store.actionError()).toContain('no longer available');
+    list('2', 'true').flush(response([], 20, 20));
+    tick();
+    list('1', 'true').flush(response([], 20, 20));
+    expect(store.query().page).toBe(1);
+    expect(store.unreadCount()).toBe(20);
+    active.set(false);
+    TestBed.tick();
+    tick();
+    http.verify();
+  }));
+
   it('polls only in the visible authenticated session and refreshes on return', fakeAsync(() => {
     const document = TestBed.inject(DOCUMENT);
     const hidden = spyOnProperty(document, 'hidden', 'get').and.returnValue(false);

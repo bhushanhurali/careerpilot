@@ -30,10 +30,10 @@ const deliverRemindersSql = `
     WHERE ${openDatedTask} AND source.due_on <= b.today
   ),
   delivered_pending AS (
-    UPDATE notifications n SET delivered_at = b.now, updated_at = b.now, scheduled_for = e.scheduled_for
+    UPDATE notifications n SET delivered_at = b.now, updated_at = b.now
     FROM candidates e CROSS JOIN bounds b
     WHERE n.user_id = e.user_id AND n.type = e.type AND n.delivered_at IS NULL
-      AND e.scheduled_for <= b.now
+      AND e.scheduled_for <= b.now AND n.scheduled_for <= b.now
       AND ((n.interview_id = e.interview_id AND n.interview_scheduled_at = e.interview_scheduled_at)
         OR (n.task_id = e.task_id AND n.task_due_on = e.task_due_on))
   )

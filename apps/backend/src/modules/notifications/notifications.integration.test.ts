@@ -178,6 +178,36 @@ describe('notification inbox and reminder processing', () => {
     ]);
   });
 
+  it('honors the persisted not-before time of a pending event', async () => {
+    const { user, interview } = await fixture();
+    const source = await interview('2026-03-30T08:00:00Z');
+    const scheduledFor = new Date('2026-03-29T10:00:00Z');
+    const pending = await NotificationModel.create({
+      id: randomUUID(),
+      userId: user.id,
+      type: 'interview_reminder',
+      interviewId: source.id,
+      interviewScheduledAt: source.scheduledAt,
+      scheduledFor,
+    });
+    await run('2026-03-29T08:00:00Z');
+    expect((await pending.reload()).deliveredAt).toBeNull();
+    await Promise.all([run(scheduledFor.toISOString()), run(scheduledFor.toISOString())]);
+    expect(await pending.reload()).toMatchObject({ scheduledFor, deliveredAt: scheduledFor });
+    expect(await NotificationModel.count()).toBe(1);
+  });
+
+  it('does not generate reminders for inactive users or cancelled interviews', async () => {
+    const inactive = await fixture();
+    await inactive.task('2026-03-28');
+    await inactive.user.update({ isActive: false });
+    const active = await fixture();
+    const source = await active.interview('2026-03-30T08:00:00Z');
+    await source.update({ status: 'cancelled' });
+    await run('2026-03-29T08:00:00Z');
+    expect(await NotificationModel.count()).toBe(0);
+  });
+
   it('delivers a matching pending row and hides old events after rescheduling or source changes', async () => {
     const { user, auth, interview, task, application, company } = await fixture();
     const source = await interview('2026-03-30T08:00:00Z');
@@ -208,6 +238,8 @@ describe('notification inbox and reminder processing', () => {
     await followUp.update({ completedAt: new Date('2026-03-30T08:00:00Z') });
     expect((await list()).body).toMatchObject({ data: { unreadCount: 0 } });
     await followUp.update({ completedAt: null });
+    await run('2026-03-30T08:01:00Z');
+    expect(await NotificationModel.count()).toBe(4);
     await source.destroy();
     expect((await list()).body).toMatchObject({ data: { unreadCount: 1 } });
     await company.destroy();
