@@ -74,18 +74,24 @@ const aliasOwners = new Map(
 const aliases = [...aliasOwners.keys()]
   .sort((left, right) => right.length - left.length)
   .map((alias) => alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+// Bare aliases that also occur in ordinary prose need their technology spelling.
+const ambiguousAliases = new Set(['react', 'swift', 'rust', 'ruby', 'bash', 'jest']);
+
 // Longest match wins at a position, so React Native and ASP.NET do not imply React and .NET.
 const skillPattern = new RegExp(
   `(?<![\\p{L}\\p{M}\\p{N}_+#]|[\\p{L}\\p{M}\\p{N}_]\\.)(?:${aliases.join('|')})(?![\\p{L}\\p{M}\\p{N}_+#]|\\.[\\p{L}\\p{M}\\p{N}_])`,
-  'gu',
+  'giu',
 );
 
 export function extractSkills(text: string): string[] {
-  const normalized = text.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ');
+  const normalized = text.normalize('NFKC').replace(/\s+/g, ' ');
   const skills = new Set<string>();
   for (const [alias] of normalized.matchAll(skillPattern)) {
-    const skill = aliasOwners.get(alias);
-    if (skill) skills.add(skill);
+    const key = alias.toLowerCase();
+    const skill = aliasOwners.get(key);
+    if (skill && (!ambiguousAliases.has(key) || alias === skill || alias === skill.toUpperCase())) {
+      skills.add(skill);
+    }
   }
   return [...skills].sort();
 }

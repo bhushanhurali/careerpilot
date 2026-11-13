@@ -100,6 +100,25 @@ describe('ApplicationResumeMatchComponent', () => {
     fixture.detectChanges();
     expect(element.textContent).toContain('Coverage is unavailable');
     expect(element.textContent).not.toContain('0%');
+
+    compare();
+    http.expectOne(url).flush({
+      success: true,
+      data: {
+        match: {
+          status: 'no_recognized_resume_skills',
+          coveragePercentage: 0,
+          requiredCount: 1,
+          matchedSkills: [],
+          missingSkills: ['TypeScript'],
+          matchedCount: 0,
+        },
+      },
+    });
+    fixture.detectChanges();
+    expect(element.querySelector('[role="status"]')?.textContent).toContain('0% skill coverage');
+    expect(element.textContent).toContain('No recognized technical skills in this resume.');
+    expect(element.textContent).toContain('TypeScript');
     http.verify();
   });
 });

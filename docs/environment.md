@@ -30,7 +30,8 @@ Allowed `NODE_ENV` values are `development`, `test`, and `production`. Allowed l
   Use an absolute container path. The volume survives restarts and container replacement, but
   `docker compose down -v` removes it.
 - Store files and database metadata in coordinated backups. Production persistence must be
-  configured separately. Authenticated uploads and downloads use this storage. Soft deletion
+  configured separately: the production Compose example does not mount resume storage.
+  Authenticated uploads and downloads use this storage. Soft deletion
   retains the original file and extracted text; no permanent purge workflow is enabled yet.
 
 ## PostgreSQL

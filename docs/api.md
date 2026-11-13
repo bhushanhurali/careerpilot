@@ -1170,6 +1170,14 @@ text returns `422 RESUME_TEXT_UNAVAILABLE`. The comparison does not return Resum
 storage metadata. Recognized mentions are weighted equally; coverage is not an ATS score or
 hiring prediction.
 
+Extraction normalizes Unicode, whitespace, and aliases (for example, JS/JavaScript), matches
+whole tokens and phrases, and deduplicates canonical skills. Longer overlapping aliases take
+precedence. Selected ambiguous bare words require canonical capitalization or uppercase.
+The vocabulary does not interpret negation, proficiency, years of experience, or required
+versus preferred mentions. Successful comparisons are `private, no-store`.
+
+### Manage Resumes
+
 All routes require a bearer token. Metadata includes `id`, `title`, `originalFilename`,
 `mimeType`, `fileSizeBytes`, `createdAt`, and `updatedAt`. Extracted text and storage keys
 are private and omitted. Missing, deleted, and other users' resumes return
@@ -1188,4 +1196,6 @@ max). PDF and DOCX require matching extensions, MIME types, and parseable conten
 5 MiB file limit. Invalid multipart or fields return `400`, oversized files `413`, and
 unsupported types `415`. Unreadable, encrypted, textless, or overly complex documents
 return `422`. Extraction does not perform OCR. DELETE hides the record and download
-without permanently purging the original bytes or extracted text.
+without permanently purging the original bytes or extracted text. PDF extraction reads text
+from up to 100 pages. DOCX extraction reads the main Word document body, not headers or footers;
+external relationships are not followed. Extracted text is capped at 200,000 characters.

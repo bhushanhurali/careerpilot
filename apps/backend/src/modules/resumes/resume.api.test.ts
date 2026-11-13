@@ -10,6 +10,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { createApp } from '../../app.js';
 import { env } from '../../config/env.js';
 import { createMigrator } from '../../db/migrator.js';
+import { CompanyModel } from '../../db/models/company.model.js';
 import { ResumeModel, resumeMimeTypes } from '../../db/models/resume.model.js';
 import { UserModel } from '../../db/models/user.model.js';
 import { sequelize } from '../../db/sequelize.js';
@@ -89,8 +90,7 @@ function docx(text: string): Buffer {
   });
 }
 
-async function owner(): Promise<string> {
-  const id = randomUUID();
+async function owner(id = randomUUID()): Promise<string> {
   await UserModel.create({
     id,
     email: `${id}@example.com`,
@@ -209,10 +209,40 @@ describe('Resume API', () => {
     await request(app).delete(item).set('Authorization', token).expect(200);
     await request(app).get(item).set('Authorization', token).expect(404);
     await request(app).get(`${item}/download`).set('Authorization', token).expect(404);
-    expect((await ResumeModel.findByPk(resume.id, { paranoid: false }))?.deletedAt).toBeInstanceOf(
-      Date,
-    );
+    const deleted = await ResumeModel.findByPk(resume.id, { paranoid: false });
+    expect(deleted?.deletedAt).toBeInstanceOf(Date);
+    expect(deleted?.extractedText).toBe('Private text');
     expect(await readdir(directory)).toHaveLength(1);
+  });
+
+  it('matches parsed upload text against a persisted job description and excludes deleted resumes', async () => {
+    const userId = randomUUID();
+    const token = await owner(userId);
+    const company = await CompanyModel.create({ id: randomUUID(), userId, name: 'Test Company' });
+    const application = await request(app)
+      .post('/api/v1/applications')
+      .set('Authorization', token)
+      .send({
+        companyId: company.id,
+        jobTitle: 'Engineer',
+        jobDescription: 'TypeScript and Docker',
+      })
+      .expect(201);
+    const { data } = application.body as ApiResponse<{ application: { id: string } }>;
+    if (!data) throw new Error('Expected application');
+    const resume = await uploaded(token, docx('Private resume with TS'), 'Resume.docx', docxMime);
+    const matchUrl = `/api/v1/applications/${data.application.id}/resume-match`;
+    const compare = () =>
+      request(app).post(matchUrl).set('Authorization', token).send({ resumeId: resume.id });
+    const result = await compare().expect('Cache-Control', 'private, no-store').expect(200);
+    expect(result.body).toMatchObject({
+      data: {
+        match: { coveragePercentage: 50, matchedSkills: ['TypeScript'], missingSkills: ['Docker'] },
+      },
+    });
+    expect(result.text).not.toContain('Private resume with TS');
+    await request(app).delete(`${url}/${resume.id}`).set('Authorization', token).expect(200);
+    await compare().expect(404);
   });
 
   it('rejects unsupported, malformed, empty, encrypted, and oversized uploads without writing files', async () => {

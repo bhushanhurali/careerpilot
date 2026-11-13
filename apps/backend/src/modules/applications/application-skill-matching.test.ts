@@ -18,6 +18,21 @@ describe('application skill matching', () => {
     expect(extractSkills('go with spring, parts, tools.js, node, breakfast')).toEqual([]);
   });
 
+  it('avoids common prose aliases without dropping canonical spellings or explicit variants', () => {
+    expect(
+      extractSkills('react quickly; make a swift decision; remove rust; a running jest'),
+    ).toEqual([]);
+    expect(extractSkills('React, SWIFT, Rust, Bash, Jest, ruby on rails')).toEqual([
+      'Bash',
+      'Jest',
+      'React',
+      'Ruby on Rails',
+      'Rust',
+      'Swift',
+    ]);
+    expect(extractSkills('react.js and react native')).toEqual(['React', 'React Native']);
+  });
+
   it('returns unique requirements, gaps, and rounded coverage', () => {
     expect(compareSkills('JS, JavaScript, TS, Docker', 'TypeScript and JS')).toEqual({
       status: 'compared',

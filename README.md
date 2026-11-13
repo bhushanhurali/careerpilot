@@ -2,10 +2,11 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 7 Dashboard & Analytics is implemented. CareerPilot currently includes registration, login,
+Phase 8 Resume Management & Job Matching is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
-status transitions, interview scheduling, application tasks, an analytics dashboard, soft deletion, and
+status transitions, interview scheduling, application tasks, an analytics dashboard, private resume
+management, deterministic skill matching, soft deletion, and
 frontend/backend tests for the completed feature set.
 
 ## Architecture
@@ -29,6 +30,7 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 5 | Complete | Interview scheduling and management on application detail, API, tests, docs    |
 | Phase 6 | Complete | Application tasks, due-date filters, and cross-application follow-ups          |
 | Phase 7 | Complete | Dashboard KPIs, application trends, upcoming work, and recent activity         |
+| Phase 8 | Complete | Private resume management, job descriptions, and deterministic skill coverage  |
 
 ## Prerequisites
 
@@ -193,6 +195,17 @@ application activity. Preview rows link back to their applications.
 The backend aggregates metrics and returns bounded previews. The dashboard uses your browser's
 local calendar for submissions and task due dates. See the [Dashboard API](docs/api.md#dashboard)
 for exact metric definitions.
+
+## Resumes & Job Matching
+
+Use **Resumes** to upload, download, or delete PDF and DOCX files up to 5 MiB. Add a job
+description to an application and select an owned resume on its detail page to compare
+recognized skills. Coverage is not an ATS score or hiring prediction. Scanned documents
+without selectable text are not supported. Deleting a resume hides it but does not purge its
+bytes or extracted text.
+
+See the [API contract](docs/api.md#resumes), [storage configuration](docs/environment.md#private-resume-storage),
+and [security notes](docs/security.md#resume-security-and-retention).
 
 ## Commit Convention
 

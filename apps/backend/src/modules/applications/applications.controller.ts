@@ -24,7 +24,7 @@ export class ApplicationsController {
     const { applicationId } = parseRequestParams(applicationIdParamsSchema, request.params);
     const { resumeId } = parseRequestBody(compareResumeSchema, request.body);
     const match = await this.applicationsService.compareResume(userId, applicationId, resumeId);
-    response.status(200).json(ok({ match }));
+    response.set('Cache-Control', 'private, no-store').status(200).json(ok({ match }));
   };
 
   list: RequestHandler = async (request, response, next) => {
