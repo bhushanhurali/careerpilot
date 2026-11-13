@@ -1145,3 +1145,25 @@ Interview previews contain `id`, `type`, `scheduledAt`, `applicationId`, `jobTit
 fields. Recent applications contain `id`, `jobTitle`, `companyName`, `status`, and `updatedAt`.
 Timestamps are UTC ISO strings; task due dates remain `YYYY-MM-DD` without timezone conversion.
 An account with no visible data gets zero totals, zero-filled charts, and empty previews.
+
+## Resumes
+
+All routes require a bearer token. Metadata includes `id`, `title`, `originalFilename`,
+`mimeType`, `fileSizeBytes`, `createdAt`, and `updatedAt`. Extracted text and storage keys
+are private and omitted. Missing, deleted, and other users' resumes return
+`404 RESUME_NOT_FOUND` on item routes.
+
+| Method and path                   | Success                                                               |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `POST /resumes`                   | `201` with `data: { resume }`                                         |
+| `GET /resumes`                    | `200` with `data: { resumes }`, newest first                          |
+| `GET /resumes/:resumeId`          | `200` with `data: { resume }`                                         |
+| `GET /resumes/:resumeId/download` | `200` with original file bytes as a private, non-cacheable attachment |
+| `DELETE /resumes/:resumeId`       | `200` with `data: { deleted: true }`                                  |
+
+Upload uses `multipart/form-data` with one `file` and a nonblank `title` (160 characters
+max). PDF and DOCX require matching extensions, MIME types, and parseable content, with a
+5 MiB file limit. Invalid multipart or fields return `400`, oversized files `413`, and
+unsupported types `415`. Unreadable, encrypted, textless, or overly complex documents
+return `422`. Extraction does not perform OCR. DELETE hides the record and download
+without permanently purging the original bytes or extracted text.

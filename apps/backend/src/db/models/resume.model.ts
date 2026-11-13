@@ -25,6 +25,7 @@ export class ResumeModel extends Model<
   declare mimeType: ResumeMimeType;
   declare fileSizeBytes: number;
   declare storageKey: string;
+  declare extractedText: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare deletedAt: CreationOptional<Date | null>;
@@ -49,6 +50,7 @@ export class ResumeModel extends Model<
         mimeType: { type: DataTypes.STRING(127), allowNull: false, field: 'mime_type' },
         fileSizeBytes: { type: DataTypes.INTEGER, allowNull: false, field: 'file_size_bytes' },
         storageKey: { type: DataTypes.UUID, allowNull: false, field: 'storage_key' },
+        extractedText: { type: DataTypes.TEXT, allowNull: true, field: 'extracted_text' },
         createdAt: { type: DataTypes.DATE, allowNull: false, field: 'created_at' },
         updatedAt: { type: DataTypes.DATE, allowNull: false, field: 'updated_at' },
         deletedAt: { type: DataTypes.DATE, allowNull: true, field: 'deleted_at' },
