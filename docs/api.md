@@ -1148,6 +1148,28 @@ An account with no visible data gets zero totals, zero-filled charts, and empty 
 
 ## Resumes
 
+### Compare a Resume Against an Application
+
+`POST /api/v1/applications/:applicationId/resume-match` requires authentication and a JSON
+body of `{ "resumeId": "<uuid>" }`. Both records must belong to the caller and be active;
+the Application's Company must also be visible. Missing or inaccessible records return `404`.
+
+Set `jobDescription` through Application creation or PATCH, and read it from the Application
+response. It accepts up to 50,000 characters after trimming. Blank strings and `null` clear
+it; omitting it from PATCH preserves the current value.
+
+The response is `200` with `data.match`: `applicationId`, `resumeId`, `status`,
+`matchedSkills`, `missingSkills`, `matchedCount`, `requiredCount`, and `coveragePercentage`.
+Coverage is the rounded percentage of unique recognized description skills also found in the
+stored Resume text. No recognized description skills yields `no_recognized_requirements` and
+null coverage; no recognized Resume skills yields `no_recognized_resume_skills` and zero
+coverage when requirements exist. Otherwise the status is `compared`.
+
+A missing description returns `422 JOB_DESCRIPTION_REQUIRED`; missing extracted Resume
+text returns `422 RESUME_TEXT_UNAVAILABLE`. The comparison does not return Resume text or
+storage metadata. Recognized mentions are weighted equally; coverage is not an ATS score or
+hiring prediction.
+
 All routes require a bearer token. Metadata includes `id`, `title`, `originalFilename`,
 `mimeType`, `fileSizeBytes`, `createdAt`, and `updatedAt`. Extracted text and storage keys
 are private and omitted. Missing, deleted, and other users' resumes return

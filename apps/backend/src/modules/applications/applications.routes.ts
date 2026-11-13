@@ -6,6 +6,7 @@ import { createInterviewsRouter } from '../interviews/interviews.routes.js';
 import { createApplicationTasksRouter } from '../tasks/tasks.routes.js';
 import { ApplicationsController } from './applications.controller.js';
 import {
+  compareResumeSchema,
   createApplicationSchema,
   createStatusTransitionSchema,
   updateApplicationSchema,
@@ -22,6 +23,11 @@ export function createApplicationsRouter(): Router {
   router.post('/', validateBody(createApplicationSchema), applicationsController.create);
   router.use('/:applicationId/interviews', createInterviewsRouter());
   router.use('/:applicationId/tasks', createApplicationTasksRouter());
+  router.post(
+    '/:applicationId/resume-match',
+    validateBody(compareResumeSchema),
+    applicationsController.compareResume,
+  );
   router.get('/:applicationId/status-history', applicationsController.listStatusHistory);
   router.post(
     '/:applicationId/status-transitions',

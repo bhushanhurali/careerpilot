@@ -56,6 +56,7 @@ export class JobApplicationModel extends Model<
   declare workMode: CreationOptional<string | null>;
   declare appliedAt: CreationOptional<string | null>;
   declare notes: CreationOptional<string | null>;
+  declare jobDescription: CreationOptional<string | null>;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
   declare deletedAt: CreationOptional<Date | null>;
@@ -161,6 +162,14 @@ export class JobApplicationModel extends Model<
           type: DataTypes.DATEONLY,
           allowNull: true,
           field: 'applied_at',
+        },
+        jobDescription: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+          field: 'job_description',
+          set(value: string | null | undefined) {
+            this.setDataValue('jobDescription', normalizeOptionalText(value));
+          },
         },
         notes: {
           type: DataTypes.TEXT,
