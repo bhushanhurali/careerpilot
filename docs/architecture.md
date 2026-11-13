@@ -160,6 +160,19 @@ labeled CSS bars, and links preview items to Application detail. See
   renders comparison states without receiving extracted text.
 - See [ADR 0012](decisions/0012-resume-storage-and-matching.md) for storage and scoring tradeoffs.
 
+### Notifications & Reminders
+
+- The backend runs one set-based PostgreSQL delivery statement at startup and every
+  minute, skipping overlap in the same process. Event uniqueness makes retries and
+  concurrent processes safe without a separate queue or in-memory delivery cursor.
+- The inbox validates the live recipient, Application, Company, and source snapshot on
+  reads and mark-as-read. Rows are retained for deduplication even when no longer visible.
+- The authenticated Angular shell and `/notifications` share one signal/RxJS store. The
+  bell requests a one-item unread page outside the center. The center requests its current
+  page and filter; it refreshes on entry, tab visibility, manual refresh, and read completion.
+  Background HTTP polling runs every minute while authenticated and visible.
+- See [ADR 0013](decisions/0013-in-app-reminders.md).
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.

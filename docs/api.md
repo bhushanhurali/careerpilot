@@ -1218,3 +1218,6 @@ external relationships are not followed. Extracted text is capped at 200,000 cha
   while the Interview is still upcoming, sends due reminders only on the local due date,
   and catches up one overdue reminder per open Task and due date. Stale rows are retained
   for deduplication but hidden; a source restored to the same event can expose its old row.
+- Already-delivered reminders remain visible after the scheduled Interview time if the
+  source remains scheduled and unchanged. A due-day notification can remain visible
+  alongside the later overdue notification while the Task is still open.

@@ -40,6 +40,10 @@ Allowed `NODE_ENV` values are `development`, `test`, and `production`. Allowed l
 `Europe/Berlin`. Both Compose configurations pass it to the backend. All accounts use
 this deployment-wide timezone for date-only Task reminders; keep it consistent across
 backend instances. Interviews use their scheduled instant, independent of this setting.
+Task due reminders become eligible at local midnight on the due date; overdue reminders
+at the following local midnight. PostgreSQL resolves the timezone and DST offset. Apply
+migration `012` before starting the backend; Compose does not apply migrations on restart.
+The scheduler runs inside the backend and cannot deliver while it is stopped.
 
 ## PostgreSQL
 

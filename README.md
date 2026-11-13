@@ -2,11 +2,11 @@
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 8 Resume Management & Job Matching is implemented. CareerPilot currently includes registration, login,
+Phase 9 Notifications & Reminders is implemented. CareerPilot currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
 status transitions, interview scheduling, application tasks, an analytics dashboard, private resume
-management, deterministic skill matching, soft deletion, and
+management, deterministic skill matching, in-app reminders, soft deletion, and
 frontend/backend tests for the completed feature set.
 
 ## Architecture
@@ -31,6 +31,7 @@ docs                  Setup, API, security, architecture, and decision records
 | Phase 6 | Complete | Application tasks, due-date filters, and cross-application follow-ups          |
 | Phase 7 | Complete | Dashboard KPIs, application trends, upcoming work, and recent activity         |
 | Phase 8 | Complete | Private resume management, job descriptions, and deterministic skill coverage  |
+| Phase 9 | Complete | Persistent in-app Interview and Task reminders and notification inbox          |
 
 ## Prerequisites
 
@@ -206,6 +207,15 @@ bytes or extracted text.
 
 See the [API contract](docs/api.md#resumes), [storage configuration](docs/environment.md#private-resume-storage),
 and [security notes](docs/security.md#resume-security-and-retention).
+
+## Notifications & Reminders
+
+The authenticated bell opens the notification center with All and Unread filters, paging,
+mark-as-read, and links to Applications. The backend checks for reminders at startup and every
+minute. Apply migration `012` before starting the backend. Task reminders use
+`REMINDER_TIME_ZONE` (UTC by default); Interview reminders use 24 elapsed hours.
+See the [Notifications API](docs/api.md#notifications) and
+[reminder configuration](docs/environment.md#reminder-timezone).
 
 ## Commit Convention
 
