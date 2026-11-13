@@ -94,6 +94,13 @@ pnpm --filter @careerpilot/backend seed
 - `migrate:down` rolls back the most recent migration.
 - `seed` runs the development seed strategy.
 
+When running the backend in Docker, apply pending migrations after pulling or switching branches
+that add schema changes. Restarting the development container does not apply them:
+
+```bash
+docker compose exec backend pnpm --filter @careerpilot/backend migrate:up
+```
+
 ## Authentication
 
 CareerPilot uses short-lived JWT access tokens held only in frontend memory and rotating refresh

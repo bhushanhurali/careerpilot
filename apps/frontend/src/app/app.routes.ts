@@ -38,6 +38,13 @@ export const routes: Routes = [
           import('./features/applications/applications.routes').then((m) => m.applicationRoutes),
       },
       {
+        path: 'resumes',
+        loadComponent: () =>
+          import('./features/resumes/pages/resumes-page/resumes-page.component').then(
+            (m) => m.ResumesPageComponent,
+          ),
+      },
+      {
         path: 'tasks',
         loadComponent: () =>
           import('./features/tasks/pages/tasks-page/tasks-page.component').then(

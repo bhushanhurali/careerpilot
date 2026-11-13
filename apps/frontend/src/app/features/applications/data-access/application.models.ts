@@ -40,6 +40,7 @@ export type JobApplication = {
   workMode: string | null;
   appliedAt: string | null;
   notes: string | null;
+  jobDescription: string | null;
   company: ApplicationCompany;
   contact: ApplicationContact | null;
   createdAt: string;
@@ -62,6 +63,18 @@ export type ApplicationFormValue = {
   workMode: string | null;
   appliedAt: string | null;
   notes: string | null;
+  jobDescription: string | null;
+};
+
+export type ApplicationResumeMatch = {
+  applicationId: string;
+  resumeId: string;
+  status: 'compared' | 'no_recognized_requirements' | 'no_recognized_resume_skills';
+  matchedSkills: string[];
+  missingSkills: string[];
+  matchedCount: number;
+  requiredCount: number;
+  coveragePercentage: number | null;
 };
 
 export type ApplicationUpdateValue = Omit<ApplicationFormValue, 'status'>;

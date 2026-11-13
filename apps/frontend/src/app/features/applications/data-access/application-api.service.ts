@@ -8,6 +8,7 @@ import {
   ApplicationFormValue,
   ApplicationListQuery,
   ApplicationPaginationMeta,
+  ApplicationResumeMatch,
   ApplicationStatusHistoryEntry,
   ApplicationStatusTransitionValue,
   ApplicationUpdateValue,
@@ -91,6 +92,14 @@ export class ApplicationApiService {
         ApplicationApiResponse<StatusHistoryResponse>
       >(`${this.applicationsUrl}/${applicationId}/status-history`)
       .pipe(map((response) => this.unwrap(response).statusHistory));
+  }
+
+  compareResume(applicationId: string, resumeId: string): Observable<ApplicationResumeMatch> {
+    return this.http
+      .post<
+        ApplicationApiResponse<{ match: ApplicationResumeMatch }>
+      >(`${this.applicationsUrl}/${applicationId}/resume-match`, { resumeId })
+      .pipe(map((response) => this.unwrap(response).match));
   }
 
   createStatusTransition(

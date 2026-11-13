@@ -131,3 +131,11 @@
     grid-template-columns: 1fr;
   }
 }
+.resume-matching {
+  margin-block: 24px;
+}
+
+.job-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

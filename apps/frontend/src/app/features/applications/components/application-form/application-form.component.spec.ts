@@ -105,6 +105,7 @@ describe('ApplicationFormComponent', () => {
       workMode: '',
       appliedAt: '2026-07-05',
       notes: '',
+      jobDescription: '  TypeScript  ',
     });
     componentApi().submit();
 
@@ -124,6 +125,7 @@ describe('ApplicationFormComponent', () => {
       workMode: null,
       appliedAt: '2026-07-05',
       notes: null,
+      jobDescription: 'TypeScript',
     });
   });
 
@@ -166,6 +168,7 @@ describe('ApplicationFormComponent', () => {
       workMode: null,
       appliedAt: null,
       notes: null,
+      jobDescription: null,
       company: { id: 'company-1', name: 'Acme GmbH' },
       contact: {
         id: 'contact-1',

@@ -85,6 +85,19 @@
     </div>
   </section>
 
+  <section class="resume-matching" aria-labelledby="resume-matching-heading">
+    <h2 id="resume-matching-heading">Resume matching</h2>
+    <p>Deterministic skill coverage, not an ATS score or hiring prediction.</p>
+    <h3>Job description</h3>
+    @if (application.jobDescription; as description) {
+      <p class="job-description">{{ description }}</p>
+      <cp-application-resume-match [applicationId]="application.id" />
+    } @else {
+      <p>No job description added.</p>
+      <a mat-button [routerLink]="['/applications', application.id, 'edit']">Add job description</a>
+    }
+  </section>
+
   <cp-application-tasks [applicationId]="application.id" />
   <cp-interview-list [applicationId]="application.id" />
 

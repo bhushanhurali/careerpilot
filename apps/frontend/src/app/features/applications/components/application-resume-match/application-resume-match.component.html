@@ -1,0 +1,75 @@
+@if (resumes.loading()) {
+  <p role="status">Loading resumes...</p>
+} @else if (resumes.listError(); as message) {
+  <p role="alert">{{ message }}</p>
+  <button mat-stroked-button type="button" (click)="resumes.load()">Retry</button>
+} @else if (!resumes.resumes().length) {
+  <p>No resumes available.</p>
+  <a mat-button routerLink="/resumes">Manage resumes</a>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="compare()">
+    <mat-form-field appearance="outline">
+      <mat-label>Resume</mat-label>
+      <mat-select formControlName="resumeId">
+        @for (resume of resumes.resumes(); track resume.id) {
+          <mat-option [value]="resume.id"
+            >{{ resume.title }} ({{ resume.originalFilename }})</mat-option
+          >
+        }
+      </mat-select>
+    </mat-form-field>
+    <button mat-stroked-button type="submit" [disabled]="matching() || resumeId.invalid">
+      Compare resume
+    </button>
+  </form>
+}
+
+@if (error(); as message) {
+  <p role="alert">{{ message }}</p>
+}
+@if (matching()) {
+  <p role="status">Comparing resume...</p>
+}
+@if (result(); as match) {
+  <div role="status">
+    @if (match.coveragePercentage === null) {
+      <p>No recognized technical skills in the job description. Coverage is unavailable.</p>
+    } @else {
+      <p>
+        <strong>{{ match.coveragePercentage }}% skill coverage</strong> ({{ match.matchedCount }} of
+        {{ match.requiredCount }} recognized skills)
+      </p>
+      @if (match.status === 'no_recognized_resume_skills') {
+        <p>No recognized technical skills in this resume.</p>
+      }
+    }
+  </div>
+  @if (match.requiredCount > 0) {
+    <div class="skill-results">
+      <div>
+        <h3>Matched skills</h3>
+        @if (match.matchedSkills.length) {
+          <ul>
+            @for (skill of match.matchedSkills; track skill) {
+              <li>{{ skill }}</li>
+            }
+          </ul>
+        } @else {
+          <p>None</p>
+        }
+      </div>
+      <div>
+        <h3>Missing skills</h3>
+        @if (match.missingSkills.length) {
+          <ul>
+            @for (skill of match.missingSkills; track skill) {
+              <li>{{ skill }}</li>
+            }
+          </ul>
+        } @else {
+          <p>None</p>
+        }
+      </div>
+    </div>
+  }
+}

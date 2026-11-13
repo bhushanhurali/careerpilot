@@ -1,0 +1,43 @@
+section {
+  margin-block: 24px;
+}
+fieldset {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  border: 0;
+  padding: 0;
+  margin: 0 0 12px;
+  min-inline-size: 0;
+}
+.file-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.file-field input,
+mat-form-field {
+  max-width: 100%;
+}
+.resumes {
+  list-style: none;
+  padding: 0;
+}
+.resumes li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding-block: 12px;
+  overflow-wrap: anywhere;
+}
+.resumes p {
+  margin: 4px 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
