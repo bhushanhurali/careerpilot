@@ -8,6 +8,7 @@ import { ContactModel } from './models/contact.model.js';
 import { InterviewModel } from './models/interview.model.js';
 import { JobApplicationModel } from './models/job-application.model.js';
 import { RefreshTokenModel } from './models/refresh-token.model.js';
+import { ResumeModel } from './models/resume.model.js';
 import { TaskModel } from './models/task.model.js';
 import { UserModel } from './models/user.model.js';
 
@@ -24,6 +25,7 @@ JobApplicationModel.initialize(sequelize);
 ApplicationStatusHistoryModel.initialize(sequelize);
 InterviewModel.initialize(sequelize);
 TaskModel.initialize(sequelize);
+ResumeModel.initialize(sequelize);
 
 UserModel.hasMany(RefreshTokenModel, {
   foreignKey: 'userId',
@@ -118,4 +120,16 @@ JobApplicationModel.hasMany(TaskModel, {
 TaskModel.belongsTo(JobApplicationModel, {
   foreignKey: 'applicationId',
   as: 'application',
+});
+
+UserModel.hasMany(ResumeModel, {
+  foreignKey: 'userId',
+  as: 'resumes',
+  onDelete: 'RESTRICT',
+});
+
+ResumeModel.belongsTo(UserModel, {
+  foreignKey: 'userId',
+  as: 'user',
+  onDelete: 'RESTRICT',
 });

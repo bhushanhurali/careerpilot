@@ -20,6 +20,18 @@ into each service.
 Allowed `NODE_ENV` values are `development`, `test`, and `production`. Allowed log levels are
 `fatal`, `error`, `warn`, `info`, `debug`, and `trace`.
 
+## Private Resume Storage
+
+- `RESUME_STORAGE_DIR` defaults to `.careerpilot-data/resumes`, relative to the backend
+  process working directory. Use an absolute path outside any public or static directory in
+  deployed environments. Custom local paths inside the repository need their own ignore rule.
+- Development Compose sets `RESUME_STORAGE_DIR` to `DOCKER_RESUME_STORAGE_DIR` (default
+  `/var/lib/careerpilot/resumes`) and mounts the backend-only `resume_data` named volume there.
+  Use an absolute container path. The volume survives restarts and container replacement, but
+  `docker compose down -v` removes it.
+- Store files and database metadata in coordinated backups. Production persistence must be
+  configured separately. No upload, download, parsing, or file purge workflow is enabled yet.
+
 ## PostgreSQL
 
 | Variable            | Required                 | Example                                                                      | Purpose                                      |

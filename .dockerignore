@@ -7,6 +7,8 @@ dist
 coverage
 .angular
 .eslintcache
+.careerpilot-data
+**/.careerpilot-data
 *.log
 
 apps/*/node_modules
