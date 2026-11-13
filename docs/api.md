@@ -1145,3 +1145,57 @@ Interview previews contain `id`, `type`, `scheduledAt`, `applicationId`, `jobTit
 fields. Recent applications contain `id`, `jobTitle`, `companyName`, `status`, and `updatedAt`.
 Timestamps are UTC ISO strings; task due dates remain `YYYY-MM-DD` without timezone conversion.
 An account with no visible data gets zero totals, zero-filled charts, and empty previews.
+
+## Resumes
+
+### Compare a Resume Against an Application
+
+`POST /api/v1/applications/:applicationId/resume-match` requires authentication and a JSON
+body of `{ "resumeId": "<uuid>" }`. Both records must belong to the caller and be active;
+the Application's Company must also be visible. Missing or inaccessible records return `404`.
+
+Set `jobDescription` through Application creation or PATCH, and read it from the Application
+response. It accepts up to 50,000 characters after trimming. Blank strings and `null` clear
+it; omitting it from PATCH preserves the current value.
+
+The response is `200` with `data.match`: `applicationId`, `resumeId`, `status`,
+`matchedSkills`, `missingSkills`, `matchedCount`, `requiredCount`, and `coveragePercentage`.
+Coverage is the rounded percentage of unique recognized description skills also found in the
+stored Resume text. No recognized description skills yields `no_recognized_requirements` and
+null coverage; no recognized Resume skills yields `no_recognized_resume_skills` and zero
+coverage when requirements exist. Otherwise the status is `compared`.
+
+A missing description returns `422 JOB_DESCRIPTION_REQUIRED`; missing extracted Resume
+text returns `422 RESUME_TEXT_UNAVAILABLE`. The comparison does not return Resume text or
+storage metadata. Recognized mentions are weighted equally; coverage is not an ATS score or
+hiring prediction.
+
+Extraction normalizes Unicode, whitespace, and aliases (for example, JS/JavaScript), matches
+whole tokens and phrases, and deduplicates canonical skills. Longer overlapping aliases take
+precedence. Selected ambiguous bare words require canonical capitalization or uppercase.
+The vocabulary does not interpret negation, proficiency, years of experience, or required
+versus preferred mentions. Successful comparisons are `private, no-store`.
+
+### Manage Resumes
+
+All routes require a bearer token. Metadata includes `id`, `title`, `originalFilename`,
+`mimeType`, `fileSizeBytes`, `createdAt`, and `updatedAt`. Extracted text and storage keys
+are private and omitted. Missing, deleted, and other users' resumes return
+`404 RESUME_NOT_FOUND` on item routes.
+
+| Method and path                   | Success                                                               |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `POST /resumes`                   | `201` with `data: { resume }`                                         |
+| `GET /resumes`                    | `200` with `data: { resumes }`, newest first                          |
+| `GET /resumes/:resumeId`          | `200` with `data: { resume }`                                         |
+| `GET /resumes/:resumeId/download` | `200` with original file bytes as a private, non-cacheable attachment |
+| `DELETE /resumes/:resumeId`       | `200` with `data: { deleted: true }`                                  |
+
+Upload uses `multipart/form-data` with one `file` and a nonblank `title` (160 characters
+max). PDF and DOCX require matching extensions, MIME types, and parseable content, with a
+5 MiB file limit. Invalid multipart or fields return `400`, oversized files `413`, and
+unsupported types `415`. Unreadable, encrypted, textless, or overly complex documents
+return `422`. Extraction does not perform OCR. DELETE hides the record and download
+without permanently purging the original bytes or extracted text. PDF extraction reads text
+from up to 100 pages. DOCX extraction reads the main Word document body, not headers or footers;
+external relationships are not followed. Extracted text is capped at 200,000 characters.

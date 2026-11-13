@@ -34,6 +34,7 @@ describe('ApplicationApiService', () => {
     workMode: 'hybrid',
     appliedAt: '2026-07-05',
     notes: null,
+    jobDescription: null,
     company: { id: 'company-1', name: 'Acme GmbH' },
     contact: null,
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -114,6 +115,7 @@ describe('ApplicationApiService', () => {
       workMode: null,
       appliedAt: null,
       notes: null,
+      jobDescription: 'TypeScript',
     };
 
     service.createApplication(payload).subscribe((result) => expect(result).toEqual(application));
@@ -142,6 +144,7 @@ describe('ApplicationApiService', () => {
         workMode: payload.workMode,
         appliedAt: payload.appliedAt,
         notes: payload.notes,
+        jobDescription: payload.jobDescription,
       })
       .subscribe((result) => expect(result).toEqual(application));
     const updateRequest = httpTestingController.expectOne(

@@ -62,6 +62,17 @@ const applicationFieldsSchema = {
   workMode: optionalText(80),
   appliedAt: optionalDateOnly,
   notes: optionalText(10_000),
+  jobDescription: z
+    .preprocess(
+      emptyStringToNull,
+      z
+        .string()
+        .trim()
+        .max(50_000)
+        .refine((value) => !value.includes('\0'))
+        .nullable(),
+    )
+    .optional(),
 };
 
 function validateSalaryFields(value: {
@@ -118,6 +129,7 @@ export const updateApplicationSchema = z
     workMode: applicationFieldsSchema.workMode,
     appliedAt: applicationFieldsSchema.appliedAt,
     notes: applicationFieldsSchema.notes,
+    jobDescription: applicationFieldsSchema.jobDescription,
   })
   .strict()
   .refine((value) => Object.keys(value).length > 0, {
@@ -172,6 +184,7 @@ export const createStatusTransitionSchema = z
 
 export type ApplicationIdParams = z.infer<typeof applicationIdParamsSchema>;
 export type CreateApplicationBody = z.infer<typeof createApplicationSchema>;
+export const compareResumeSchema = z.object({ resumeId: z.string().uuid() }).strict();
 export type UpdateApplicationBody = z.infer<typeof updateApplicationSchema>;
 export type ListApplicationsQuery = z.infer<typeof listApplicationsQuerySchema>;
 export type CreateStatusTransitionBody = z.infer<typeof createStatusTransitionSchema>;

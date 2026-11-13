@@ -7,7 +7,9 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { of } from 'rxjs';
 
 import { InterviewApiService } from '../../../interviews/data-access/interview-api.service';
+import { ResumeApiService } from '../../../resumes/data-access/resume-api.service';
 import { TaskApiService } from '../../../tasks/data-access/task-api.service';
+import { ApplicationApiService } from '../../data-access/application-api.service';
 import {
   ApplicationStatusHistoryEntry,
   JobApplication,
@@ -43,6 +45,7 @@ describe('ApplicationDetailPageComponent', () => {
     workMode: null,
     appliedAt: null,
     notes: null,
+    jobDescription: null,
     company: { id: 'company-1', name: 'Acme GmbH' },
     contact: {
       id: 'contact-1',
@@ -105,6 +108,8 @@ describe('ApplicationDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: InterviewApiService, useValue: interviewApi },
+        { provide: ResumeApiService, useValue: { listResumes: () => of([]) } },
+        { provide: ApplicationApiService, useValue: {} },
         { provide: TaskApiService, useValue: taskApi },
         { provide: ApplicationStore, useValue: store },
         {
@@ -132,6 +137,19 @@ describe('ApplicationDetailPageComponent', () => {
     expect(interviewApi.listInterviews).toHaveBeenCalledWith(application.id);
     expect(fixture.nativeElement.textContent).toContain('Applied to Interviewing');
     expect(fixture.nativeElement.textContent).toContain('Technical interview scheduled');
+  });
+
+  it('shows the add-description action until a description is available for matching', () => {
+    fixture = TestBed.createComponent(ApplicationDetailPageComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Add job description');
+    expect(fixture.nativeElement.querySelector('cp-application-resume-match')).toBeNull();
+
+    selectedApplicationSignal.set({ ...application, jobDescription: 'TypeScript and Docker' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('TypeScript and Docker');
+    expect(fixture.nativeElement.textContent).toContain('not an ATS score or hiring prediction');
+    expect(fixture.nativeElement.textContent).toContain('No resumes available.');
   });
 
   it('renders status history loading, empty, and error states', () => {

@@ -9,6 +9,7 @@ import {
 import { ApplicationsService } from './applications.service.js';
 import {
   applicationIdParamsSchema,
+  compareResumeSchema,
   createApplicationSchema,
   createStatusTransitionSchema,
   listApplicationsQuerySchema,
@@ -17,6 +18,14 @@ import {
 
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) {}
+
+  compareResume: RequestHandler = async (request, response) => {
+    const { userId } = this.getAuth(request);
+    const { applicationId } = parseRequestParams(applicationIdParamsSchema, request.params);
+    const { resumeId } = parseRequestBody(compareResumeSchema, request.body);
+    const match = await this.applicationsService.compareResume(userId, applicationId, resumeId);
+    response.set('Cache-Control', 'private, no-store').status(200).json(ok({ match }));
+  };
 
   list: RequestHandler = async (request, response, next) => {
     try {

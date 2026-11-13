@@ -53,6 +53,7 @@ export class ApplicationEditPageComponent implements OnInit {
       workMode: payload.workMode,
       appliedAt: payload.appliedAt,
       notes: payload.notes,
+      jobDescription: payload.jobDescription,
     };
   }
 }

@@ -6,8 +6,10 @@ import { ApplicationStatusHistoryModel } from '../../db/models/application-statu
 import { CompanyModel } from '../../db/models/company.model.js';
 import { ContactModel } from '../../db/models/contact.model.js';
 import { JobApplicationModel } from '../../db/models/job-application.model.js';
+import { ResumeModel } from '../../db/models/resume.model.js';
 import { sequelize } from '../../db/sequelize.js';
 import { HttpError } from '../../shared/errors/http-error.js';
+import { compareSkills } from './application-skill-matching.js';
 import {
   CreateApplicationBody,
   CreateStatusTransitionBody,
@@ -40,6 +42,7 @@ type ApplicationChanges = {
   workMode?: string | null;
   appliedAt?: string | null;
   notes?: string | null;
+  jobDescription?: string | null;
 };
 
 const sortColumnByField = {
@@ -105,6 +108,7 @@ function toApplicationDto(application: JobApplicationModel): JobApplicationDto {
     workMode: application.workMode ?? null,
     appliedAt: application.appliedAt ?? null,
     notes: application.notes ?? null,
+    jobDescription: application.jobDescription ?? null,
     company: {
       id: company.id,
       name: company.name,
@@ -271,6 +275,7 @@ export class ApplicationsService {
           workMode: input.workMode,
           appliedAt: input.appliedAt,
           notes: input.notes,
+          jobDescription: input.jobDescription,
         },
         { transaction },
       );
@@ -376,11 +381,38 @@ export class ApplicationsService {
     if (input.notes !== undefined) {
       changes.notes = input.notes;
     }
+    if (input.jobDescription !== undefined) {
+      changes.jobDescription = input.jobDescription;
+    }
 
     application.set(changes);
     await application.save();
 
     return this.getApplication(userId, application.id);
+  }
+
+  async compareResume(userId: string, applicationId: string, resumeId: string) {
+    const application = await this.findOwnedActiveApplication(userId, applicationId);
+    const resume = await ResumeModel.findOne({
+      where: { id: resumeId, userId },
+      attributes: ['extractedText'],
+      logging: false,
+    });
+    if (!resume) throw new HttpError(404, 'RESUME_NOT_FOUND', 'Resume was not found');
+    const description = application.jobDescription?.trim();
+    const resumeText = resume.extractedText?.trim();
+    if (!description) {
+      throw new HttpError(
+        422,
+        'JOB_DESCRIPTION_REQUIRED',
+        'Add a job description before comparing',
+      );
+    }
+    if (!resumeText) {
+      throw new HttpError(422, 'RESUME_TEXT_UNAVAILABLE', 'Resume has no extracted text');
+    }
+
+    return { applicationId, resumeId, ...compareSkills(description, resumeText) };
   }
 
   async listStatusHistory(

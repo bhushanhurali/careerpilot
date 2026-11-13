@@ -18,7 +18,12 @@ export const requestLogger = pinoHttp({
   logger,
   genReqId: (request: IncomingMessage, _response: ServerResponse) => getRequestId(request),
   redact: {
-    paths: ['req.headers.authorization', 'req.headers.cookie', 'res.headers.set-cookie'],
+    paths: [
+      'req.headers.authorization',
+      'req.headers.cookie',
+      'res.headers.set-cookie',
+      'res.headers.content-disposition',
+    ],
     remove: true,
   },
 });

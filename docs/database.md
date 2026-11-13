@@ -33,6 +33,7 @@ apps/backend/src/db/seeds
   Each interview belongs to one job application.
 - `SequelizeMeta`: migration names applied by Umzug's Sequelize storage.
 - `tasks`: application follow-ups with optional due dates, priority, completion, and soft deletion.
+- `resumes`: user-owned metadata and extracted text for privately stored PDF/DOCX files.
 
 The application does not use `sequelize.sync()`. Migrations are the only supported way to change
 the schema.
@@ -279,6 +280,18 @@ many `tasks` and Task belongs to one `application` via `application_id`. Tasks h
 - `tasks_open_due_on_idx` indexes `(due_on, id)` for non-deleted, open tasks with a due date.
 - The foreign key uses `ON DELETE CASCADE` and `ON UPDATE CASCADE`. Soft-deleting an application
   retains its tasks; physical deletion removes them, including already soft-deleted tasks.
+
+## Resumes and Job Descriptions
+
+- Migration `009` creates `resumes` with UUID `id` and required `user_id` (User FK with
+  physical-delete RESTRICT), title, original filename, MIME type, positive byte size, unique
+  UUIDv4 storage key, timestamps, and nullable `deleted_at`. Checks reject blank names and
+  unsupported MIME types. Indexes cover `user_id` and active `(user_id, created_at, id)` lookup.
+- Migration `010` adds nullable `extracted_text`; uploads through the API require readable
+  text. Migration `011` adds nullable `job_applications.job_description`. Existing rows remain
+  null; neither migration backfills text. Reverting either drops its text column and data.
+- Reverting `009` drops metadata, not files. Ordinary soft deletion preserves the metadata,
+  original file, and extracted text while excluding the resume from normal reads and matching.
 
 ## Test Database Safety
 

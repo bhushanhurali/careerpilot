@@ -33,6 +33,7 @@ export type JobApplicationDto = {
   workMode: string | null;
   appliedAt: string | null;
   notes: string | null;
+  jobDescription: string | null;
   company: ApplicationCompanyDto;
   contact: ApplicationContactDto | null;
   createdAt: string;

@@ -38,6 +38,7 @@ describe('ApplicationEditPageComponent', () => {
     workMode: null,
     appliedAt: null,
     notes: null,
+    jobDescription: null,
     company: { id: 'company-1', name: 'Acme GmbH' },
     contact: null,
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -102,6 +103,7 @@ describe('ApplicationEditPageComponent', () => {
 
     expect(store.updateApplication).toHaveBeenCalled();
     expect(updatePayload).not.toEqual(jasmine.objectContaining({ status: jasmine.anything() }));
+    expect(updatePayload.jobDescription).toBe('TypeScript');
     expect(navigateSpy).toHaveBeenCalledWith(['/applications', application.id]);
   });
 
@@ -141,6 +143,7 @@ describe('ApplicationEditPageComponent', () => {
       workMode: null,
       appliedAt: null,
       notes: null,
+      jobDescription: 'TypeScript',
     };
   }
 });

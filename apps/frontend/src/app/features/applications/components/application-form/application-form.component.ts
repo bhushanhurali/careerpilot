@@ -87,6 +87,7 @@ export class ApplicationFormComponent implements OnInit, OnChanges {
     workMode: ['', [Validators.maxLength(80)]],
     appliedAt: [''],
     notes: ['', [Validators.maxLength(10_000)]],
+    jobDescription: ['', [Validators.maxLength(50_000)]],
   });
 
   ngOnInit(): void {
@@ -122,6 +123,7 @@ export class ApplicationFormComponent implements OnInit, OnChanges {
         workMode: this.application.workMode ?? '',
         appliedAt: this.application.appliedAt ?? '',
         notes: this.application.notes ?? '',
+        jobDescription: this.application.jobDescription ?? '',
       },
       { emitEvent: false },
     );
@@ -265,6 +267,7 @@ export class ApplicationFormComponent implements OnInit, OnChanges {
       workMode: this.emptyToNull(value.workMode),
       appliedAt: this.emptyToNull(value.appliedAt),
       notes: this.emptyToNull(value.notes),
+      jobDescription: this.emptyToNull(value.jobDescription),
     };
   }
 

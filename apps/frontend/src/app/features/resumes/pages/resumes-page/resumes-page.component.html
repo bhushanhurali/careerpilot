@@ -1,0 +1,107 @@
+<h1>Resume Management</h1>
+<section aria-labelledby="upload-heading">
+  <h2 id="upload-heading">Upload a resume</h2>
+  <form [formGroup]="form" (ngSubmit)="upload(fileInput)">
+    <fieldset [disabled]="store.saving()">
+      <mat-form-field appearance="outline">
+        <mat-label>Title</mat-label>
+        <input matInput id="resume-title" formControlName="title" maxlength="160" />
+        <mat-error>Enter a title.</mat-error>
+      </mat-form-field>
+      <div class="file-field">
+        <label for="resume-file">Resume file</label>
+        <input
+          #fileInput
+          id="resume-file"
+          type="file"
+          accept=".pdf,.docx"
+          required
+          aria-describedby="resume-file-hint"
+          [attr.aria-invalid]="fileError() ? 'true' : null"
+          [attr.aria-errormessage]="fileError() ? 'resume-file-error' : null"
+          (change)="selectFile(fileInput)"
+        />
+        <small id="resume-file-hint">PDF or DOCX, up to 5 MiB.</small>
+        @if (fileError(); as error) {
+          <p id="resume-file-error" role="alert">{{ error }}</p>
+        }
+      </div>
+    </fieldset>
+    @if (uploadError(); as error) {
+      <p role="alert">{{ error }}</p>
+    }
+    <button
+      mat-flat-button
+      type="submit"
+      [disabled]="store.loading() || store.saving() || !!store.listError()"
+    >
+      <mat-icon>upload</mat-icon> Upload resume
+    </button>
+    @if (store.saving()) {
+      <p role="status">Saving resume changes...</p>
+    }
+  </form>
+</section>
+<section aria-labelledby="resumes-heading">
+  <h2 id="resumes-heading">Your resumes</h2>
+  @if (actionError(); as error) {
+    <p role="alert">{{ error }}</p>
+  }
+  @if (store.loading()) {
+    <p role="status">Loading resumes...</p>
+  } @else if (store.listError(); as error) {
+    <p role="alert">{{ error }}</p>
+    <button mat-stroked-button type="button" (click)="store.load()">Retry</button>
+  } @else {
+    <ul class="resumes">
+      @for (resume of store.resumes(); track resume.id) {
+        <li>
+          <div>
+            <strong>{{ resume.title }}</strong>
+            <p>
+              {{ resume.originalFilename }} ·
+              {{ resume.fileSizeBytes / 1024 | number: '1.0-1' }} KiB ·
+              {{ resume.createdAt | date: 'mediumDate' }}
+            </p>
+          </div>
+          <div class="actions">
+            <button
+              mat-button
+              type="button"
+              [disabled]="!!downloading() || store.saving()"
+              [attr.aria-label]="'Download ' + resume.title"
+              (click)="download(resume)"
+            >
+              <mat-icon>download</mat-icon> Download
+            </button>
+            <button
+              mat-button
+              type="button"
+              [disabled]="store.saving() || !!downloading()"
+              [attr.aria-label]="'Delete ' + resume.title"
+              (click)="confirmDelete(deleteDialog, resume)"
+            >
+              <mat-icon>delete</mat-icon> Delete
+            </button>
+          </div>
+        </li>
+      } @empty {
+        <li>No resumes uploaded yet.</li>
+      }
+    </ul>
+    @if (downloading()) {
+      <p role="status">Preparing download...</p>
+    }
+  }
+</section>
+
+<ng-template #deleteDialog let-resume>
+  <h2 mat-dialog-title>Delete resume?</h2>
+  <mat-dialog-content
+    >“{{ resume.title }}” will no longer be available for downloads or matching.</mat-dialog-content
+  >
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="button" [mat-dialog-close]="true">Delete resume</button>
+  </mat-dialog-actions>
+</ng-template>

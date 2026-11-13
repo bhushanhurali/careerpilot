@@ -197,6 +197,25 @@ Generic login errors avoid account discovery, and rate limits slow automated att
 improvements include breached-password checks, suspicious-login monitoring, MFA, and gateway-level
 rate limits.
 
+## Resume Security and Retention
+
+- Every resume route requires bearer authentication. Metadata, download, deletion, and matching
+  require ownership and exclude soft-deleted resumes. Matching also requires an active owned
+  application and company. Inaccessible records return `404`.
+- Upload validation checks multipart shape, extension, MIME type, and parseable content. The
+  client filename is metadata only; a generated UUIDv4 identifies the private file. Local
+  storage uses exclusive writes and rejects non-regular file entries on download. Keep the
+  configured directory and its parents writable only by trusted operators and the backend.
+- Downloads are authenticated attachments with `nosniff` and `private, no-store`. Angular uses
+  an authenticated blob request and revokes its temporary object URL. Metadata and comparison
+  responses do not include storage keys or extracted resume text.
+- Parsing is not malware scanning or a sandbox. Deployment should limit concurrent uploads
+  and storage consumption; per-file and extraction limits are not account quotas.
+- Uploads write the file before the database row. If persistence fails, cleanup is best-effort
+  and avoids removing a file when the row may already have committed. A crash or failed
+  reconciliation can leave orphan files. Soft deletion does not purge bytes or text, and no
+  automatic purge or reconciliation job exists. Restrict database, volume, and backup access.
+
 ## Remaining Production Work
 
 - Use secrets from a managed secret store and support key rotation.

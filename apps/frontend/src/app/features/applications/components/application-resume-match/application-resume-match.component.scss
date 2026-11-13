@@ -1,0 +1,14 @@
+form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+}
+mat-form-field {
+  width: min(100%, 360px);
+}
+.skill-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 40px;
+}

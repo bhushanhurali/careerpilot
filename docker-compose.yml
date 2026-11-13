@@ -31,6 +31,7 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-careerpilot}:${POSTGRES_PASSWORD:-careerpilot_dev_password}@postgres:5432/${POSTGRES_DB:-careerpilot}
       CORS_ORIGIN: ${BACKEND_CORS_ORIGIN:-http://localhost:4200}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      RESUME_STORAGE_DIR: ${DOCKER_RESUME_STORAGE_DIR:-/var/lib/careerpilot/resumes}
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-replace-with-at-least-32-characters-access-secret}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-replace-with-at-least-32-characters-refresh-secret}
       ACCESS_TOKEN_TTL_SECONDS: ${ACCESS_TOKEN_TTL_SECONDS:-900}
@@ -39,6 +40,7 @@ services:
     ports:
       - '${BACKEND_PORT:-3000}:3000'
     volumes:
+      - resume_data:${DOCKER_RESUME_STORAGE_DIR:-/var/lib/careerpilot/resumes}
       - ./apps/backend/src:/workspace/apps/backend/src
       - ./apps/backend/package.json:/workspace/apps/backend/package.json:ro
       - ./apps/backend/tsconfig.json:/workspace/apps/backend/tsconfig.json:ro
@@ -71,3 +73,4 @@ services:
 
 volumes:
   postgres_data:
+  resume_data:

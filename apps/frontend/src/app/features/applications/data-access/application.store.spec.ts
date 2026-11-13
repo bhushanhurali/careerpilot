@@ -29,6 +29,7 @@ describe('ApplicationStore', () => {
     workMode: null,
     appliedAt: null,
     notes: null,
+    jobDescription: null,
     company: { id: 'company-1', name: 'Acme GmbH' },
     contact: null,
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -238,6 +239,7 @@ describe('ApplicationStore', () => {
       workMode: null,
       appliedAt: null,
       notes: null,
+      jobDescription: null,
     };
   }
 });

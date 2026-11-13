@@ -9,6 +9,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { InterviewListComponent } from '../../../interviews/components/interview-list/interview-list.component';
 import { ApplicationTasksComponent } from '../../../tasks/components/application-tasks/application-tasks.component';
 import { ApplicationDeleteDialogComponent } from '../../components/application-delete-dialog/application-delete-dialog.component';
+import { ApplicationResumeMatchComponent } from '../../components/application-resume-match/application-resume-match.component';
 import { ApplicationStatusTransitionDialogComponent } from '../../components/application-status-transition-dialog/application-status-transition-dialog.component';
 import {
   ApplicationStatus,
@@ -29,6 +30,7 @@ import { ApplicationStore } from '../../data-access/application.store';
     MatSnackBarModule,
     InterviewListComponent,
     ApplicationTasksComponent,
+    ApplicationResumeMatchComponent,
   ],
   templateUrl: './application-detail-page.component.html',
   styleUrl: './application-detail-page.component.scss',

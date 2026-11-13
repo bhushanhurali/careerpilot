@@ -137,6 +137,14 @@
   </div>
 
   <mat-form-field appearance="outline">
+    <mat-label>Job description</mat-label>
+    <textarea matInput formControlName="jobDescription" rows="6"></textarea>
+    @if (fieldError('jobDescription')) {
+      <mat-error>{{ fieldError('jobDescription') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
     <mat-label>Notes</mat-label>
     <textarea matInput formControlName="notes" rows="5"></textarea>
     @if (fieldError('notes')) {

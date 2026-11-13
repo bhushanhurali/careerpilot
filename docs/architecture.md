@@ -147,11 +147,25 @@ signal/RxJS store. It sends the browser's local calendar date, renders the API's
 labeled CSS bars, and links preview items to Application detail. See
 [ADR 0011](decisions/0011-dashboard-aggregation.md).
 
+### Resume Management & Job Matching
+
+- The Resumes module validates and extracts text before writing original bytes through
+  `ResumeStorage`. PostgreSQL holds metadata, extracted text, and an opaque storage key;
+  the filesystem is private and never served as a static directory.
+- Resumes belong directly to users. Matching reuses the Applications module's active
+  Application/Company scope before loading the owned, active Resume's text. Coverage is
+  computed on demand; no comparison record or resume-to-application link is stored.
+- The authenticated Angular `/resumes` page uses a scoped signal/RxJS store and an API service.
+  Application forms edit the optional description; the detail panel loads owned resumes and
+  renders comparison states without receiving extracted text.
+- See [ADR 0012](decisions/0012-resume-storage-and-matching.md) for storage and scoring tradeoffs.
+
 ## Ownership Model
 
 The authenticated user ID is the security boundary for business data.
 
 - `companies.user_id` stores direct ownership.
+- `resumes.user_id` stores direct ownership independent of applications.
 - `contacts.company_id` stores the parent relationship.
 - Contact ownership is derived by verifying the parent company belongs to the authenticated user.
 - `job_applications.user_id` stores direct ownership because applications are queried as a
@@ -177,7 +191,7 @@ owned records, contacts hang from companies, and applications are the user's pip
 
 ## Soft Deletion
 
-Companies, contacts, job applications, interviews, and tasks use Sequelize paranoid models with
+Companies, contacts, job applications, interviews, tasks, and resumes use Sequelize paranoid models with
 `deleted_at`.
 
 - Normal list/detail queries only return active records.
@@ -193,6 +207,7 @@ Companies, contacts, job applications, interviews, and tasks use Sequelize paran
 - Hard-deleting an application physically cascades status history and interview rows.
 - Deleting a task soft-deletes only that task. Soft-deleting the application or its company
   hides retained tasks from both task lists. Hard-deleting the application cascades task rows.
+- Deleting a resume hides it from listing, download, and matching, but retains bytes and text.
 - Company deletion does not yet soft-delete or otherwise modify applications; that behavior should
   be decided when application lifecycle rules are expanded.
 - PostgreSQL foreign-key cascade is not used for ordinary soft deletion because no physical delete
