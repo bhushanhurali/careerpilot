@@ -216,6 +216,14 @@ rate limits.
   reconciliation can leave orphan files. Soft deletion does not purge bytes or text, and no
   automatic purge or reconciliation job exists. Restrict database, volume, and backup access.
 
+## Notification Visibility
+
+Both notification endpoints require bearer authentication and return private, non-cacheable
+responses. Inbox reads and mark-as-read require an active User, a matching notification
+recipient, and an active source under an active Application and Company owned by that
+User. An inaccessible item returns the same 404 as a missing one. The recipient FK alone
+is not proof of source ownership. Source changes are reflected on the next inbox refresh.
+
 ## Remaining Production Work
 
 - Use secrets from a managed secret store and support key rotation.

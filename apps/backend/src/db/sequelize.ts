@@ -7,6 +7,7 @@ import { CompanyModel } from './models/company.model.js';
 import { ContactModel } from './models/contact.model.js';
 import { InterviewModel } from './models/interview.model.js';
 import { JobApplicationModel } from './models/job-application.model.js';
+import { NotificationModel } from './models/notification.model.js';
 import { RefreshTokenModel } from './models/refresh-token.model.js';
 import { ResumeModel } from './models/resume.model.js';
 import { TaskModel } from './models/task.model.js';
@@ -26,6 +27,7 @@ ApplicationStatusHistoryModel.initialize(sequelize);
 InterviewModel.initialize(sequelize);
 TaskModel.initialize(sequelize);
 ResumeModel.initialize(sequelize);
+NotificationModel.initialize(sequelize);
 
 UserModel.hasMany(RefreshTokenModel, {
   foreignKey: 'userId',
@@ -133,3 +135,28 @@ ResumeModel.belongsTo(UserModel, {
   as: 'user',
   onDelete: 'RESTRICT',
 });
+
+UserModel.hasMany(NotificationModel, {
+  foreignKey: 'userId',
+  as: 'notifications',
+  onDelete: 'CASCADE',
+});
+NotificationModel.belongsTo(UserModel, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
+
+InterviewModel.hasMany(NotificationModel, {
+  foreignKey: 'interviewId',
+  as: 'notifications',
+  onDelete: 'CASCADE',
+});
+NotificationModel.belongsTo(InterviewModel, {
+  foreignKey: 'interviewId',
+  as: 'interview',
+  onDelete: 'CASCADE',
+});
+
+TaskModel.hasMany(NotificationModel, {
+  foreignKey: 'taskId',
+  as: 'notifications',
+  onDelete: 'CASCADE',
+});
+NotificationModel.belongsTo(TaskModel, { foreignKey: 'taskId', as: 'task', onDelete: 'CASCADE' });

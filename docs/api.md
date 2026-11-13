@@ -1199,3 +1199,25 @@ return `422`. Extraction does not perform OCR. DELETE hides the record and downl
 without permanently purging the original bytes or extracted text. PDF extraction reads text
 from up to 100 pages. DOCX extraction reads the main Word document body, not headers or footers;
 external relationships are not followed. Extracted text is capped at 200,000 characters.
+
+## Notifications
+
+- `GET /api/v1/notifications?page=1&pageSize=20&unread=true` returns
+  `data: { notifications, unreadCount }` and `meta: { page, pageSize, total, totalPages }`.
+  `unread` defaults to false (all visible items); `unreadCount` is independent of pagination
+  and filtering. Maximum page size is 100. Items sort by delivery time descending, then ID descending.
+- `PATCH /api/v1/notifications/:notificationId/read` takes no payload and returns
+  `data: { notification: { id, readAt } }`. Repeating it preserves the original read time.
+  Inaccessible, stale, undelivered, or missing items return `404 NOTIFICATION_NOT_FOUND`.
+- Both routes require bearer authentication. Only delivered items belonging to the caller
+  with active, matching sources and active User, Application, and Company are visible.
+  Items include their type, application ID and title, company name, source IDs and event
+  dates, optional task title, scheduled and delivered times, and nullable read time.
+  Timestamps use UTC ISO strings; task due dates remain `YYYY-MM-DD`.
+- The backend polls at startup and every minute. It catches up Interview reminders only
+  while the Interview is still upcoming, sends due reminders only on the local due date,
+  and catches up one overdue reminder per open Task and due date. Stale rows are retained
+  for deduplication but hidden; a source restored to the same event can expose its old row.
+- Already-delivered reminders remain visible after the scheduled Interview time if the
+  source remains scheduled and unchanged. A due-day notification can remain visible
+  alongside the later overdue notification while the Task is still open.

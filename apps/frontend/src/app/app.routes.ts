@@ -45,6 +45,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/pages/notification-center.component').then(
+            (m) => m.NotificationCenterComponent,
+          ),
+      },
+      {
         path: 'tasks',
         loadComponent: () =>
           import('./features/tasks/pages/tasks-page/tasks-page.component').then(

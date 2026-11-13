@@ -12,6 +12,7 @@ import { AuthRepository } from './modules/auth/auth.repository.js';
 import { createApplicationsRouter } from './modules/applications/applications.routes.js';
 import { createCompaniesRouter } from './modules/companies/companies.routes.js';
 import { createDashboardRouter } from './modules/dashboard/dashboard.routes.js';
+import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
 import { createResumesRouter } from './modules/resumes/resume.routes.js';
 import { createTasksRouter } from './modules/tasks/tasks.routes.js';
 import { ok } from './shared/responses/api-response.js';
@@ -42,6 +43,7 @@ export function createApp(options: CreateAppOptions = {}) {
   app.use('/api/v1/applications', createApplicationsRouter());
   app.use('/api/v1/companies', createCompaniesRouter());
   app.use('/api/v1/dashboard', createDashboardRouter());
+  app.use('/api/v1/notifications', createNotificationsRouter());
   app.use('/api/v1/resumes', createResumesRouter());
   app.use('/api/v1/tasks', createTasksRouter());
 

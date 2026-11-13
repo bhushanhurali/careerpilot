@@ -293,6 +293,21 @@ many `tasks` and Task belongs to one `application` via `application_id`. Tasks h
 - Reverting `009` drops metadata, not files. Ordinary soft deletion preserves the metadata,
   original file, and extracted text while excluding the resume from normal reads and matching.
 
+## Notifications
+
+Migration `012-create-notifications` adds `notifications` without backfilling rows. It
+stores a UUID primary key, required recipient User FK, exactly one Interview or Task FK,
+the Interview's scheduled instant or Task's date-only due date, `scheduled_for`,
+nullable `delivered_at` and `read_at`, and creation/update timestamps.
+
+- The source check constrains the shape for `interview_reminder`, `task_due`, and
+  `task_overdue`. Delivery cannot precede scheduling; reading cannot precede delivery.
+- Partial unique indexes identify Interview events by source ID and scheduled instant,
+  and Task events by source ID, due date, and type. Pending, inbox, and unread indexes
+  support lookup by time or recipient.
+- Physical deletion of the recipient or source cascades. Soft deletion retains rows,
+  and inbox queries hide inaccessible sources. Rollback drops the table and its history.
+
 ## Test Database Safety
 
 Backend integration tests run with `NODE_ENV=test` and require a database name containing `test`.

@@ -19,6 +19,26 @@
   @switch (authStore.status()) {
     @case ('authenticated') {
       <span class="user-name">{{ authStore.displayName() }}</span>
+      <a
+        mat-icon-button
+        routerLink="/notifications"
+        routerLinkActive="active-link"
+        ariaCurrentWhenActive="page"
+        [attr.aria-label]="
+          notificationStore.unreadCount() === null
+            ? 'Notifications'
+            : 'Notifications, ' + notificationStore.unreadCount() + ' unread'
+        "
+      >
+        <mat-icon
+          [matBadge]="
+            (notificationStore.unreadCount() ?? 0) > 99 ? '99+' : notificationStore.unreadCount()
+          "
+          [matBadgeHidden]="!notificationStore.unreadCount()"
+          matBadgeSize="small"
+          >notifications</mat-icon
+        >
+      </a>
       <button mat-icon-button type="button" aria-label="Sign out" (click)="logout()">
         <mat-icon>logout</mat-icon>
       </button>
