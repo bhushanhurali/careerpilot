@@ -9,6 +9,19 @@ status transitions, interview scheduling, application tasks, an analytics dashbo
 management, deterministic skill matching, in-app reminders, soft deletion, and
 frontend/backend tests for the completed feature set.
 
+## Application Preview
+
+The signed-out landing page introduces CareerPilot and previews the dashboard with sample data.
+The public Appearance menu supports Light, Dark, and System.
+
+| Desktop · Light                                                                                   | Desktop · Dark                                                                                  |
+| ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| ![CareerPilot landing page on desktop in Light mode](docs/screenshots/landing-desktop-light.webp) | ![CareerPilot landing page on desktop in Dark mode](docs/screenshots/landing-desktop-dark.webp) |
+
+**Mobile · Light.** The hero and sample dashboard adapt to a narrow viewport.
+
+![CareerPilot landing page on mobile in Light mode](docs/screenshots/landing-mobile-light.webp)
+
 ## Architecture
 
 ```text
