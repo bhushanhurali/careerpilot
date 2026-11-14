@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use './styles/tokens';
+@use './styles/records';
 
 html {
   @include mat.theme(

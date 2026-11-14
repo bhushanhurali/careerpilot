@@ -1,14 +1,19 @@
 <a mat-button routerLink="/applications">Back to applications</a>
 
 @if (applicationStore.selectedLoading()) {
-  <div class="state-panel">Loading application...</div>
+  <div class="cp-record-state" role="status">Loading application...</div>
 } @else if (applicationStore.selectedApplication(); as application) {
-  <section class="detail-header">
+  <section class="cp-record-heading my-cp-lg flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1>{{ application.jobTitle }}</h1>
-      <p>{{ application.company.name }} · {{ application.status }}</p>
+      <p class="flex flex-wrap items-center gap-2">
+        {{ application.company.name }}
+        <span class="cp-record-badge" [attr.data-tone]="application.status">{{
+          statusLabel(application.status)
+        }}</span>
+      </p>
     </div>
-    <div class="detail-actions">
+    <div class="flex flex-wrap gap-2">
       <button mat-stroked-button type="button" (click)="changeStatus()">
         <mat-icon>swap_horiz</mat-icon>
         <span>Change status</span>
@@ -24,65 +29,72 @@
     </div>
   </section>
 
-  <section class="detail-grid" aria-label="Application details">
-    <div>
-      <span>Company</span>
-      <a [routerLink]="['/companies', application.companyId]">{{ application.company.name }}</a>
-    </div>
-    <div>
-      <span>Contact</span>
-      <p>{{ contactName(application) }}</p>
-    </div>
-    <div>
-      <span>Priority</span>
-      <p>{{ application.priority }}</p>
-    </div>
-    <div>
-      <span>Source</span>
-      <p>{{ application.source || '-' }}</p>
-    </div>
-    <div>
-      <span>Location</span>
-      <p>{{ application.location || '-' }}</p>
-    </div>
-    <div>
-      <span>Applied</span>
-      <p>{{ application.appliedAt || '-' }}</p>
-    </div>
-    <div>
-      <span>Salary</span>
-      <p>{{ salary(application) }}</p>
-    </div>
-    <div>
-      <span>Employment</span>
-      <p>{{ application.employmentType || '-' }}</p>
-    </div>
-    <div>
-      <span>Work mode</span>
-      <p>{{ application.workMode || '-' }}</p>
-    </div>
-    <div class="detail-grid__wide">
-      <span>Job URL</span>
-      @if (application.jobUrl) {
-        <a [href]="application.jobUrl" target="_blank" rel="noreferrer">
-          {{ application.jobUrl }}
-        </a>
-      } @else {
-        <p>-</p>
-      }
-    </div>
-    <div>
-      <span>Created</span>
-      <p>{{ application.createdAt | date: 'medium' }}</p>
-    </div>
-    <div>
-      <span>Updated</span>
-      <p>{{ application.updatedAt | date: 'medium' }}</p>
-    </div>
-    <div class="detail-grid__wide">
-      <span>Notes</span>
-      <p>{{ application.notes || '-' }}</p>
-    </div>
+  <section class="cp-record-divider-bottom pb-cp-lg">
+    <h2 class="text-lg">Application details</h2>
+    <dl class="cp-record-facts grid gap-x-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <dt>Company</dt>
+        <dd>
+          <a [routerLink]="['/companies', application.companyId]">{{ application.company.name }}</a>
+        </dd>
+      </div>
+      <div>
+        <dt>Contact</dt>
+        <dd>{{ contactName(application) }}</dd>
+      </div>
+      <div>
+        <dt>Priority</dt>
+        <dd>{{ application.priority }}</dd>
+      </div>
+      <div>
+        <dt>Source</dt>
+        <dd>{{ application.source || '-' }}</dd>
+      </div>
+      <div>
+        <dt>Location</dt>
+        <dd>{{ application.location || '-' }}</dd>
+      </div>
+      <div>
+        <dt>Applied</dt>
+        <dd>{{ application.appliedAt || '-' }}</dd>
+      </div>
+      <div>
+        <dt>Salary</dt>
+        <dd>{{ salary(application) }}</dd>
+      </div>
+      <div>
+        <dt>Employment</dt>
+        <dd>{{ application.employmentType || '-' }}</dd>
+      </div>
+      <div>
+        <dt>Work mode</dt>
+        <dd>{{ application.workMode || '-' }}</dd>
+      </div>
+      <div class="col-span-full">
+        <dt>Job URL</dt>
+        <dd>
+          @if (application.jobUrl) {
+            <a [href]="application.jobUrl" target="_blank" rel="noreferrer">
+              {{ application.jobUrl }}
+            </a>
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd>{{ application.createdAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Updated</dt>
+        <dd>{{ application.updatedAt | date: 'medium' }}</dd>
+      </div>
+      <div class="col-span-full">
+        <dt>Notes</dt>
+        <dd>{{ application.notes || '-' }}</dd>
+      </div>
+    </dl>
   </section>
 
   <section class="resume-matching" aria-labelledby="resume-matching-heading">
@@ -101,14 +113,14 @@
   <cp-application-tasks [applicationId]="application.id" />
   <cp-interview-list [applicationId]="application.id" />
 
-  <section class="status-history" aria-label="Application status history">
-    <div class="status-history__header">
+  <section class="mt-cp-lg cp-record-divider-top pt-cp-lg" aria-label="Application status history">
+    <div class="cp-record-heading mb-cp-md flex flex-wrap items-center justify-between gap-3">
       <h2>Status timeline</h2>
       <p>{{ statusLabel(application.status) }}</p>
     </div>
 
     @if (applicationStore.statusHistoryLoading()) {
-      <div class="state-panel" role="status" aria-live="polite">Loading status timeline...</div>
+      <div class="cp-record-state" role="status" aria-live="polite">Loading status timeline...</div>
     } @else if (applicationStore.statusHistoryError()) {
       <div class="state-panel" role="alert">
         <p>{{ applicationStore.statusHistoryError() }}</p>
@@ -129,7 +141,11 @@
                   {{ statusLabel(entry.toStatus) }}
                 }
               </h3>
-              <p>{{ entry.changedAt | date: 'medium' }}</p>
+              <p>
+                <time [attr.datetime]="entry.changedAt">{{
+                  entry.changedAt | date: 'medium'
+                }}</time>
+              </p>
               @if (entry.note) {
                 <p class="status-timeline__note">{{ entry.note }}</p>
               }
@@ -140,7 +156,7 @@
     }
   </section>
 } @else {
-  <div class="state-panel">
+  <div class="cp-record-state" role="alert">
     <p>{{ applicationStore.error() || 'Application was not found.' }}</p>
     <a mat-button routerLink="/applications">Return to applications</a>
   </div>

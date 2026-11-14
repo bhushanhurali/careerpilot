@@ -114,6 +114,23 @@ describe('ApplicationListPageComponent', () => {
     );
   }));
 
+  it('offers to clear filters when the list has no matching applications', fakeAsync(() => {
+    fixture = TestBed.createComponent(ApplicationListPageComponent);
+    fixture.detectChanges();
+    componentApi().filtersForm.controls.search.setValue('no matches');
+    tick(300);
+    fixture.detectChanges();
+
+    const element: HTMLElement = fixture.nativeElement;
+    const emptyState = element.querySelector('.cp-record-state');
+    expect(emptyState?.textContent).toContain('No matching applications');
+    expect(emptyState?.querySelector('a')).toBeNull();
+    emptyState?.querySelector('button')?.click();
+    tick(300);
+    fixture.detectChanges();
+    expect(element.textContent).toContain('No applications yet');
+  }));
+
   it('updates sorting and pagination through the store query', () => {
     fixture = TestBed.createComponent(ApplicationListPageComponent);
     fixture.detectChanges();

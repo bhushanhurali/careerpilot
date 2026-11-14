@@ -1,4 +1,4 @@
-<section class="page-header">
+<section class="cp-record-heading mb-cp-lg flex flex-wrap items-center justify-between gap-4">
   <div>
     <h1>Applications</h1>
     <p>Track roles across your job-search pipeline.</p>
@@ -9,10 +9,14 @@
   </a>
 </section>
 
-<form class="filters" [formGroup]="filtersForm">
+<form
+  class="cp-filter-grid grid items-start gap-3 mb-cp-md"
+  aria-label="Filter applications"
+  [formGroup]="filtersForm"
+>
   <mat-form-field appearance="outline">
     <mat-label>Search</mat-label>
-    <input matInput formControlName="search" />
+    <input matInput type="search" formControlName="search" />
   </mat-form-field>
   <mat-form-field appearance="outline">
     <mat-label>Status</mat-label>
@@ -40,89 +44,111 @@
     <mat-label>Location</mat-label>
     <input matInput formControlName="location" />
   </mat-form-field>
-  <button mat-button type="button" (click)="clearFilters()">Clear</button>
+  <button mat-button type="button" (click)="clearFilters()">
+    <mat-icon>filter_alt_off</mat-icon> Clear filters
+  </button>
 </form>
 
 @if (applicationStore.loading()) {
-  <div class="state-panel">
-    <mat-progress-spinner mode="indeterminate" diameter="36" />
+  <div class="cp-record-state" role="status">
+    <mat-progress-spinner mode="indeterminate" diameter="28" aria-label="Loading applications" />
+    <p>Loading applications...</p>
   </div>
 } @else if (applicationStore.error()) {
-  <div class="state-panel">
+  <div class="cp-record-state" role="alert">
     <p>{{ applicationStore.error() }}</p>
-    <button mat-button type="button" (click)="retry()">Retry</button>
+    <button mat-button type="button" (click)="retry()"><mat-icon>refresh</mat-icon> Retry</button>
   </div>
 } @else if (!applicationStore.hasApplications()) {
-  <div class="state-panel">
-    <h2>No applications yet</h2>
-    <p>Create your first application to start tracking your pipeline.</p>
-    <a mat-flat-button color="primary" routerLink="/applications/new">Create application</a>
-  </div>
+  @if (filtersActive()) {
+    <div class="cp-record-state">
+      <mat-icon aria-hidden="true">search_off</mat-icon>
+      <h2>No matching applications</h2>
+      <button mat-stroked-button type="button" (click)="clearFilters()">Clear filters</button>
+    </div>
+  } @else {
+    <div class="cp-record-state">
+      <mat-icon aria-hidden="true">work_outline</mat-icon>
+      <h2>No applications yet</h2>
+      <p>Create your first application to start tracking your pipeline.</p>
+      <a mat-flat-button color="primary" routerLink="/applications/new">Create application</a>
+    </div>
+  }
 } @else {
-  <div class="table-shell">
-    <table
-      mat-table
-      matSort
-      [dataSource]="applicationStore.applications()"
-      [matSortActive]="applicationStore.query().sortBy"
-      [matSortDirection]="applicationStore.query().sortDirection"
-      (matSortChange)="sortChanged($event)"
-    >
-      <ng-container matColumnDef="jobTitle">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="jobTitle">Role</th>
-        <td mat-cell *matCellDef="let application">
-          <a [routerLink]="['/applications', application.id]">{{ application.jobTitle }}</a>
-        </td>
-      </ng-container>
+  <div class="cp-table-frame">
+    <div class="cp-table-scroll" role="region" tabindex="0" aria-label="Applications table">
+      <table
+        mat-table
+        matSort
+        [dataSource]="applicationStore.applications()"
+        [matSortActive]="applicationStore.query().sortBy"
+        [matSortDirection]="applicationStore.query().sortDirection"
+        (matSortChange)="sortChanged($event)"
+      >
+        <ng-container matColumnDef="jobTitle">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="jobTitle">Role</th>
+          <td mat-cell *matCellDef="let application">
+            <a [routerLink]="['/applications', application.id]">{{ application.jobTitle }}</a>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="company">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="companyName">Company</th>
-        <td mat-cell *matCellDef="let application">{{ application.company.name }}</td>
-      </ng-container>
+        <ng-container matColumnDef="company">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="companyName">Company</th>
+          <td mat-cell *matCellDef="let application">{{ application.company.name }}</td>
+        </ng-container>
 
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="status">Status</th>
-        <td mat-cell *matCellDef="let application">{{ application.status }}</td>
-      </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="status">Status</th>
+          <td mat-cell *matCellDef="let application">
+            <span class="cp-record-badge" [attr.data-tone]="application.status">{{
+              application.status
+            }}</span>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="priority">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="priority">Priority</th>
-        <td mat-cell *matCellDef="let application">{{ application.priority }}</td>
-      </ng-container>
+        <ng-container matColumnDef="priority">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="priority">Priority</th>
+          <td mat-cell *matCellDef="let application">
+            <span class="cp-record-badge" [attr.data-tone]="application.priority">{{
+              application.priority
+            }}</span>
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="updatedAt">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header="updatedAt">Updated</th>
-        <td mat-cell *matCellDef="let application">
-          {{ application.updatedAt | date: 'mediumDate' }}
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="updatedAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header="updatedAt">Updated</th>
+          <td mat-cell *matCellDef="let application">
+            {{ application.updatedAt | date: 'mediumDate' }}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let application">
-          <a
-            mat-icon-button
-            [routerLink]="['/applications', application.id, 'edit']"
-            aria-label="Edit application"
-          >
-            <mat-icon>edit</mat-icon>
-          </a>
-          <button
-            mat-icon-button
-            type="button"
-            aria-label="Delete application"
-            (click)="deleteApplication(application)"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let application">
+            <a
+              mat-icon-button
+              [routerLink]="['/applications', application.id, 'edit']"
+              [attr.aria-label]="'Edit ' + application.jobTitle"
+            >
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button
+              mat-icon-button
+              type="button"
+              [attr.aria-label]="'Delete ' + application.jobTitle"
+              (click)="deleteApplication(application)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
     <mat-paginator
+      aria-label="Applications pagination"
       [length]="applicationStore.meta().total"
       [pageIndex]="applicationStore.meta().page - 1"
       [pageSize]="applicationStore.meta().pageSize"

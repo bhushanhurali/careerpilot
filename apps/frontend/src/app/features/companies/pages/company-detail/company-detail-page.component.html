@@ -1,14 +1,14 @@
 <a mat-button routerLink="/companies">Back to companies</a>
 
 @if (companyStore.selectedLoading()) {
-  <div class="state-panel">Loading company...</div>
+  <div class="cp-record-state" role="status">Loading company...</div>
 } @else if (companyStore.selectedCompany(); as company) {
-  <section class="detail-header">
+  <section class="cp-record-heading my-cp-lg flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1>{{ company.name }}</h1>
       <p>{{ company.industry || 'No industry' }} · {{ company.location || 'No location' }}</p>
     </div>
-    <div class="detail-actions">
+    <div class="flex flex-wrap gap-2">
       <a mat-flat-button color="primary" [routerLink]="['/companies', company.id, 'edit']">
         <mat-icon>edit</mat-icon>
         <span>Edit</span>
@@ -20,32 +20,37 @@
     </div>
   </section>
 
-  <section class="detail-grid" aria-label="Company details">
-    <div>
-      <span>Website</span>
-      @if (company.website) {
-        <a [href]="company.website" target="_blank" rel="noreferrer">{{ company.website }}</a>
-      } @else {
-        <p>-</p>
-      }
-    </div>
-    <div>
-      <span>Created</span>
-      <p>{{ company.createdAt | date: 'medium' }}</p>
-    </div>
-    <div>
-      <span>Updated</span>
-      <p>{{ company.updatedAt | date: 'medium' }}</p>
-    </div>
-    <div class="detail-grid__wide">
-      <span>Notes</span>
-      <p>{{ company.notes || '-' }}</p>
-    </div>
+  <section class="cp-record-divider-bottom pb-cp-lg">
+    <h2 class="text-lg">Company details</h2>
+    <dl class="cp-record-facts grid gap-x-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <dt>Website</dt>
+        <dd>
+          @if (company.website) {
+            <a [href]="company.website" target="_blank" rel="noreferrer">{{ company.website }}</a>
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd>{{ company.createdAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Updated</dt>
+        <dd>{{ company.updatedAt | date: 'medium' }}</dd>
+      </div>
+      <div class="col-span-full">
+        <dt>Notes</dt>
+        <dd>{{ company.notes || '-' }}</dd>
+      </div>
+    </dl>
   </section>
 
   <cp-contact-list [companyId]="company.id" [companyName]="company.name" />
 } @else {
-  <div class="state-panel">
+  <div class="cp-record-state" role="alert">
     <p>{{ companyStore.error() || 'Company was not found.' }}</p>
     <a mat-button routerLink="/companies">Return to companies</a>
   </div>

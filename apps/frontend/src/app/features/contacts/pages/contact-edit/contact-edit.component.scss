@@ -1,15 +1,3 @@
-.form-page,
-.state-panel {
-  max-width: 760px;
-  margin-top: 16px;
-  padding: 24px;
-  background: var(--cp-color-surface);
-  border: 1px solid var(--cp-color-border);
-  border-radius: 8px;
-}
-
-.form-page h1 {
-  margin: 0 0 24px;
-  font-size: 2rem;
-  font-weight: 600;
+:host {
+  display: block;
 }

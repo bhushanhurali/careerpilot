@@ -1,9 +1,9 @@
-<section class="form-page">
+<section class="cp-form-page">
   <a mat-button [routerLink]="['/companies', companyId]">Back to company</a>
   <h1>Edit company</h1>
 
   @if (companyStore.selectedLoading()) {
-    <p>Loading company...</p>
+    <p role="status">Loading company...</p>
   } @else if (companyStore.selectedCompany()) {
     <cp-company-form
       submitLabel="Save changes"
@@ -14,6 +14,8 @@
       (cancelForm)="cancel()"
     />
   } @else {
-    <p>{{ companyStore.error() || 'Company was not found.' }}</p>
+    <p class="cp-record-error" role="alert">
+      {{ companyStore.error() || 'Company was not found.' }}
+    </p>
   }
 </section>
