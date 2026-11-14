@@ -1,45 +1,108 @@
+.shell {
+  min-height: 100dvh;
+  background: var(--cp-color-canvas);
+  color: var(--cp-color-text);
+}
+
+.sidebar {
+  width: min(244px, 85vw);
+  background: var(--cp-color-surface);
+  border-inline-end: 1px solid var(--cp-color-border);
+  border-radius: 0;
+}
+
+.sidebar-content {
+  padding: var(--cp-space-lg) var(--cp-space-md);
+}
+
 .brand-link {
-  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cp-space-sm);
+  color: var(--cp-color-text);
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
 }
 
-.primary-nav {
-  display: flex;
-  gap: 4px;
-  margin-left: 24px;
+.sidebar .brand-link {
+  margin: 0 var(--cp-space-sm) var(--cp-space-xl);
+}
+
+.brand-icon {
+  color: var(--cp-color-primary);
+}
+
+.nav-link {
+  justify-content: flex-start;
+  min-height: 44px;
+  border-radius: var(--cp-radius-md);
+  color: var(--cp-color-text);
 }
 
 .active-link {
   background: var(--cp-color-selected);
+  color: var(--cp-color-primary);
 }
 
+.top-bar {
+  min-height: 64px;
+  padding-inline: var(--cp-space-lg);
+  background: var(--cp-color-surface);
+  border-bottom: 1px solid var(--cp-color-border);
+}
+
+.workspace-label,
 .user-name {
-  margin-right: var(--cp-space-sm);
+  color: var(--cp-color-muted);
   font-size: var(--cp-font-size-sm);
 }
 
-.app-shell__content {
-  width: min(1180px, calc(100% - 32px));
-  margin: 32px auto;
+.user-name {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (width <= 800px) {
-  .user-name {
-    display: none;
+.app-shell__content {
+  box-sizing: border-box;
+  max-width: 1244px;
+  padding: var(--cp-space-xl) var(--cp-space-lg);
+}
+
+.skip-link {
+  position: fixed;
+  inset: var(--cp-space-sm) auto auto var(--cp-space-sm);
+  z-index: 20;
+  padding: var(--cp-space-sm) var(--cp-space-md);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-primary);
+  border: 1px solid var(--cp-color-primary);
+  border-radius: var(--cp-radius-md);
+}
+
+.skip-link:not(:focus) {
+  clip-path: inset(50%);
+}
+
+@media (width < 640px) {
+  .top-bar {
+    padding-inline: var(--cp-space-sm);
   }
 
-  mat-toolbar {
-    flex-wrap: wrap;
-    height: auto;
-    min-height: 56px;
+  .compact-brand {
+    font-size: 1rem;
   }
 
-  .primary-nav {
-    flex: 1 0 100%;
-    order: 1;
-    flex-wrap: wrap;
-    margin: 0 0 4px;
+  .app-shell__content {
+    padding: var(--cp-space-lg) var(--cp-space-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .workspace {
+    transition: none;
   }
 }

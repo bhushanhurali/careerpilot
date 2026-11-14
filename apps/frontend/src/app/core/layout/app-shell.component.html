@@ -1,55 +1,101 @@
-<mat-toolbar color="primary">
-  <a class="brand-link" routerLink="/companies">CareerPilot</a>
-  <nav class="primary-nav" aria-label="Primary navigation">
-    <a
-      mat-button
-      routerLink="/dashboard"
-      routerLinkActive="active-link"
-      ariaCurrentWhenActive="page"
-      >Dashboard</a
-    >
-    <a mat-button routerLink="/companies" routerLinkActive="active-link">Companies</a>
-    <a mat-button routerLink="/applications" routerLinkActive="active-link">Applications</a>
-    <a mat-button routerLink="/tasks" routerLinkActive="active-link">Tasks</a>
-    <a mat-button routerLink="/resumes" routerLinkActive="active-link" ariaCurrentWhenActive="page"
-      >Resumes</a
-    >
-  </nav>
-  <span class="flex-1"></span>
-  @switch (authStore.status()) {
-    @case ('authenticated') {
-      <span class="user-name">{{ authStore.displayName() }}</span>
-      <cp-theme-switcher />
-      <a
-        mat-icon-button
-        routerLink="/notifications"
-        routerLinkActive="active-link"
-        ariaCurrentWhenActive="page"
-        [attr.aria-label]="
-          notificationStore.unreadCount() === null
-            ? 'Notifications'
-            : 'Notifications, ' + notificationStore.unreadCount() + ' unread'
-        "
-      >
-        <mat-icon
-          [matBadge]="
-            (notificationStore.unreadCount() ?? 0) > 99 ? '99+' : notificationStore.unreadCount()
-          "
-          [matBadgeHidden]="!notificationStore.unreadCount()"
-          matBadgeSize="small"
-          >notifications</mat-icon
-        >
+<button class="skip-link" type="button" (click)="content.focus()">Skip to main content</button>
+<mat-sidenav-container class="shell">
+  <mat-sidenav
+    #navigation
+    id="primary-navigation"
+    class="sidebar"
+    [mode]="compact() ? 'over' : 'side'"
+    [opened]="!compact()"
+    [disableClose]="!compact()"
+    [autoFocus]="compact()"
+  >
+    <div class="sidebar-content">
+      <a class="brand-link" routerLink="/companies" (click)="closeNavigation(navigation)">
+        <mat-icon class="brand-icon">work_outline</mat-icon>
+        CareerPilot
       </a>
-      <button mat-icon-button type="button" aria-label="Sign out" (click)="logout()">
-        <mat-icon>logout</mat-icon>
-      </button>
-    }
-    @case ('unknown') {
-      <span class="user-name">Restoring session...</span>
-    }
-  }
-</mat-toolbar>
+      <nav class="grid gap-1" aria-label="Primary navigation">
+        @for (item of destinations; track item.path) {
+          <a
+            mat-button
+            class="nav-link"
+            [routerLink]="item.path"
+            routerLinkActive="active-link"
+            ariaCurrentWhenActive="page"
+            (click)="closeNavigation(navigation)"
+          >
+            <mat-icon>{{ item.icon }}</mat-icon>
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+    </div>
+  </mat-sidenav>
 
-<main class="app-shell__content">
-  <router-outlet />
-</main>
+  <mat-sidenav-content class="workspace">
+    <header class="top-bar flex items-center justify-between gap-2">
+      @if (compact()) {
+        <div class="flex min-w-0 items-center gap-1">
+          <button
+            mat-icon-button
+            type="button"
+            aria-label="Open navigation"
+            aria-controls="primary-navigation"
+            [attr.aria-expanded]="navigation.opened"
+            (click)="navigation.toggle()"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+          <a class="brand-link compact-brand" routerLink="/companies">CareerPilot</a>
+        </div>
+      } @else {
+        <span class="workspace-label">Workspace</span>
+      }
+      @switch (authStore.status()) {
+        @case ('authenticated') {
+          <div class="top-actions flex shrink-0 items-center gap-1">
+            <span class="user-name hidden sm:block">{{ authStore.displayName() }}</span>
+            <cp-theme-switcher />
+            <a
+              mat-icon-button
+              routerLink="/notifications"
+              routerLinkActive="active-link"
+              ariaCurrentWhenActive="page"
+              matTooltip="Notifications"
+              [matBadge]="
+                (notificationStore.unreadCount() ?? 0) > 99
+                  ? '99+'
+                  : notificationStore.unreadCount()
+              "
+              [matBadgeHidden]="!notificationStore.unreadCount()"
+              matBadgeSize="small"
+              matBadgeOverlap="false"
+              [attr.aria-label]="
+                notificationStore.unreadCount() === null
+                  ? 'Notifications'
+                  : 'Notifications, ' + notificationStore.unreadCount() + ' unread'
+              "
+            >
+              <mat-icon>notifications</mat-icon>
+            </a>
+            <button
+              mat-icon-button
+              type="button"
+              aria-label="Sign out"
+              matTooltip="Sign out"
+              (click)="logout()"
+            >
+              <mat-icon>logout</mat-icon>
+            </button>
+          </div>
+        }
+        @case ('unknown') {
+          <span role="status">Restoring session...</span>
+        }
+      }
+    </header>
+    <main #content tabindex="-1" class="app-shell__content mx-auto w-full min-w-0">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

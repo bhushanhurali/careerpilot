@@ -1,0 +1,15 @@
+<div class="auth-layout flex min-h-dvh flex-col">
+  <header class="auth-bar flex items-center justify-between gap-4">
+    <div class="auth-brand flex items-center gap-2">
+      <mat-icon>work_outline</mat-icon>
+      CareerPilot
+    </div>
+    <cp-theme-switcher />
+  </header>
+  <main class="auth-main grid flex-1 place-items-center">
+    <section class="auth-panel w-full min-w-0" aria-labelledby="auth-heading">
+      <h1 id="auth-heading">{{ heading() }}</h1>
+      <ng-content />
+    </section>
+  </main>
+</div>

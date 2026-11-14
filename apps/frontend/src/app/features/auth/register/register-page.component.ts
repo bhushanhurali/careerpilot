@@ -1,8 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { AuthLayoutComponent } from '../components/auth-layout.component';
 
 @Component({
   selector: 'cp-register-page',
@@ -18,7 +18,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
-    MatCardModule,
+    AuthLayoutComponent,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -43,15 +43,15 @@ export class RegisterPageComponent {
     password: ['', [Validators.required, Validators.minLength(12)]],
   });
 
-  protected readonly firstNameError = computed(() =>
-    this.fieldError('firstName', 'First name is required.'),
-  );
+  protected firstNameError(): string | null {
+    return this.fieldError('firstName', 'First name is required.');
+  }
 
-  protected readonly lastNameError = computed(() =>
-    this.fieldError('lastName', 'Last name is required.'),
-  );
+  protected lastNameError(): string | null {
+    return this.fieldError('lastName', 'Last name is required.');
+  }
 
-  protected readonly emailError = computed(() => {
+  protected emailError(): string | null {
     const control = this.form.controls.email;
 
     if (!control.touched || control.valid) {
@@ -59,9 +59,9 @@ export class RegisterPageComponent {
     }
 
     return control.hasError('email') ? 'Enter a valid email address.' : 'Email is required.';
-  });
+  }
 
-  protected readonly passwordError = computed(() => {
+  protected passwordError(): string | null {
     const control = this.form.controls.password;
 
     if (!control.touched || control.valid) {
@@ -71,7 +71,7 @@ export class RegisterPageComponent {
     return control.hasError('minlength')
       ? 'Password must be at least 12 characters.'
       : 'Password is required.';
-  });
+  }
 
   protected submit(): void {
     if (this.form.invalid) {
