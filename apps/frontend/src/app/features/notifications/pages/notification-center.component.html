@@ -1,4 +1,4 @@
-<header>
+<header class="cp-record-heading mb-cp-md flex flex-wrap items-center justify-between gap-3">
   <h1>Notifications</h1>
   <button
     mat-stroked-button
@@ -11,6 +11,7 @@
 </header>
 
 <mat-button-toggle-group
+  class="mb-cp-md"
   aria-label="Filter notifications"
   [value]="store.query().unread"
   (change)="store.setUnread($event.value === true)"
@@ -20,25 +21,25 @@
 </mat-button-toggle-group>
 
 @if (store.actionError(); as error) {
-  <p role="alert">{{ error }}</p>
+  <p class="cp-record-error" role="alert">{{ error }}</p>
 }
 
 @if (store.error(); as error) {
-  <p role="alert">{{ error }}</p>
+  <p class="cp-record-error" role="alert">{{ error }}</p>
   <button mat-stroked-button type="button" (click)="store.refresh()">Retry</button>
 } @else if (!store.notifications().length) {
   @if (store.loading()) {
-    <p role="status">Loading notifications...</p>
+    <p class="cp-record-state" role="status">Loading notifications...</p>
   } @else {
-    <p role="status">
+    <p class="cp-record-state" role="status">
       {{ store.query().unread ? 'No unread notifications.' : 'No notifications yet.' }}
     </p>
   }
 } @else {
-  <ul class="inbox">
+  <ul class="cp-work-list inbox" role="list">
     @for (item of store.notifications(); track item.id) {
-      <li>
-        <div class="message">
+      <li class="cp-work-row" [class.is-unread]="!item.readAt">
+        <div class="cp-work-body">
           <h2>
             @switch (item.type) {
               @case ('interview_reminder') {
@@ -52,19 +53,27 @@
               }
             }
             @if (!item.readAt) {
-              <span class="unread">Unread</span>
+              <span class="cp-record-badge" data-tone="unread">Unread</span>
             }
           </h2>
           @if (item.type === 'interview_reminder') {
             <p>{{ item.interviewScheduledAt | date: 'medium' }}</p>
           } @else {
-            <p>{{ item.taskTitle }} · Due {{ item.taskDueOn }}</p>
+            <p>
+              {{ item.taskTitle }} · Due
+              <time [attr.datetime]="item.taskDueOn">{{ item.taskDueOn }}</time>
+            </p>
           }
           <a [routerLink]="['/applications', item.applicationId]"
             >{{ item.jobTitle }} · {{ item.companyName }}</a
           >
           <p>
-            <small>Received {{ item.deliveredAt | date: 'medium' }}</small>
+            <small
+              >Received
+              <time [attr.datetime]="item.deliveredAt">{{
+                item.deliveredAt | date: 'medium'
+              }}</time></small
+            >
           </p>
         </div>
         @if (!item.readAt) {

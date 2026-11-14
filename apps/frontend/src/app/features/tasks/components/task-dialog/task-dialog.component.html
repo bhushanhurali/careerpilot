@@ -2,23 +2,23 @@
   {{ data.mode === 'delete' ? 'Delete task?' : data.task ? 'Edit task' : 'Add task' }}
 </h2>
 
-<form [formGroup]="form" (ngSubmit)="submit()">
+<form [attr.aria-busy]="pending()" [formGroup]="form" (ngSubmit)="submit()">
   <mat-dialog-content>
     @if (data.mode === 'delete') {
       <p>{{ data.task.title }} will be removed.</p>
     } @else {
-      <div class="task-fields">
-        <mat-form-field>
+      <div class="grid gap-3 sm:grid-cols-2">
+        <mat-form-field appearance="outline" class="col-span-full">
           <mat-label>Title</mat-label>
           <input matInput required maxlength="160" formControlName="title" />
           <mat-error>Enter a title of up to 160 characters.</mat-error>
         </mat-form-field>
-        <mat-form-field floatLabel="always">
+        <mat-form-field appearance="outline" floatLabel="always">
           <mat-label>Due date</mat-label>
           <input #dueDate matInput type="date" max="9999-12-31" formControlName="dueOn" />
           <mat-error>Enter a valid date.</mat-error>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field appearance="outline">
           <mat-label>Priority</mat-label>
           <mat-select formControlName="priority">
             @for (priority of priorities; track priority) {
@@ -26,14 +26,14 @@
             }
           </mat-select>
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field appearance="outline" class="col-span-full">
           <mat-label>Notes</mat-label>
           <textarea matInput rows="3" maxlength="10000" formControlName="notes"></textarea>
         </mat-form-field>
       </div>
     }
     @if (error(); as message) {
-      <p class="dialog-error" role="alert">{{ message }}</p>
+      <p class="cp-record-error" role="alert">{{ message }}</p>
     }
   </mat-dialog-content>
   <mat-dialog-actions align="end">

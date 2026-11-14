@@ -1,8 +1,13 @@
-<h1>Resume Management</h1>
-<section aria-labelledby="upload-heading">
+<header class="cp-record-heading mb-cp-lg"><h1>Resume Management</h1></header>
+<section class="resume-upload cp-record-divider-top pt-cp-md" aria-labelledby="upload-heading">
   <h2 id="upload-heading">Upload a resume</h2>
-  <form [formGroup]="form" (ngSubmit)="upload(fileInput)">
-    <fieldset [disabled]="store.saving()">
+  <form
+    class="grid justify-items-start gap-3"
+    [attr.aria-busy]="store.saving()"
+    [formGroup]="form"
+    (ngSubmit)="upload(fileInput)"
+  >
+    <fieldset class="grid w-full gap-3 sm:grid-cols-2" [disabled]="store.saving()">
       <mat-form-field appearance="outline">
         <mat-label>Title</mat-label>
         <input matInput id="resume-title" formControlName="title" maxlength="160" />
@@ -23,12 +28,12 @@
         />
         <small id="resume-file-hint">PDF or DOCX, up to 5 MiB.</small>
         @if (fileError(); as error) {
-          <p id="resume-file-error" role="alert">{{ error }}</p>
+          <p id="resume-file-error" class="cp-record-error" role="alert">{{ error }}</p>
         }
       </div>
     </fieldset>
     @if (uploadError(); as error) {
-      <p role="alert">{{ error }}</p>
+      <p class="cp-record-error" role="alert">{{ error }}</p>
     }
     <button
       mat-flat-button
@@ -42,29 +47,29 @@
     }
   </form>
 </section>
-<section aria-labelledby="resumes-heading">
+<section class="mt-cp-lg cp-record-divider-top pt-cp-md" aria-labelledby="resumes-heading">
   <h2 id="resumes-heading">Your resumes</h2>
   @if (actionError(); as error) {
-    <p role="alert">{{ error }}</p>
+    <p class="cp-record-error" role="alert">{{ error }}</p>
   }
   @if (store.loading()) {
-    <p role="status">Loading resumes...</p>
+    <p class="cp-record-state" role="status">Loading resumes...</p>
   } @else if (store.listError(); as error) {
-    <p role="alert">{{ error }}</p>
+    <p class="cp-record-error" role="alert">{{ error }}</p>
     <button mat-stroked-button type="button" (click)="store.load()">Retry</button>
   } @else {
-    <ul class="resumes">
+    <ul class="cp-work-list resumes" role="list">
       @for (resume of store.resumes(); track resume.id) {
-        <li>
-          <div>
-            <strong>{{ resume.title }}</strong>
+        <li class="cp-work-row">
+          <div class="cp-work-body">
+            <h3>{{ resume.title }}</h3>
             <p>
               {{ resume.originalFilename }} ·
               {{ resume.fileSizeBytes / 1024 | number: '1.0-1' }} KiB ·
               {{ resume.createdAt | date: 'mediumDate' }}
             </p>
           </div>
-          <div class="actions">
+          <div class="flex flex-wrap gap-1">
             <button
               mat-button
               type="button"
@@ -86,7 +91,9 @@
           </div>
         </li>
       } @empty {
-        <li>No resumes uploaded yet.</li>
+        <li class="cp-record-state">
+          <mat-icon aria-hidden="true">description</mat-icon>No resumes uploaded yet.
+        </li>
       }
     </ul>
     @if (downloading()) {

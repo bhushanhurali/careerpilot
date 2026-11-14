@@ -1,7 +1,11 @@
-<h1>Tasks</h1>
+<header class="cp-record-heading mb-cp-lg"><h1>Tasks</h1></header>
 
-<form class="task-filters" [formGroup]="filters" aria-label="Task filters">
-  <mat-form-field>
+<form
+  class="cp-filter-grid mb-cp-md grid items-start gap-3"
+  [formGroup]="filters"
+  aria-label="Task filters"
+>
+  <mat-form-field appearance="outline">
     <mat-label>View</mat-label>
     <mat-select formControlName="view">
       @for (view of views; track view.value) {
@@ -9,7 +13,7 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field appearance="outline">
     <mat-label>Priority</mat-label>
     <mat-select formControlName="priority">
       <mat-option value="all">All priorities</mat-option>
@@ -18,7 +22,7 @@
       }
     </mat-select>
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field appearance="outline">
     <mat-label>Sort by</mat-label>
     <mat-select formControlName="sortBy">
       <mat-option value="dueOn">Due date</mat-option>
@@ -27,7 +31,7 @@
       <mat-option value="completedAt">Date completed</mat-option>
     </mat-select>
   </mat-form-field>
-  <mat-form-field>
+  <mat-form-field appearance="outline">
     <mat-label>Sort direction</mat-label>
     <mat-select formControlName="sortDirection">
       <mat-option value="asc">Ascending</mat-option>

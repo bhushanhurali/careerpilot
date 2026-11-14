@@ -1,10 +1,3 @@
-.task-fields {
-  display: grid;
-  padding-top: 4px;
-  gap: 4px;
-}
-
-.dialog-error {
-  margin: 0;
-  color: var(--cp-color-error);
+mat-form-field {
+  min-width: 0;
 }

@@ -103,12 +103,67 @@
   text-transform: capitalize;
 }
 
-.cp-record-badge:is([data-tone='rejected'], [data-tone='high']) {
+.cp-record-badge:is(
+  [data-tone='rejected'],
+  [data-tone='high'],
+  [data-tone='overdue'],
+  [data-tone='cancelled']
+) {
   background: var(--mat-sys-error-container);
   color: var(--mat-sys-on-error-container);
 }
 
-.cp-record-badge:is([data-tone='accepted'], [data-tone='offer']) {
+.cp-record-badge:is([data-tone='accepted'], [data-tone='offer'], [data-tone='completed']) {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.cp-record-badge:is([data-tone='scheduled'], [data-tone='due'], [data-tone='unread']) {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.cp-work-list {
+  display: grid;
+  gap: var(--cp-space-sm);
+  margin-block: var(--cp-space-md);
+  padding: 0;
+  list-style: none;
+}
+
+.cp-work-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--cp-space-sm) var(--cp-space-md);
+  padding: var(--cp-space-md);
+  border: 1px solid var(--cp-color-border);
+  border-radius: var(--cp-radius-md);
+  background: var(--cp-color-surface);
+}
+
+.cp-work-body {
+  flex: 1 1 13rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cp-work-body :is(h2, h3) {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.cp-work-body p {
+  margin: var(--cp-space-xs) 0;
+  font-size: var(--cp-font-size-sm);
+  color: var(--cp-color-muted);
+}
+
+.cp-work-feedback {
+  padding: var(--cp-space-sm) var(--cp-space-md);
+  border-inline-start: 3px solid var(--mat-sys-tertiary);
+  border-radius: var(--cp-radius-sm);
   background: var(--mat-sys-tertiary-container);
   color: var(--mat-sys-on-tertiary-container);
 }

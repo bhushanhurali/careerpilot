@@ -56,6 +56,14 @@ describe('InterviewListComponent', () => {
     return result;
   }
 
+  function action(label: string): HTMLButtonElement {
+    const result = Array.from(host.querySelectorAll('button')).find((item) =>
+      item.textContent?.trim().endsWith(label),
+    );
+    if (!result) throw new Error(`Action not found: ${label}`);
+    return result;
+  }
+
   beforeEach(async () => {
     closed = new Subject<boolean>();
     await TestBed.configureTestingModule({
@@ -92,7 +100,7 @@ describe('InterviewListComponent', () => {
       throw new Error('Interviews heading not found');
     }
     const focusHeading = spyOn(heading, 'focus');
-    button('.interviews__state button').click();
+    action('Retry').click();
     fixture.detectChanges();
     expect(focusHeading).toHaveBeenCalled();
     expect(host.querySelector('[role="status"]')?.textContent).toContain('Loading interviews');
@@ -125,7 +133,7 @@ describe('InterviewListComponent', () => {
 
   it('schedules an interview and displays its details after refreshing', () => {
     expectList([]);
-    button('.interviews__header button').click();
+    action('Schedule interview').click();
     const data = openDialog.calls.mostRecent().args[1]?.data as InterviewFormDialogData;
     expect(data.interview).toBeUndefined();
     data.saveAction(formValue).subscribe(() => closed.next(true));
@@ -137,6 +145,7 @@ describe('InterviewListComponent', () => {
     expectList([interview]);
     expect(host.textContent).toContain('Technical');
     expect(host.textContent).toContain('Scheduled');
+    expect(host.querySelector('[data-tone="scheduled"]')?.textContent?.trim()).toBe('Scheduled');
     expect(host.textContent).toContain('45 min');
     expect(host.textContent).toContain('Bring portfolio');
     expect(host.querySelector('time')?.dateTime).toBe(interview.scheduledAt);
