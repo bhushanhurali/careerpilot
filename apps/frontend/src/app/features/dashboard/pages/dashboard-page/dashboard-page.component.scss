@@ -33,7 +33,7 @@ h4 {
 .dashboard-header time,
 .muted,
 .activity-list time {
-  color: #52616f;
+  color: var(--cp-color-muted);
 }
 
 .dashboard-state {
@@ -63,14 +63,14 @@ h4 {
   height: 100%;
   box-sizing: border-box;
   padding: 12px 14px;
-  border-color: #d8e0e8;
+  border-color: var(--cp-color-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--cp-color-surface);
 }
 
 .metrics span {
   grid-column: 1 / -1;
-  color: #52616f;
+  color: var(--cp-color-muted);
   font-size: 0.875rem;
 }
 
@@ -81,12 +81,12 @@ h4 {
 }
 
 .metrics mat-icon {
-  color: #376482;
+  color: var(--cp-color-info);
 }
 
 .metric-overdue strong,
 .metric-overdue mat-icon {
-  color: #a33126;
+  color: var(--cp-color-error);
 }
 
 .dashboard-grid {
@@ -100,7 +100,7 @@ h4 {
 .recent {
   min-width: 0;
   padding-top: 14px;
-  border-top: 1px solid #d8e0e8;
+  border-top: 1px solid var(--cp-color-border);
 }
 
 .recent {
@@ -122,7 +122,7 @@ h4 {
 
 .bar-track,
 .trend-track {
-  background: #e4edf3;
+  background: var(--cp-color-chart-track);
   border-radius: 3px;
 }
 
@@ -133,7 +133,7 @@ h4 {
 .bar {
   height: 100%;
   border-radius: inherit;
-  background: #28708f;
+  background: var(--cp-color-chart-primary);
 }
 
 .trend-chart {
@@ -160,7 +160,7 @@ h4 {
 
 .trend-track .bar {
   width: 100%;
-  background: #23776a;
+  background: var(--cp-color-chart-secondary);
 }
 
 .activity-list li {
@@ -170,7 +170,7 @@ h4 {
   align-items: baseline;
   gap: 4px 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #d8e0e8;
+  border-bottom: 1px solid var(--cp-color-border);
   font-size: 0.875rem;
   overflow-wrap: anywhere;
 }

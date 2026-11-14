@@ -6,6 +6,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { AuthStore } from '../auth/auth.store';
+import { ThemeSwitcherComponent } from '../theme/theme-switcher.component';
 import { NotificationStore } from '../../features/notifications/data-access/notification.store';
 
 @Component({
@@ -18,6 +19,7 @@ import { NotificationStore } from '../../features/notifications/data-access/noti
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
+    ThemeSwitcherComponent,
   ],
   templateUrl: './app-shell.component.html',
   providers: [NotificationStore],

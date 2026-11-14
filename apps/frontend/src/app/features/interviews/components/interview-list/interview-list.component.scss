@@ -20,7 +20,7 @@
 .interviews__state {
   margin: 0;
   padding: 16px 0;
-  color: #52616f;
+  color: var(--cp-color-muted);
 }
 
 .interviews__state p {
@@ -40,8 +40,8 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   padding: 12px 16px;
-  background: #ffffff;
-  border: 1px solid #d8e0e8;
+  background: var(--cp-color-surface);
+  border: 1px solid var(--cp-color-border);
   border-radius: 8px;
 }
 
@@ -57,7 +57,7 @@
 
 .interview-list__details p {
   margin: 4px 0 0;
-  color: #52616f;
+  color: var(--cp-color-muted);
 }
 
 .interview-list__notes {

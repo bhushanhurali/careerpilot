@@ -1,0 +1,27 @@
+<button
+  mat-icon-button
+  type="button"
+  [matMenuTriggerFor]="appearance"
+  matTooltip="Appearance"
+  [attr.aria-label]="'Appearance: ' + theme.preference()"
+>
+  <mat-icon>{{
+    theme.preference() === 'system' ? 'brightness_auto' : theme.preference() + '_mode'
+  }}</mat-icon>
+</button>
+<mat-menu #appearance="matMenu" aria-label="Appearance">
+  @for (option of options; track option.value) {
+    <button
+      mat-menu-item
+      role="menuitemradio"
+      [attr.aria-checked]="theme.preference() === option.value"
+      (click)="theme.setPreference(option.value)"
+    >
+      <mat-icon>{{ option.icon }}</mat-icon>
+      <span>{{ option.label }}</span>
+      @if (theme.preference() === option.value) {
+        <mat-icon class="selected-icon">check</mat-icon>
+      }
+    </button>
+  }
+</mat-menu>

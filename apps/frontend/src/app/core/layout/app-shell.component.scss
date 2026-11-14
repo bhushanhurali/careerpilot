@@ -12,16 +12,12 @@
 }
 
 .active-link {
-  background: rgb(255 255 255 / 16%);
-}
-
-.toolbar-spacer {
-  flex: 1;
+  background: var(--cp-color-selected);
 }
 
 .user-name {
-  margin-right: 8px;
-  font-size: 0.875rem;
+  margin-right: var(--cp-space-sm);
+  font-size: var(--cp-font-size-sm);
 }
 
 .app-shell__content {

@@ -3,7 +3,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: #f6f7fb;
+  background: var(--cp-color-canvas);
 }
 
 .auth-card {
@@ -25,7 +25,7 @@
 
 .form-error {
   margin: 0;
-  color: #ba1a1a;
+  color: var(--cp-color-error);
   font-size: 0.875rem;
 }
 

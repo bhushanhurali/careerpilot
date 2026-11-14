@@ -231,6 +231,20 @@ cleanup workflows.
 
 ## Frontend Workflows
 
+### Appearance Foundation
+
+Angular Material 3 owns component styling, including overlays. Global CareerPilot
+`--cp-*` tokens cover semantic colors, typography, spacing, radii, and shadows. Tailwind
+CSS 4 maps shared tokens to utilities; Preflight is intentionally omitted. Keep existing
+component SCSS where it is the clearer fit.
+
+The document root sets the color scheme for the entire application. A small startup
+script restores the appearance preference before styles render. System leaves both
+schemes available so the browser responds to OS changes without a JavaScript listener.
+Only the appearance preference is stored in `localStorage`; authentication is unchanged.
+Rebuild the frontend image after updating its build dependencies:
+`docker compose up -d --build frontend`.
+
 The authenticated shell links to Applications alongside Companies. The Applications feature
 supports:
 

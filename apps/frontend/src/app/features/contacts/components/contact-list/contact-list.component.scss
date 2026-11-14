@@ -18,7 +18,7 @@
 
 .contacts-section__header p {
   margin-top: 4px;
-  color: #52616f;
+  color: var(--cp-color-muted);
 }
 
 .contact-filters {
@@ -29,8 +29,8 @@
 
 .table-shell {
   overflow-x: auto;
-  background: #ffffff;
-  border: 1px solid #d8e0e8;
+  background: var(--cp-color-surface);
+  border: 1px solid var(--cp-color-border);
   border-radius: 8px;
 }
 
@@ -44,8 +44,8 @@ table {
   place-items: center;
   padding: 24px;
   text-align: center;
-  background: #ffffff;
-  border: 1px solid #d8e0e8;
+  background: var(--cp-color-surface);
+  border: 1px solid var(--cp-color-border);
   border-radius: 8px;
 }
 
