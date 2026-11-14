@@ -290,8 +290,13 @@ many `tasks` and Task belongs to one `application` via `application_id`. Tasks h
 - Migration `010` adds nullable `extracted_text`; uploads through the API require readable
   text. Migration `011` adds nullable `job_applications.job_description`. Existing rows remain
   null; neither migration backfills text. Reverting either drops its text column and data.
-- Reverting `009` drops metadata, not files. Ordinary soft deletion preserves the metadata,
-  original file, and extracted text while excluding the resume from normal reads and matching.
+- Migration `013` adds nullable `cleanup_due_at` and a partial index on pending deleted
+  rows. It clears text and queues file cleanup for previously deleted resumes, leaving
+  active records unchanged. Rollback removes the marker, not the effects of content removal.
+- Uploads serialize on the recipient User row before counting active resumes and inserting.
+  Deletion atomically sets `deleted_at`, clears extracted text, and marks the file for
+  cleanup. The worker locks pending rows with `SKIP LOCKED`, retries failed removals, and
+  clears the marker only after success. The opaque key remains reserved on deleted metadata.
 
 ## Notifications
 

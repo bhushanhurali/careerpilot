@@ -1,4 +1,5 @@
-export const resumeMaxBytes = 5 * 1024 * 1024;
+export const resumeMaxBytes = 2 * 1024 * 1024;
+export const resumeMaxActive = 10;
 export const resumeFileTypes = {
   pdf: 'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

@@ -1,6 +1,15 @@
 <header class="cp-record-heading mb-cp-lg"><h1>Resume Management</h1></header>
 <section class="resume-upload cp-record-divider-top pt-cp-md" aria-labelledby="upload-heading">
   <h2 id="upload-heading">Upload a resume</h2>
+  @if (!store.loading() && !store.listError()) {
+    <p role="status">{{ store.resumes().length }} of {{ maxActive }} active resumes.</p>
+    @if (store.resumes().length >= maxActive) {
+      <p>Delete an active resume before uploading another.</p>
+      <button mat-button type="button" (click)="store.load()" [disabled]="store.saving()">
+        <mat-icon>refresh</mat-icon> Refresh resumes
+      </button>
+    }
+  }
   <form
     class="grid justify-items-start gap-3"
     [attr.aria-busy]="store.saving()"
@@ -26,7 +35,7 @@
           [attr.aria-errormessage]="fileError() ? 'resume-file-error' : null"
           (change)="selectFile(fileInput)"
         />
-        <small id="resume-file-hint">PDF or DOCX, up to 5 MiB.</small>
+        <small id="resume-file-hint">PDF or DOCX, up to 2 MiB.</small>
         @if (fileError(); as error) {
           <p id="resume-file-error" class="cp-record-error" role="alert">{{ error }}</p>
         }
@@ -38,7 +47,12 @@
     <button
       mat-flat-button
       type="submit"
-      [disabled]="store.loading() || store.saving() || !!store.listError()"
+      [disabled]="
+        store.loading() ||
+        store.saving() ||
+        !!store.listError() ||
+        store.resumes().length >= maxActive
+      "
     >
       <mat-icon>upload</mat-icon> Upload resume
     </button>
@@ -105,7 +119,8 @@
 <ng-template #deleteDialog let-resume>
   <h2 mat-dialog-title>Delete resume?</h2>
   <mat-dialog-content
-    >“{{ resume.title }}” will no longer be available for downloads or matching.</mat-dialog-content
+    >“{{ resume.title }}” will no longer be available for downloads or matching. The stored file and
+    extracted text will be removed.</mat-dialog-content
   >
   <mat-dialog-actions align="end">
     <button mat-button type="button" mat-dialog-close>Cancel</button>

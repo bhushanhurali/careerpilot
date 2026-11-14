@@ -213,8 +213,14 @@ rate limits.
   and storage consumption; per-file and extraction limits are not account quotas.
 - Uploads write the file before the database row. If persistence fails, cleanup is best-effort
   and avoids removing a file when the row may already have committed. A crash or failed
-  reconciliation can leave orphan files. Soft deletion does not purge bytes or text, and no
-  automatic purge or reconciliation job exists. Restrict database, volume, and backup access.
+  reconciliation can leave orphan files; the delete worker does not scan for upload orphans.
+- Deletion atomically revokes new reads/downloads/matching, clears live extracted text,
+  and records pending file cleanup. An already-started download or comparison cannot be
+  recalled. The worker retries failures without logging private paths or contents, and
+  missing files count as success. Deleted metadata remains for cleanup and recordkeeping.
+- Clearing live data is not secure erasure of historical copies. Files and extracted text
+  may remain in retained backups until expiration. Restrict database, volume, and backup
+  access; coordinate restores with deletion handling so old backups do not republish data.
 
 ## Notification Visibility
 

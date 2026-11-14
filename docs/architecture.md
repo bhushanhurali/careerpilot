@@ -220,7 +220,8 @@ Companies, contacts, job applications, interviews, tasks, and resumes use Sequel
 - Hard-deleting an application physically cascades status history and interview rows.
 - Deleting a task soft-deletes only that task. Soft-deleting the application or its company
   hides retained tasks from both task lists. Hard-deleting the application cascades task rows.
-- Deleting a resume hides it from listing, download, and matching, but retains bytes and text.
+- Deleting a resume hides it from listing, download, and matching, clears extracted text,
+  and schedules durable private-file removal while retaining the metadata row.
 - Company deletion does not yet soft-delete or otherwise modify applications; that behavior should
   be decided when application lifecycle rules are expanded.
 - PostgreSQL foreign-key cascade is not used for ordinary soft deletion because no physical delete

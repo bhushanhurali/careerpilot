@@ -19,7 +19,12 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
 import { resumeErrorMessage } from '../../data-access/resume-api.service';
-import { Resume, resumeFileTypes, resumeMaxBytes } from '../../data-access/resume.models';
+import {
+  Resume,
+  resumeFileTypes,
+  resumeMaxActive,
+  resumeMaxBytes,
+} from '../../data-access/resume.models';
 import { ResumeStore } from '../../data-access/resume.store';
 
 @Component({
@@ -42,6 +47,7 @@ import { ResumeStore } from '../../data-access/resume.store';
 })
 export class ResumesPageComponent implements OnInit {
   protected readonly store = inject(ResumeStore);
+  protected readonly maxActive = resumeMaxActive;
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
   private readonly destroyRef = inject(DestroyRef);
@@ -71,7 +77,7 @@ export class ResumesPageComponent implements OnInit {
       : !mime || (file.type && file.type !== mime)
         ? 'Choose a PDF or DOCX file.'
         : file.size > resumeMaxBytes
-          ? 'Choose a file no larger than 5 MiB.'
+          ? 'Choose a file no larger than 2 MiB.'
           : file.size === 0
             ? 'Choose a file that is not empty.'
             : null;
@@ -85,7 +91,13 @@ export class ResumesPageComponent implements OnInit {
   }
 
   protected upload(input: HTMLInputElement): void {
-    if (this.store.loading() || this.store.saving() || this.store.listError()) return;
+    if (
+      this.store.loading() ||
+      this.store.saving() ||
+      this.store.listError() ||
+      this.store.resumes().length >= this.maxActive
+    )
+      return;
     const { title, file } = this.form.getRawValue();
     if (this.form.invalid || !file) {
       this.form.markAllAsTouched();

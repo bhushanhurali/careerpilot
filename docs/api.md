@@ -1193,10 +1193,16 @@ are private and omitted. Missing, deleted, and other users' resumes return
 
 Upload uses `multipart/form-data` with one `file` and a nonblank `title` (160 characters
 max). PDF and DOCX require matching extensions, MIME types, and parseable content, with a
-5 MiB file limit. Invalid multipart or fields return `400`, oversized files `413`, and
+2 MiB (2,097,152-byte) file limit and a quota of 10 active resumes per user.
+Concurrent uploads cannot exceed the quota; a full quota returns
+`409 RESUME_QUOTA_REACHED`. Existing larger or over-quota active resumes remain accessible;
+new uploads are blocked while at or above the quota.
+Invalid multipart or fields return `400`, oversized files `413`, and
 unsupported types `415`. Unreadable, encrypted, textless, or overly complex documents
-return `422`. Extraction does not perform OCR. DELETE hides the record and download
-without permanently purging the original bytes or extracted text. PDF extraction reads text
+return `422`. Extraction does not perform OCR. DELETE hides the record from normal access
+and matching, frees its quota slot, clears extracted text, and schedules durable removal of
+the original file. Success acknowledges revocation, not necessarily completed file removal.
+PDF extraction reads text
 from up to 100 pages. DOCX extraction reads the main Word document body, not headers or footers;
 external relationships are not followed. Extracted text is capped at 200,000 characters.
 

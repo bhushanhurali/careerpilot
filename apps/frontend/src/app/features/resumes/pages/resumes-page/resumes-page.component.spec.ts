@@ -57,8 +57,45 @@ describe('ResumesPageComponent', () => {
       new File([new Uint8Array(resumeMaxBytes + 1)], 'large.pdf', { type: 'application/pdf' }),
     );
     submit();
-    expect(fixture.nativeElement.textContent).toContain('Choose a file no larger than 5 MiB.');
+    expect(fixture.nativeElement.textContent).toContain('Choose a file no larger than 2 MiB.');
     expect(api.uploadResume).not.toHaveBeenCalled();
+  });
+
+  it('shows the quota and blocks uploads when all slots are used', () => {
+    api.listResumes.and.returnValue(
+      of(
+        Array.from({ length: 10 }, (_, index) => ({
+          ...resume,
+          id: String(index),
+        })),
+      ),
+    );
+    fixture = TestBed.createComponent(ResumesPageComponent);
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    expect(element.textContent).toContain('10 of 10 active resumes.');
+    expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBeTrue();
+    submit();
+    expect(api.uploadResume).not.toHaveBeenCalled();
+  });
+
+  it('shows the server quota error when another session fills the last slot', () => {
+    const title: HTMLInputElement = fixture.nativeElement.querySelector('#resume-title');
+    title.value = 'Engineering';
+    title.dispatchEvent(new Event('input'));
+    select(new File(['pdf'], 'resume.pdf', { type: 'application/pdf' }));
+    api.uploadResume.and.returnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 409,
+            error: { error: { code: 'RESUME_QUOTA_REACHED' } },
+          }),
+      ),
+    );
+    submit();
+    expect(fixture.nativeElement.textContent).toContain('Delete one before uploading another.');
+    expect(title.value).toBe('Engineering');
   });
 
   it('preserves inputs after a parsing error, then adds a successful upload to the list', () => {

@@ -24,7 +24,7 @@ const receiveResume: RequestHandler = (request, response, next) => {
   multipart(request, response, (error?: unknown) => {
     if (!error) next();
     else if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
-      next(new HttpError(413, 'RESUME_TOO_LARGE', 'Resume must be at most 5 MiB'));
+      next(new HttpError(413, 'RESUME_TOO_LARGE', 'Resume must be at most 2 MiB'));
     } else {
       next(new HttpError(400, 'RESUME_INVALID_UPLOAD', 'Expected one resume file and a title'));
     }

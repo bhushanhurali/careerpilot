@@ -8,7 +8,7 @@ import { fromBuffer, type Entry, type ZipFile } from 'yauzl';
 import { resumeMimeTypes, type ResumeMimeType } from '../../db/models/resume.model.js';
 import { HttpError } from '../../shared/errors/http-error.js';
 
-export const maxResumeBytes = 5 * 1024 * 1024;
+export const maxResumeBytes = 2 * 1024 * 1024;
 const maxTextLength = 200_000;
 const maxXmlBytes = 8 * 1024 * 1024;
 const requiredDocxParts = new Set(['[Content_Types].xml', '_rels/.rels', 'word/document.xml']);
@@ -228,7 +228,7 @@ function xmlParser() {
 
 export async function parseResume(content: Buffer, filename: string, declaredMimeType: string) {
   if (content.length > maxResumeBytes)
-    throw new HttpError(413, 'RESUME_TOO_LARGE', 'Resume must be at most 5 MiB');
+    throw new HttpError(413, 'RESUME_TOO_LARGE', 'Resume must be at most 2 MiB');
   if (content.length === 0) throw invalid();
   if (filename.length > 255 || /[\p{Cc}<>:"/\\|?*]/u.test(filename)) {
     throw new HttpError(400, 'RESUME_INVALID_FILENAME', 'Invalid resume filename');
