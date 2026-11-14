@@ -31,8 +31,11 @@ Allowed `NODE_ENV` values are `development`, `test`, and `production`. Allowed l
   `docker compose down -v` removes it.
 - Store files and database metadata in coordinated backups. Production persistence must be
   configured separately: the production Compose example does not mount resume storage.
-  Authenticated uploads and downloads use this storage. Soft deletion
-  retains the original file and extracted text; no permanent purge workflow is enabled yet.
+  Authenticated uploads and downloads use this storage. Run migration `013` before starting
+  the updated backend; it queues previously soft-deleted resumes for cleanup. The backend
+  retries cleanup at startup and every minute. Instances must share the same private storage
+  namespace so a missing object means it is already removed, not that the wrong volume is mounted.
+  Backups retain historical content under their own expiration policy.
 
 ## Reminder Timezone
 

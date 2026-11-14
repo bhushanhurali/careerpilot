@@ -219,11 +219,13 @@ for exact metric definitions.
 
 ## Resumes & Job Matching
 
-Use **Resumes** to upload, download, or delete PDF and DOCX files up to 5 MiB. Add a job
+Use **Resumes** to upload, download, or delete PDF and DOCX files up to 2 MiB, with up to
+10 active resumes per user. Add a job
 description to an application and select an owned resume on its detail page to compare
 recognized skills. Coverage is not an ATS score or hiring prediction. Scanned documents
-without selectable text are not supported. Deleting a resume hides it but does not purge its
-bytes or extracted text.
+without selectable text are not supported. Deleting a resume immediately revokes access
+and clears extracted text. Private file removal retries if needed; backups may retain
+deleted content until expiration.
 
 See the [API contract](docs/api.md#resumes), [storage configuration](docs/environment.md#private-resume-storage),
 and [security notes](docs/security.md#resume-security-and-retention).

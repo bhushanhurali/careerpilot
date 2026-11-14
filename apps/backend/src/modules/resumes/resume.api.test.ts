@@ -18,6 +18,7 @@ import type { ApiResponse } from '../../shared/responses/api-response.js';
 import { signAccessToken } from '../../shared/security/jwt.js';
 import { maxResumeBytes } from './resume.parser.js';
 import { LocalResumeStorage } from './resume.storage.js';
+import { processResumeCleanup } from './resume.cleanup.js';
 import type { ResumeDto } from './resume.types.js';
 
 const url = '/api/v1/resumes';
@@ -196,7 +197,7 @@ describe('Resume API', () => {
       .expect((response) => expect(response.body).toEqual(original));
   });
 
-  it('scopes metadata, downloads and deletion by owner and retains bytes after soft deletion', async () => {
+  it('scopes metadata, downloads and deletion by owner and purges deleted content', async () => {
     const token = await owner();
     const outsider = await owner();
     const resume = await uploaded(token, pdf('Private text'));
@@ -211,8 +212,77 @@ describe('Resume API', () => {
     await request(app).get(`${item}/download`).set('Authorization', token).expect(404);
     const deleted = await ResumeModel.findByPk(resume.id, { paranoid: false });
     expect(deleted?.deletedAt).toBeInstanceOf(Date);
-    expect(deleted?.extractedText).toBe('Private text');
-    expect(await readdir(directory)).toHaveLength(1);
+    expect(deleted?.extractedText).toBeNull();
+    expect(deleted?.cleanupDueAt).toBeNull();
+    expect(await readdir(directory)).toEqual([]);
+  });
+
+  it('serializes concurrent uploads at the quota and frees the slot on deletion', async () => {
+    const token = await owner();
+    const content = pdf('Private text');
+    const first = await uploaded(token, content);
+    for (let index = 0; index < 8; index++) await uploaded(token, content);
+    const results = await Promise.all([upload(token, content), upload(token, content)]);
+    expect(results.map(({ status }) => status).sort()).toEqual([201, 409]);
+    expect(
+      (results.find(({ status }) => status === 409)?.body as ApiResponse<never>).error?.code,
+    ).toBe('RESUME_QUOTA_REACHED');
+    expect(await readdir(directory)).toHaveLength(10);
+    await request(app).delete(`${url}/${first.id}`).set('Authorization', token).expect(200);
+    await uploaded(token, content);
+    expect(await ResumeModel.count()).toBe(10);
+  });
+
+  it('accepts a PDF exactly at the byte limit', async () => {
+    const content = pdf('Private text');
+    const eof = content.lastIndexOf('%%EOF');
+    const padded = Buffer.concat([
+      content.subarray(0, eof),
+      Buffer.alloc(maxResumeBytes - content.length, 32),
+      content.subarray(eof),
+    ]);
+    const resume = await uploaded(await owner(), padded);
+    expect(resume.fileSizeBytes).toBe(2_097_152);
+  });
+
+  it('recovers durable cleanup after failure and after removal without acknowledgement', async () => {
+    const token = await owner();
+    const resume = await uploaded(token, pdf('Private text'));
+    const remove = vi
+      .spyOn(LocalResumeStorage.prototype, 'remove')
+      .mockRejectedValueOnce(new Error('private/path'));
+    await request(app).delete(`${url}/${resume.id}`).set('Authorization', token).expect(200);
+    await request(app).get(`${url}/${resume.id}/download`).set('Authorization', token).expect(404);
+    const pending = await ResumeModel.findByPk(resume.id, { paranoid: false });
+    if (!pending?.cleanupDueAt) throw new Error('Expected durable cleanup marker');
+    expect(pending.extractedText).toBeNull();
+    expect(await readdir(directory)).toEqual([pending.storageKey]);
+    await processResumeCleanup(
+      new LocalResumeStorage(directory),
+      undefined,
+      new Date(pending.cleanupDueAt.getTime() - 1),
+    );
+    expect(remove).toHaveBeenCalledTimes(1);
+    remove.mockRestore();
+    const storage = new LocalResumeStorage(directory);
+    await storage.remove(pending.storageKey);
+    await Promise.all([
+      processResumeCleanup(storage, undefined, pending.cleanupDueAt),
+      processResumeCleanup(new LocalResumeStorage(directory), undefined, pending.cleanupDueAt),
+    ]);
+    await pending.reload({ paranoid: false });
+    expect(pending.cleanupDueAt).toBeNull();
+    expect(await readdir(directory)).toEqual([]);
+
+    const another = await uploaded(token, pdf('Another private resume'));
+    vi.spyOn(LocalResumeStorage.prototype, 'remove').mockRejectedValueOnce(new Error('Busy'));
+    await request(app).delete(`${url}/${another.id}`).set('Authorization', token).expect(200);
+    const retry = await ResumeModel.findByPk(another.id, { paranoid: false });
+    if (!retry?.cleanupDueAt) throw new Error('Expected retry marker');
+    expect(await readdir(directory)).toEqual([retry.storageKey]);
+    await processResumeCleanup(new LocalResumeStorage(directory), undefined, retry.cleanupDueAt);
+    expect((await retry.reload({ paranoid: false })).cleanupDueAt).toBeNull();
+    expect(await readdir(directory)).toEqual([]);
   });
 
   it('matches parsed upload text against a persisted job description and excludes deleted resumes', async () => {

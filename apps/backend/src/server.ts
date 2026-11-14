@@ -2,9 +2,11 @@ import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { startReminderScheduler } from './modules/notifications/reminder.scheduler.js';
+import { startResumeCleanup } from './modules/resumes/resume.cleanup.js';
 
 const app = createApp();
 const stopReminderScheduler = startReminderScheduler();
+const stopResumeCleanup = startResumeCleanup();
 
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, 'CareerPilot API started');
@@ -12,6 +14,7 @@ const server = app.listen(env.PORT, () => {
 
 const shutdown = (signal: NodeJS.Signals) => {
   stopReminderScheduler();
+  stopResumeCleanup();
   logger.info({ signal }, 'Shutting down CareerPilot API');
   server.close(() => {
     logger.info('HTTP server closed');

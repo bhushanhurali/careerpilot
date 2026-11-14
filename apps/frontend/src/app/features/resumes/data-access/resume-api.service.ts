@@ -48,7 +48,11 @@ export function resumeErrorMessage(error: unknown, fallback: string): string {
     case 404:
       return 'This resume is no longer available.';
     case 413:
-      return 'Choose a file no larger than 5 MiB.';
+      return 'Choose a file no larger than 2 MiB.';
+    case 409:
+      return (error.error as ApiResponse<never> | null)?.error?.code === 'RESUME_QUOTA_REACHED'
+        ? 'You can keep up to 10 active resumes. Delete one before uploading another.'
+        : fallback;
     case 415:
       return 'Choose a PDF or DOCX file with a matching extension and file type.';
     case 422:
