@@ -1,0 +1,41 @@
+.auth-bar {
+  min-height: 64px;
+  padding-inline: var(--cp-space-lg);
+  background: var(--cp-color-surface);
+  border-bottom: 1px solid var(--cp-color-border);
+}
+
+.auth-brand {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.auth-brand mat-icon {
+  color: var(--cp-color-primary);
+}
+
+.auth-main {
+  padding: var(--cp-space-xl) var(--cp-space-md);
+}
+
+.auth-panel {
+  box-sizing: border-box;
+  max-width: 480px;
+  padding: var(--cp-space-xl);
+  background: var(--cp-color-surface);
+  border: 1px solid var(--cp-color-border);
+  border-radius: var(--cp-radius-md);
+  box-shadow: var(--cp-shadow-raised);
+}
+
+h1 {
+  margin: 0 0 var(--cp-space-lg);
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+@media (width < 640px) {
+  .auth-panel {
+    padding: var(--cp-space-lg);
+  }
+}

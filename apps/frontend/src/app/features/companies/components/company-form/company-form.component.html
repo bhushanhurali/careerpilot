@@ -1,4 +1,4 @@
-<form class="company-form" [formGroup]="form" (ngSubmit)="submit()">
+<form class="grid gap-cp-md" [attr.aria-busy]="isSaving" [formGroup]="form" (ngSubmit)="submit()">
   <mat-form-field appearance="outline">
     <mat-label>Company name</mat-label>
     <input matInput formControlName="name" autocomplete="organization" />
@@ -15,7 +15,7 @@
     }
   </mat-form-field>
 
-  <div class="company-form__grid">
+  <div class="grid gap-cp-md sm:grid-cols-2">
     <mat-form-field appearance="outline">
       <mat-label>Industry</mat-label>
       <input matInput formControlName="industry" autocomplete="off" />
@@ -42,16 +42,16 @@
   </mat-form-field>
 
   @if (errorMessage) {
-    <p class="form-error">{{ errorMessage }}</p>
+    <p class="cp-record-error" role="alert">{{ errorMessage }}</p>
   }
 
-  <div class="company-form__actions">
+  <div class="flex flex-wrap justify-end gap-2 cp-record-divider-top pt-cp-md">
     <button mat-button type="button" [disabled]="isSaving" (click)="cancelForm.emit()">
       Cancel
     </button>
     <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
       @if (isSaving) {
-        <mat-progress-spinner diameter="18" mode="indeterminate" />
+        <mat-progress-spinner diameter="18" mode="indeterminate" aria-label="Saving" />
       }
       <span>{{ submitLabel }}</span>
     </button>

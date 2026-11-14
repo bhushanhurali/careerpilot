@@ -1,14 +1,28 @@
 form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+}
+form button {
+  justify-self: start;
 }
 mat-form-field {
-  width: min(100%, 360px);
+  min-width: 0;
 }
-.skill-results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 40px;
+.coverage strong {
+  font-size: 1.25rem;
+}
+.coverage meter {
+  display: block;
+  width: min(100%, 26rem);
+  height: 1rem;
+  accent-color: var(--cp-color-primary);
+}
+.skill-list {
+  list-style: none;
+  padding: 0;
+  overflow-wrap: anywhere;
+}
+@media (width >= 640px) {
+  form {
+    grid-template-columns: minmax(0, 24rem) auto;
+  }
 }

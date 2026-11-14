@@ -155,10 +155,14 @@ describe('DashboardPageComponent', () => {
       'Dec 31, 2025',
     );
     expect(
-      host.querySelector('.activity-grid time[datetime="2026-01-01"]')?.textContent?.trim(),
+      host
+        .querySelector('[aria-labelledby="tasks-heading"] time[datetime="2026-01-01"]')
+        ?.textContent?.trim(),
     ).toBe('Jan 1, 2026');
     expect(
-      host.querySelector(`.activity-grid time[datetime="${scheduledAt}"]`)?.textContent?.trim(),
+      host
+        .querySelector(`[aria-labelledby="interview-heading"] time[datetime="${scheduledAt}"]`)
+        ?.textContent?.trim(),
     ).toBe(formatDate(scheduledAt, 'medium', 'en-US'));
     expect(host.querySelectorAll('a[href="/applications/application-1"]').length).toBe(4);
     expect(

@@ -65,6 +65,10 @@ describe('ApplicationResumeMatchComponent', () => {
     });
     fixture.detectChanges();
     expect(element.textContent).toContain('50% skill coverage');
+    expect(element.querySelector<HTMLMeterElement>('meter')?.value).toBe(50);
+    expect(element.querySelector('meter')?.getAttribute('aria-label')).toBe(
+      'Recognized skill coverage',
+    );
     expect(element.textContent).toContain('TypeScript');
     expect(element.textContent).toContain('Docker');
     http.verify();
@@ -99,6 +103,7 @@ describe('ApplicationResumeMatchComponent', () => {
     });
     fixture.detectChanges();
     expect(element.textContent).toContain('Coverage is unavailable');
+    expect(element.querySelector('meter')).toBeNull();
     expect(element.textContent).not.toContain('0%');
 
     compare();
@@ -117,6 +122,7 @@ describe('ApplicationResumeMatchComponent', () => {
     });
     fixture.detectChanges();
     expect(element.querySelector('[role="status"]')?.textContent).toContain('0% skill coverage');
+    expect(element.querySelector<HTMLMeterElement>('meter')?.value).toBe(0);
     expect(element.textContent).toContain('No recognized technical skills in this resume.');
     expect(element.textContent).toContain('TypeScript');
     http.verify();

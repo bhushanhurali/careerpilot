@@ -1,43 +1,36 @@
-section {
-  margin-block: 24px;
+.resume-upload {
+  max-width: 54rem;
 }
 fieldset {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
   border: 0;
+  margin: 0;
   padding: 0;
-  margin: 0 0 12px;
   min-inline-size: 0;
 }
 .file-field {
   display: grid;
-  gap: 6px;
+  gap: var(--cp-space-sm);
+  align-content: start;
   min-width: 0;
 }
-.file-field input,
-mat-form-field {
-  max-width: 100%;
+.file-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: var(--cp-space-sm);
+  border: 1px solid var(--cp-color-border);
+  border-radius: var(--cp-radius-md);
+  color: var(--cp-color-text);
+  background: var(--cp-color-surface);
 }
-.resumes {
-  list-style: none;
-  padding: 0;
+.file-field input::file-selector-button {
+  margin-inline-end: var(--cp-space-sm);
+  padding: var(--cp-space-xs) var(--cp-space-sm);
+  border: 0;
+  border-radius: var(--cp-radius-sm);
+  color: var(--cp-color-text);
+  background: var(--cp-color-selected);
 }
-.resumes li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-  padding-block: 12px;
-  overflow-wrap: anywhere;
-}
-.resumes p {
-  margin: 4px 0;
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+.file-field small {
+  color: var(--cp-color-muted);
 }

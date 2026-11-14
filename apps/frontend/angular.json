@@ -34,7 +34,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/utilities.css", "src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -85,7 +85,7 @@
                 "input": "public"
               }
             ],
-            "styles": ["src/styles.scss"]
+            "styles": ["src/utilities.css", "src/styles.scss"]
           }
         }
       }

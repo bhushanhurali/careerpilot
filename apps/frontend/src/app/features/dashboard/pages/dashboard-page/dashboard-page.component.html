@@ -1,4 +1,6 @@
-<header class="dashboard-header">
+<header
+  class="dashboard-header cp-record-heading flex flex-wrap items-baseline justify-between gap-3"
+>
   <h1 #heading tabindex="-1">Dashboard</h1>
   @if (store.dashboard(); as dashboard) {
     <time [attr.datetime]="dashboard.today">
@@ -8,12 +10,12 @@
 </header>
 
 @if (store.loading()) {
-  <div class="dashboard-state" role="status">
+  <div class="cp-record-state" role="status">
     <p>Loading dashboard...</p>
     <mat-progress-bar mode="indeterminate" aria-label="Loading dashboard" />
   </div>
 } @else if (store.error(); as error) {
-  <div class="dashboard-state">
+  <div class="cp-record-state">
     <p role="alert">{{ error }}</p>
     <button mat-stroked-button type="button" (click)="heading.focus(); store.load()">
       <mat-icon>refresh</mat-icon>
@@ -36,8 +38,8 @@
     }
   </ul>
 
-  <div class="dashboard-grid">
-    <section aria-labelledby="status-heading">
+  <div class="dashboard-grid grid gap-cp-lg xl:grid-cols-2">
+    <section aria-labelledby="status-heading" class="dashboard-section">
       <h2 id="status-heading">Application status</h2>
       @if (statusMax(); as max) {
         <ul class="status-chart" role="list">
@@ -57,7 +59,7 @@
       }
     </section>
 
-    <section aria-labelledby="trend-heading">
+    <section aria-labelledby="trend-heading" class="dashboard-section">
       <h2 id="trend-heading">Monthly submissions</h2>
       @if (trendMax(); as max) {
         <ul class="trend-chart" role="list">
@@ -79,8 +81,8 @@
     </section>
   </div>
 
-  <div class="dashboard-grid activity-grid">
-    <section aria-labelledby="interview-heading">
+  <div class="dashboard-grid grid gap-cp-lg xl:grid-cols-2">
+    <section aria-labelledby="interview-heading" class="dashboard-section">
       <h2 id="interview-heading">Upcoming interviews</h2>
       @if (dashboard.upcomingInterviews.length) {
         <ul class="activity-list" role="list">
@@ -104,8 +106,8 @@
       }
     </section>
 
-    <section aria-labelledby="tasks-heading">
-      <div class="section-heading">
+    <section aria-labelledby="tasks-heading" class="dashboard-section">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="tasks-heading">Tasks</h2>
         <a mat-button routerLink="/tasks">View tasks</a>
       </div>
@@ -148,8 +150,8 @@
     </section>
   </div>
 
-  <section class="recent" aria-labelledby="recent-heading">
-    <div class="section-heading">
+  <section class="recent dashboard-section" aria-labelledby="recent-heading">
+    <div class="flex flex-wrap items-baseline justify-between gap-2">
       <h2 id="recent-heading">Recent application activity</h2>
       <a mat-button routerLink="/applications">View applications</a>
     </div>
@@ -162,7 +164,10 @@
                 <a [routerLink]="['/applications', application.id]">{{ application.jobTitle }}</a>
               </h3>
               <span class="muted"
-                >{{ application.companyName }} · {{ statusLabel(application.status) }}</span
+                >{{ application.companyName }}
+                <span class="cp-record-badge" [attr.data-tone]="application.status">{{
+                  statusLabel(application.status)
+                }}</span></span
               >
             </div>
             <time [attr.datetime]="application.updatedAt">{{

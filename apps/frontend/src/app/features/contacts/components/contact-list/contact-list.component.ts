@@ -92,6 +92,10 @@ export class ContactListComponent implements OnInit, OnChanges {
     });
   }
 
+  protected filtersActive(): boolean {
+    return Object.values(this.filtersForm.getRawValue()).some((value) => value.trim().length > 0);
+  }
+
   protected retry(): void {
     this.loadContacts();
   }

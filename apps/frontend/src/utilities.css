@@ -1,0 +1,20 @@
+@layer theme, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+@source './app';
+
+@theme inline {
+  --color-cp-canvas: var(--cp-color-canvas);
+  --color-cp-surface: var(--cp-color-surface);
+  --color-cp-text: var(--cp-color-text);
+  --color-cp-muted: var(--cp-color-muted);
+  --color-cp-border: var(--cp-color-border);
+  --color-cp-primary: var(--cp-color-primary);
+  --color-cp-error: var(--cp-color-error);
+  --font-cp: var(--cp-font-family);
+  --spacing-cp-sm: var(--cp-space-sm);
+  --spacing-cp-md: var(--cp-space-md);
+  --spacing-cp-lg: var(--cp-space-lg);
+  --radius-cp: var(--cp-radius-md);
+  --shadow-cp: var(--cp-shadow-raised);
+}

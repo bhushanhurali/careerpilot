@@ -1,0 +1,26 @@
+:root {
+  --cp-color-canvas: light-dark(#f7f9fb, #131619);
+  --cp-color-surface: light-dark(#fff, #1d2227);
+  --cp-color-text: light-dark(#1f2933, #e3e9ef);
+  --cp-color-muted: light-dark(#52616f, #b0bfcc);
+  --cp-color-border: light-dark(#d8e0e8, #414b55);
+  --cp-color-primary: var(--mat-sys-primary);
+  --cp-color-error: var(--mat-sys-error);
+  --cp-color-info: light-dark(#376482, #a1d2ef);
+  --cp-color-chart-track: light-dark(#e4edf3, #313e47);
+  --cp-color-chart-primary: light-dark(#28708f, #78c4e4);
+  --cp-color-chart-secondary: light-dark(#23776a, #73ceb9);
+  --cp-color-selected: light-dark(#e4edf3, #303e4b);
+
+  --cp-font-family: Roboto, Arial, sans-serif;
+  --cp-font-size-sm: 0.875rem;
+  --cp-font-size-base: 1rem;
+  --cp-space-xs: 0.25rem;
+  --cp-space-sm: 0.5rem;
+  --cp-space-md: 1rem;
+  --cp-space-lg: 1.5rem;
+  --cp-space-xl: 2rem;
+  --cp-radius-sm: 4px;
+  --cp-radius-md: 8px;
+  --cp-shadow-raised: 0 2px 8px light-dark(rgb(31 41 51 / 12%), rgb(0 0 0 / 40%));
+}

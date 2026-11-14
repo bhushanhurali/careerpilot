@@ -1,5 +1,5 @@
-<section class="interviews" aria-label="Interviews">
-  <div class="interviews__header">
+<section class="my-cp-lg grid gap-cp-md" aria-label="Interviews">
+  <div class="cp-record-heading flex flex-wrap items-center justify-between gap-3">
     <h2 #heading tabindex="-1">Interviews</h2>
     <button #schedule mat-stroked-button type="button" (click)="openForm()">
       <mat-icon>add</mat-icon>
@@ -8,25 +8,30 @@
   </div>
 
   @if (store.loading()) {
-    <p class="interviews__state" role="status">Loading interviews...</p>
+    <p class="cp-record-state" role="status">Loading interviews...</p>
   } @else if (store.error(); as error) {
-    <div class="interviews__state">
-      <p role="alert">{{ error }}</p>
-      <button mat-button type="button" (click)="retry()">Retry</button>
+    <div class="cp-record-state">
+      <p class="cp-record-error" role="alert">{{ error }}</p>
+      <button mat-button type="button" (click)="retry()"><mat-icon>refresh</mat-icon> Retry</button>
     </div>
   } @else if (!store.interviews().length) {
-    <p class="interviews__state">No interviews yet.</p>
+    <div class="cp-record-state">
+      <mat-icon aria-hidden="true">event</mat-icon>
+      <p>No interviews yet.</p>
+    </div>
   } @else {
-    <ul class="interview-list" role="list">
+    <ul class="cp-work-list interview-list" role="list">
       @for (interview of store.interviews(); track interview.id) {
-        <li class="interview-list__item">
-          <div class="interview-list__details">
+        <li class="cp-work-row">
+          <div class="cp-work-body">
             <h3>{{ typeLabel(interview.type) }}</h3>
             <p>
               <time [attr.datetime]="interview.scheduledAt">{{
                 interview.scheduledAt | date: 'medium'
               }}</time>
-              · {{ statusLabel(interview.status) }}
+              <span class="cp-record-badge" [attr.data-tone]="interview.status">{{
+                statusLabel(interview.status)
+              }}</span>
               @if (interview.durationMinutes; as minutes) {
                 · {{ minutes }} min
               }
@@ -47,10 +52,10 @@
               </p>
             }
             @if (interview.notes) {
-              <p class="interview-list__notes">{{ interview.notes }}</p>
+              <p class="whitespace-pre-wrap">{{ interview.notes }}</p>
             }
           </div>
-          <div class="interview-list__actions">
+          <div class="flex shrink-0 gap-1">
             <button
               mat-icon-button
               type="button"

@@ -1,14 +1,14 @@
 <a mat-button [routerLink]="['/companies', companyId]">Back to company</a>
 
 @if (contactStore.selectedLoading()) {
-  <div class="state-panel">Loading contact...</div>
+  <div class="cp-record-state" role="status">Loading contact...</div>
 } @else if (contactStore.selectedContact(); as contact) {
-  <section class="detail-header">
+  <section class="cp-record-heading my-cp-lg flex flex-wrap items-start justify-between gap-4">
     <div>
       <h1>{{ fullName(contact) }}</h1>
       <p>{{ contact.roleTitle || 'No role title' }}</p>
     </div>
-    <div class="detail-actions">
+    <div class="flex flex-wrap gap-2">
       <a
         mat-flat-button
         color="primary"
@@ -24,52 +24,61 @@
     </div>
   </section>
 
-  <section class="detail-grid" aria-label="Contact details">
-    <div>
-      <span>Email</span>
-      @if (contact.email) {
-        <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
-      } @else {
-        <p>-</p>
-      }
-    </div>
-    <div>
-      <span>Phone</span>
-      @if (contact.phone) {
-        <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
-      } @else {
-        <p>-</p>
-      }
-    </div>
-    <div>
-      <span>LinkedIn</span>
-      @if (contact.linkedInUrl) {
-        <a [href]="contact.linkedInUrl" target="_blank" rel="noreferrer">
-          {{ contact.linkedInUrl }}
-        </a>
-      } @else {
-        <p>-</p>
-      }
-    </div>
-    <div>
-      <span>Created</span>
-      <p>{{ contact.createdAt | date: 'medium' }}</p>
-    </div>
-    <div>
-      <span>Updated</span>
-      <p>{{ contact.updatedAt | date: 'medium' }}</p>
-    </div>
-    <div>
-      <span>Company</span>
-      <a [routerLink]="['/companies', companyId]">View parent company</a>
-    </div>
-    <div class="detail-grid__wide">
-      <span>Notes</span>
-      <p>{{ contact.notes || '-' }}</p>
-    </div>
+  <section class="cp-record-divider-bottom pb-cp-lg">
+    <h2 class="text-lg">Contact details</h2>
+    <dl class="cp-record-facts grid gap-x-5 sm:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <dt>Email</dt>
+        <dd>
+          @if (contact.email) {
+            <a [href]="'mailto:' + contact.email">{{ contact.email }}</a>
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Phone</dt>
+        <dd>
+          @if (contact.phone) {
+            <a [href]="'tel:' + contact.phone">{{ contact.phone }}</a>
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>LinkedIn</dt>
+        <dd>
+          @if (contact.linkedInUrl) {
+            <a [href]="contact.linkedInUrl" target="_blank" rel="noreferrer">
+              {{ contact.linkedInUrl }}
+            </a>
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd>{{ contact.createdAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Updated</dt>
+        <dd>{{ contact.updatedAt | date: 'medium' }}</dd>
+      </div>
+      <div>
+        <dt>Company</dt>
+        <dd><a [routerLink]="['/companies', companyId]">View parent company</a></dd>
+      </div>
+      <div class="col-span-full">
+        <dt>Notes</dt>
+        <dd>{{ contact.notes || '-' }}</dd>
+      </div>
+    </dl>
   </section>
 } @else {
-  <div class="state-panel">
+  <div class="cp-record-state" role="alert">
     <p>{{ contactStore.error() || 'Contact was not found.' }}</p>
     <a mat-button [routerLink]="['/companies', companyId]">Return to company</a>
   </div>

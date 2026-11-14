@@ -1,0 +1,16 @@
+.form-error {
+  margin: 0;
+  padding: var(--cp-space-sm) var(--cp-space-md);
+  border-inline-start: 3px solid var(--cp-color-error);
+  border-radius: var(--cp-radius-sm);
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font-size: var(--cp-font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.auth-footer {
+  margin-block: var(--cp-space-lg) 0;
+  font-size: var(--cp-font-size-sm);
+  color: var(--cp-color-muted);
+}

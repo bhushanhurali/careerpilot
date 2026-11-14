@@ -1,36 +1,6 @@
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 16px;
+.inbox .is-unread {
+  border-inline-start: 3px solid var(--cp-color-primary);
 }
-.inbox {
-  list-style: none;
-  padding: 0;
-}
-.inbox li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  padding-block: 16px;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-}
-.message {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.message h2 {
-  font-size: 1.125rem;
-  margin: 0 0 4px;
-}
-.message p {
-  margin: 4px 0;
-}
-.unread {
-  font-size: 0.875rem;
-  color: var(--mat-sys-primary);
-  margin-inline-start: 8px;
+.inbox .cp-record-badge {
+  margin-inline-start: var(--cp-space-sm);
 }

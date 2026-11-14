@@ -1,12 +1,10 @@
 .status-dialog__content {
   display: grid;
-  gap: 12px;
-  min-width: min(420px, 80vw);
+  gap: var(--cp-space-md);
 }
 
-.status-dialog__error {
-  margin: 0;
-  color: #b42318;
+.status-dialog__content mat-form-field {
+  min-width: 0;
 }
 
 button mat-progress-spinner {

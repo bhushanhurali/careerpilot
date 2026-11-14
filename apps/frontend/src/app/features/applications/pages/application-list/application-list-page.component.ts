@@ -94,6 +94,10 @@ export class ApplicationListPageComponent implements OnInit {
     });
   }
 
+  protected filtersActive(): boolean {
+    return Object.values(this.filtersForm.getRawValue()).some((value) => value.trim().length > 0);
+  }
+
   protected retry(): void {
     this.loadApplications();
   }

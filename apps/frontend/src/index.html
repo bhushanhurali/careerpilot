@@ -5,6 +5,21 @@
     <title>CareerPilot</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Set the preference before global styles and Angular render.
+      (() => {
+        let preference;
+        try {
+          preference = localStorage.getItem('careerpilot-theme');
+        } catch {
+          // Storage may be blocked; follow the OS in that case.
+        }
+        const theme = preference === 'light' || preference === 'dark' ? preference : 'system';
+        document.documentElement.dataset.theme = theme;
+        if (theme !== 'system') document.querySelector('meta[name="color-scheme"]').content = theme;
+      })();
+    </script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   </head>
   <body>
