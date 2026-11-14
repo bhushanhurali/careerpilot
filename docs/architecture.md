@@ -233,6 +233,9 @@ cleanup workflows.
 
 ### Appearance Foundation
 
+See the [CareerPilot design system guide](design-system.md) for token usage, shared
+record styles, theme behavior, and accessibility checks.
+
 Angular Material 3 owns component styling, including overlays. Global CareerPilot
 `--cp-*` tokens cover semantic colors, typography, spacing, radii, and shadows. Tailwind
 CSS 4 maps shared tokens to utilities; Preflight is intentionally omitted. Keep existing
