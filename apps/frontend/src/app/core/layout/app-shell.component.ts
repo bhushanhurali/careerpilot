@@ -10,6 +10,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
 
 import { AuthStore } from '../auth/auth.store';
+import { productBrand } from '../config/product-brand';
 import { ThemeSwitcherComponent } from '../theme/theme-switcher.component';
 import { NotificationStore } from '../../features/notifications/data-access/notification.store';
 
@@ -32,6 +33,7 @@ import { NotificationStore } from '../../features/notifications/data-access/noti
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppShellComponent {
+  protected readonly brand = productBrand;
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly compactViewport = '(width < 1024px)';
   protected readonly compact = toSignal(

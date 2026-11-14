@@ -52,15 +52,26 @@ describe('guestGuard', () => {
     expect(authStore.initialize).not.toHaveBeenCalled();
   });
 
-  it('redirects authenticated users to / without reinitializing known state', async () => {
+  it('redirects authenticated users to the dashboard without reinitializing known state', async () => {
     authStore.status.and.returnValue('authenticated');
     authStore.isAuthenticated.and.returnValue(true);
 
     const result = await runGuard(guestGuard);
 
     expect(result).toEqual(jasmine.any(UrlTree));
-    expect(router.serializeUrl(result as UrlTree)).toBe('/');
+    expect(router.serializeUrl(result as UrlTree)).toBe('/dashboard');
     expect(authStore.initialize).not.toHaveBeenCalled();
+  });
+
+  it('waits for session restoration before deciding whether to show the public page', async () => {
+    authStore.status.and.returnValue('unknown');
+    authStore.isAuthenticated.and.returnValue(false);
+    authStore.initialize.and.callFake(() => {
+      authStore.isAuthenticated.and.returnValue(true);
+      return of(undefined);
+    });
+    expect(await runGuard(guestGuard)).toEqual(router.createUrlTree(['/dashboard']));
+    expect(authStore.initialize).toHaveBeenCalledTimes(1);
   });
 
   async function runGuard(guard: CanActivateFn): Promise<unknown> {
