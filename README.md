@@ -1,8 +1,10 @@
-# CareerPilot
+# JobThreader
+
+**Your entire job search, connected.**
 
 Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
-Phase 10 UI/UX Modernization & Design System is implemented. CareerPilot currently includes registration, login,
+Phase 10 UI/UX Modernization & Design System is implemented. JobThreader currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
 management, protected job application CRUD, append-only application status history, transactional
 status transitions, interview scheduling, application tasks, an analytics dashboard, private resume
@@ -11,16 +13,16 @@ frontend/backend tests for the completed feature set.
 
 ## Application Preview
 
-The signed-out landing page introduces CareerPilot and previews the dashboard with sample data.
+The signed-out landing page introduces JobThreader and previews the dashboard with sample data.
 The public Appearance menu supports Light, Dark, and System.
 
 | Desktop · Light                                                                                   | Desktop · Dark                                                                                  |
 | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| ![CareerPilot landing page on desktop in Light mode](docs/screenshots/landing-desktop-light.webp) | ![CareerPilot landing page on desktop in Dark mode](docs/screenshots/landing-desktop-dark.webp) |
+| ![JobThreader landing page on desktop in Light mode](docs/screenshots/landing-desktop-light.webp) | ![JobThreader landing page on desktop in Dark mode](docs/screenshots/landing-desktop-dark.webp) |
 
 **Mobile · Light.** The hero and sample dashboard adapt to a narrow viewport.
 
-![CareerPilot landing page on mobile in Light mode](docs/screenshots/landing-mobile-light.webp)
+![JobThreader landing page on mobile in Light mode](docs/screenshots/landing-mobile-light.webp)
 
 ## Architecture
 
@@ -126,7 +128,7 @@ docker compose exec backend pnpm --filter @careerpilot/backend migrate:up
 
 ## Authentication
 
-CareerPilot uses short-lived JWT access tokens held only in frontend memory and rotating refresh
+JobThreader uses short-lived JWT access tokens held only in frontend memory and rotating refresh
 tokens delivered through HTTP-only cookies. PostgreSQL stores only refresh-token hashes.
 
 Read these documents before changing authentication:
