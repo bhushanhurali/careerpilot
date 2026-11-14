@@ -1,6 +1,11 @@
 packages:
   - 'apps/*'
   - 'packages/*'
+packageExtensions:
+  # Bind the backend limiter's unqualified Express type imports to the backend peer.
+  express-rate-limit@7.5.1:
+    peerDependencies:
+      '@types/express': '^5.0.3'
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
