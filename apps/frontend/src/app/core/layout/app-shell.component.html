@@ -11,8 +11,8 @@
   >
     <div class="sidebar-content">
       <a class="brand-link" routerLink="/companies" (click)="closeNavigation(navigation)">
-        <mat-icon class="brand-icon">work_outline</mat-icon>
-        CareerPilot
+        <mat-icon class="brand-icon">{{ brand.icon }}</mat-icon>
+        {{ brand.name }}
       </a>
       <nav class="grid gap-1" aria-label="Primary navigation">
         @for (item of destinations; track item.path) {
@@ -46,7 +46,7 @@
           >
             <mat-icon>menu</mat-icon>
           </button>
-          <a class="brand-link compact-brand" routerLink="/companies">CareerPilot</a>
+          <a class="brand-link compact-brand" routerLink="/companies">{{ brand.name }}</a>
         </div>
       } @else {
         <span class="workspace-label">Workspace</span>

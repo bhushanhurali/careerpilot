@@ -231,6 +231,12 @@ cleanup workflows.
 
 ## Frontend Workflows
 
+The public landing route `/` is separate from the authenticated shell and shows a
+representative dashboard with sample data. The guest guard waits for session restoration
+and redirects authenticated visitors to `/dashboard`. Public `/login` and `/register` are
+aliases for the existing `/auth/login` and `/auth/register` routes. Display branding lives
+in `core/config/product-brand.ts`; identifiers and storage keys are not branding settings.
+
 ### Appearance Foundation
 
 See the [CareerPilot design system guide](design-system.md) for token usage, shared

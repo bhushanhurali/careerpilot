@@ -1,0 +1,125 @@
+<header class="public-header">
+  <div class="wrap flex flex-wrap items-center justify-between gap-2">
+    <a class="wordmark" routerLink="/"
+      ><mat-icon>{{ brand.icon }}</mat-icon
+      >{{ brand.name }}</a
+    >
+    <nav aria-label="Public navigation" class="flex flex-wrap items-center gap-1">
+      <cp-theme-switcher />
+      <a mat-button routerLink="/login">Login</a>
+      <a mat-flat-button routerLink="/register">Get Started</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-copy">
+      <h1 id="hero-title">{{ brand.name }}</h1>
+      <p class="tagline">{{ brand.tagline }}</p>
+      <p class="hero-description">
+        Track applications, prepare for interviews, and stay on top of follow-ups in one workspace.
+      </p>
+      <div class="flex flex-wrap justify-center gap-3">
+        <a mat-flat-button routerLink="/register">Get Started</a>
+        <a mat-stroked-button href="#product-preview">See the workspace</a>
+      </div>
+    </div>
+
+    <figure id="product-preview" class="wrap preview">
+      <div class="preview-header flex flex-wrap items-center justify-between gap-2">
+        <span class="flex items-center gap-2"
+          ><mat-icon aria-hidden="true">space_dashboard</mat-icon> Dashboard</span
+        >
+        <span class="sample-label">Sample workspace</span>
+      </div>
+      <div class="preview-body">
+        <dl class="metric-grid grid gap-3 sm:grid-cols-3">
+          @for (metric of sampleMetrics; track metric.label) {
+            <div class="metric">
+              <dt>{{ metric.label }}</dt>
+              <dd>
+                {{ metric.value }}<mat-icon aria-hidden="true">{{ metric.icon }}</mat-icon>
+              </dd>
+            </div>
+          }
+        </dl>
+        <div class="preview-details grid gap-4 md:grid-cols-2">
+          <section aria-label="Sample application status">
+            <h2>Application status</h2>
+            <ul class="chart" role="list">
+              @for (status of sampleStatuses; track status.label) {
+                <li>
+                  <span>{{ status.label }}</span
+                  ><span class="track" aria-hidden="true"
+                    ><span [style.width.%]="status.count * 25"></span></span
+                  ><strong>{{ status.count }}</strong>
+                </li>
+              }
+            </ul>
+          </section>
+          <section aria-label="Sample upcoming work">
+            <h2>Up next</h2>
+            <ul class="preview-activity" role="list">
+              <li>
+                <mat-icon aria-hidden="true">event</mat-icon
+                ><span><strong>Technical interview</strong><small>Frontend Engineer</small></span>
+              </li>
+              <li>
+                <mat-icon aria-hidden="true">task_alt</mat-icon
+                ><span><strong>Send a follow-up</strong><small>Product Designer</small></span>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </div>
+      <figcaption>Illustrative preview with sample data</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap band" aria-labelledby="features-title">
+    <h2 id="features-title">Your job search, organized</h2>
+    <ul class="features grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      @for (feature of features; track feature.title) {
+        <li>
+          <mat-icon aria-hidden="true">{{ feature.icon }}</mat-icon>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.detail }}</p>
+        </li>
+      }
+    </ul>
+  </section>
+
+  <section class="workflow" aria-labelledby="workflow-title">
+    <div class="wrap band">
+      <h2 id="workflow-title">How it works</h2>
+      <ol class="steps grid gap-4 md:grid-cols-3" role="list">
+        @for (step of steps; track step.title; let position = $index) {
+          <li>
+            <span class="step-number" aria-hidden="true">{{ position + 1 }}</span>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.detail }}</p>
+          </li>
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="wrap band final-cta" aria-labelledby="cta-title">
+    <h2 id="cta-title">Ready to organize your job search?</h2>
+    <div class="flex flex-wrap justify-center gap-3">
+      <a mat-flat-button routerLink="/register">Get Started</a>
+      <a mat-stroked-button routerLink="/login">Login</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap flex flex-wrap items-center justify-between gap-3">
+    <a class="wordmark" routerLink="/"
+      ><mat-icon>{{ brand.icon }}</mat-icon
+      >{{ brand.name }}</a
+    >
+    <span>{{ brand.tagline }}</span>
+  </div>
+</footer>

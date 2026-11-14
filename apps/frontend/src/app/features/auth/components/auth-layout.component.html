@@ -1,9 +1,9 @@
 <div class="auth-layout flex min-h-dvh flex-col">
   <header class="auth-bar flex items-center justify-between gap-4">
-    <div class="auth-brand flex items-center gap-2">
-      <mat-icon>work_outline</mat-icon>
-      CareerPilot
-    </div>
+    <a class="auth-brand flex items-center gap-2" routerLink="/">
+      <mat-icon>{{ brand.icon }}</mat-icon>
+      {{ brand.name }}
+    </a>
     <cp-theme-switcher />
   </header>
   <main class="auth-main grid flex-1 place-items-center">
