@@ -2,7 +2,7 @@
 
 **Your entire job search, connected.**
 
-Modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
+JobThreader (formerly CareerPilot) is a modern full-stack job application tracking platform built with Angular 20, Node.js 22, PostgreSQL, Docker, and GitHub Actions.
 
 Phase 10 UI/UX Modernization & Design System is implemented. JobThreader currently includes registration, login,
 logout, refresh-token rotation, session restoration, protected company CRUD, nested contact
