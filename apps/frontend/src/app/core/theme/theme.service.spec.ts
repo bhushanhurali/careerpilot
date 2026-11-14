@@ -5,16 +5,22 @@ import { ThemeService } from './theme.service';
 
 describe('ThemeService', () => {
   let root: HTMLElement;
+  let hint: HTMLMetaElement;
   let storage: jasmine.SpyObj<Storage>;
 
   beforeEach(() => {
     root = document.createElement('html');
+    hint = document.createElement('meta');
     storage = jasmine.createSpyObj<Storage>('Storage', ['setItem']);
     TestBed.configureTestingModule({
       providers: [
         {
           provide: DOCUMENT,
-          useValue: { documentElement: root, defaultView: { localStorage: storage } },
+          useValue: {
+            documentElement: root,
+            querySelector: () => hint,
+            defaultView: { localStorage: storage },
+          },
         },
       ],
     });
@@ -25,6 +31,7 @@ describe('ThemeService', () => {
     const theme = TestBed.inject(ThemeService);
     expect(theme.preference()).toBe('dark');
     expect(root.dataset['theme']).toBe('dark');
+    expect(hint.content).toBe('dark');
     expect(storage.setItem).not.toHaveBeenCalled();
   });
 
@@ -36,6 +43,7 @@ describe('ThemeService', () => {
       theme.setPreference(preference);
       expect(theme.preference()).toBe(preference);
       expect(root.dataset['theme']).toBe(preference);
+      expect(hint.content).toBe(preference === 'system' ? 'light dark' : preference);
       expect(storage.setItem).toHaveBeenCalledWith('careerpilot-theme', preference);
     }
   });

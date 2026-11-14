@@ -36,3 +36,12 @@ body {
 a {
   color: var(--cp-color-primary);
 }
+
+:where(
+  a[href]:not([mat-button], [mat-flat-button], [mat-stroked-button], [mat-icon-button]),
+  .skip-link,
+  input[type='file']
+):focus-visible {
+  outline: 2px solid var(--cp-color-primary);
+  outline-offset: 2px;
+}

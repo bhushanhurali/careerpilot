@@ -26,6 +26,8 @@ export class ThemeService {
 
   private apply(preference: ThemePreference): void {
     this.document.documentElement.dataset['theme'] = preference;
+    const hint = this.document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+    if (hint) hint.content = preference === 'system' ? 'light dark' : preference;
     this.selected.set(preference);
   }
 }

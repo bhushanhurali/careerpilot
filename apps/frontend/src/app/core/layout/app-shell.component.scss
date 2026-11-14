@@ -93,6 +93,10 @@
 
   .compact-brand {
     font-size: 1rem;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .app-shell__content {
