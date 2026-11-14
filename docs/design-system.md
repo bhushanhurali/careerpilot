@@ -1,4 +1,4 @@
-# CareerPilot Design System
+# JobThreader Design System
 
 ## Styling Responsibilities
 
@@ -31,7 +31,7 @@ or reload required. A script in the document head restores the stored
 falls back to System. The service keeps the color-scheme hint in sync with runtime
 changes. Preference is local to this browser and independent of auth.
 
-The document root controls both Material and CareerPilot colors, so overlays attached
+The document root controls both Material and JobThreader colors, so overlays attached
 to the body inherit the same scheme. When introducing a production CSP, allow the
 startup script by hash/nonce or move it to an explicitly allowed blocking asset.
 

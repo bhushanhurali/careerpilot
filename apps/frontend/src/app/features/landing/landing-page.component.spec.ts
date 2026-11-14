@@ -27,6 +27,7 @@ describe('Public landing routes', () => {
     await harness.navigateByUrl('/', LandingPageComponent);
     const page = harness.routeNativeElement;
     expect(page?.querySelector('h1')?.textContent).toBe(productBrand.name);
+    expect(page?.querySelector('.tagline')?.textContent).toBe(productBrand.tagline);
     expect(page?.textContent).toContain('Illustrative preview with sample data');
     expect(page?.textContent).toContain('How it works');
     expect(page?.textContent).toContain('deterministic coverage');
@@ -43,6 +44,9 @@ describe('Public landing routes', () => {
     const router = TestBed.inject(Router);
     await harness.navigateByUrl('/login');
     expect(router.url).toBe('/auth/login');
+    expect(harness.routeNativeElement?.querySelector('.auth-brand')?.textContent?.trim()).toContain(
+      productBrand.name,
+    );
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Sign in');
     await harness.navigateByUrl('/register');
     expect(router.url).toBe('/auth/register');
