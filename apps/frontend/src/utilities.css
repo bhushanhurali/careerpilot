@@ -11,7 +11,7 @@
   --color-cp-border: var(--cp-color-border);
   --color-cp-primary: var(--cp-color-primary);
   --color-cp-error: var(--cp-color-error);
-  --font-cp: var(--cp-font-family);
+  --font-sans: var(--cp-font-family);
   --spacing-cp-sm: var(--cp-space-sm);
   --spacing-cp-md: var(--cp-space-md);
   --spacing-cp-lg: var(--cp-space-lg);

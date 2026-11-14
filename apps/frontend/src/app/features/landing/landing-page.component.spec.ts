@@ -32,6 +32,10 @@ describe('Public landing routes', () => {
     expect(page?.textContent).toContain('deterministic coverage');
     expect(page?.querySelector('a[href="/login"]')?.textContent?.trim()).toBe('Login');
     expect(page?.querySelector('a[href="/register"]')?.textContent?.trim()).toBe('Get Started');
+    const heading = page?.querySelector('h1');
+    const action = page?.querySelector('a[href="/register"]');
+    if (!heading || !action) throw new Error('Expected landing heading and registration action');
+    expect(getComputedStyle(action).fontFamily).toBe(getComputedStyle(heading).fontFamily);
   });
 
   it('resolves both public auth aliases to the existing forms', async () => {

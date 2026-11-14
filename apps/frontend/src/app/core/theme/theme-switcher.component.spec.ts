@@ -40,6 +40,7 @@ describe('ThemeSwitcherComponent', () => {
     expect(item?.textContent).toContain('Dark');
     if (!item) throw new Error('Expected selected dark item');
     expect(getComputedStyle(item).colorScheme).toBe('dark');
+    expect(getComputedStyle(item).fontFamily).toBe(getComputedStyle(document.body).fontFamily);
     await menu.clickItem({ text: /System/ });
     expect(getComputedStyle(document.documentElement).colorScheme).toBe('light dark');
     expect(localStorage.getItem(key)).toBe('system');

@@ -9,7 +9,9 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$green-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: var(--cp-font-family),
+      ),
       density: 0,
     )
   );
@@ -35,6 +37,10 @@ body {
 
 a {
   color: var(--cp-color-primary);
+}
+
+:where(button, input, select, textarea, input::file-selector-button) {
+  font-family: inherit;
 }
 
 :where(

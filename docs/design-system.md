@@ -13,6 +13,15 @@
 - Reuse `src/styles/_records.scss` for record headings, filter grids, scrolling tables,
   facts, list rows, badges, and feedback. Keep feature-specific styles local.
 
+## Typography
+
+Use the system sans-serif stack defined by `--cp-font-family` for all UI text.
+The document and native controls inherit it, Angular Material uses it for both
+plain and brand typography, and Tailwind's `font-sans` resolves to the same token.
+Set size, weight, and line height independently; do not introduce feature-local font
+stacks. No text font is downloaded. Material Icons is a separate ligature font for
+icons only.
+
 ## Appearance
 
 Light and Dark override the operating system. System follows the browser's live
