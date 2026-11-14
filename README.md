@@ -24,6 +24,20 @@ The public Appearance menu supports Light, Dark, and System.
 
 ![JobThreader landing page on mobile in Light mode](docs/screenshots/landing-mobile-light.webp)
 
+## Repository Visibility and Licensing
+
+JobThreader's source is publicly visible for portfolio and recruiter review.
+Newly published JobThreader material owned by Bhushan Hurali is proprietary
+and covered by the [all-rights-reserved notice](LICENSE), not an open-source
+license. Public visibility does not grant a general license to copy, modify,
+redistribute, or commercially exploit that material. Commercial reuse requires
+prior written permission from Bhushan Hurali unless otherwise permitted by law.
+
+Earlier MIT-licensed versions and material already released under MIT retain
+their original permissions, including commercial use under those terms.
+Third-party licenses and notices remain in force. Viewing and forking through
+GitHub remain subject to the [GitHub Terms of Service](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service).
+
 ## Architecture
 
 ```text

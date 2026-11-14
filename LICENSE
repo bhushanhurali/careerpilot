@@ -1,21 +1,20 @@
-MIT License
+JobThreader Proprietary Copyright Notice
 
-Copyright (c) 2026 Bhushan Hurali
+Copyright (c) 2026 Bhushan Hurali. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This notice applies to newly published JobThreader code and related material
+owned by Bhushan Hurali that is not separately licensed. The repository is
+public for portfolio and recruiter evaluation. Public visibility does not
+grant a general license to copy, modify, redistribute, or commercially exploit
+that material. Except as otherwise permitted by applicable law or the GitHub
+Terms of Service, those activities require prior written permission from
+Bhushan Hurali.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Nothing in this notice revokes or limits permissions previously granted under
+the MIT License. Earlier MIT-licensed versions, and material already made
+available under MIT, remain usable under the original MIT terms, including
+their notice requirements.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Third-party components remain subject to their own licenses and notices.
+Nothing in this notice alters those terms or the rights granted by the GitHub
+Terms of Service, including viewing and forking through GitHub.
