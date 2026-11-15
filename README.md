@@ -49,25 +49,31 @@ docs                  Setup, API, security, architecture, and decision records
 
 ## Roadmap Status
 
-| Phase    | Status   | Scope                                                                          |
-| -------- | -------- | ------------------------------------------------------------------------------ |
-| Phase 0  | Complete | Monorepo, tooling, Docker, CI foundation                                       |
-| Phase 1  | Complete | Authentication, token flow, frontend auth foundation, auth tests, docs         |
-| Phase 2  | Complete | Companies, nested contacts, ownership, soft deletion, frontend workflows, docs |
-| Phase 3  | Complete | Job application model, API, frontend workflows, tests, docs                    |
-| Phase 4  | Complete | Status history, transactional status transitions, frontend timeline, tests     |
-| Phase 5  | Complete | Interview scheduling and management on application detail, API, tests, docs    |
-| Phase 6  | Complete | Application tasks, due-date filters, and cross-application follow-ups          |
-| Phase 7  | Complete | Dashboard KPIs, application trends, upcoming work, and recent activity         |
-| Phase 8  | Complete | Private resume management, job descriptions, and deterministic skill coverage  |
-| Phase 9  | Complete | Persistent in-app Interview and Task reminders and notification inbox          |
-| Phase 10 | Complete | Responsive shell and workflows, semantic tokens, and Light/Dark/System themes  |
-| Phase 11 | Planned  | Deployment & Infrastructure                                                    |
-| Phase 12 | Planned  | Production Polish & Portfolio                                                  |
+| Phase    | Status      | Scope                                                                          |
+| -------- | ----------- | ------------------------------------------------------------------------------ |
+| Phase 0  | Complete    | Monorepo, tooling, Docker, CI foundation                                       |
+| Phase 1  | Complete    | Authentication, token flow, frontend auth foundation, auth tests, docs         |
+| Phase 2  | Complete    | Companies, nested contacts, ownership, soft deletion, frontend workflows, docs |
+| Phase 3  | Complete    | Job application model, API, frontend workflows, tests, docs                    |
+| Phase 4  | Complete    | Status history, transactional status transitions, frontend timeline, tests     |
+| Phase 5  | Complete    | Interview scheduling and management on application detail, API, tests, docs    |
+| Phase 6  | Complete    | Application tasks, due-date filters, and cross-application follow-ups          |
+| Phase 7  | Complete    | Dashboard KPIs, application trends, upcoming work, and recent activity         |
+| Phase 8  | Complete    | Private resume management, job descriptions, and deterministic skill coverage  |
+| Phase 9  | Complete    | Persistent in-app Interview and Task reminders and notification inbox          |
+| Phase 10 | Complete    | Responsive shell and workflows, semantic tokens, and Light/Dark/System themes  |
+| Phase 11 | In progress | Deployment preparation; live deployment and recovery verification pending      |
+| Phase 12 | Planned     | Production Polish & Portfolio                                                  |
 
 Use the Appearance menu on sign-in, registration, or in the authenticated shell to
 choose Light, Dark, or System. See the [design system guide](docs/design-system.md)
 for styling and accessibility conventions.
+
+## Deployment Documentation
+
+- [Manual deployment runbook](docs/manual-deployment.md): EC2, Cloudflare Pages, rollout gates, and live checks.
+- [Production Docker runtime](docs/production-runtime.md): Compose settings, Caddy, storage, and migrations.
+- [Backup, recovery, and monitoring](docs/backup-and-recovery.md): coordinated backups, isolated restore, and alerts.
 
 ## Prerequisites
 

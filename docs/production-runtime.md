@@ -2,6 +2,8 @@
 
 Use a dedicated Compose project on a Linux Docker host. This setup runs one API instance with its
 reminder and resume-cleanup workers. It does not configure EC2, Cloudflare Pages, DNS, or EC2 access.
+Start with the [manual deployment runbook](manual-deployment.md) and plan
+[backup, recovery, and monitoring](backup-and-recovery.md) before opening traffic.
 
 ## Operator Configuration
 
