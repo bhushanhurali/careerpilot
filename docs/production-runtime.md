@@ -24,6 +24,9 @@ ports. Caddy is the only service publishing ports (`80`/`443`); the API/DB netwo
 network are separate. Runtime secrets are passed as environment variables, so Docker administrators
 can inspect them. Restrict host and Docker access.
 
+Keep `REGISTRATION_ENABLED=false` for the initial release (also the production default). Use the
+[private initial account command](manual-deployment.md#provision-the-initial-account).
+
 On the actual persistent filesystem, provision a dedicated resume directory owned by UID/GID
 `1000:1000`, mode `0700`, with a regular `.storage-id` file owned by the same user, mode `0600`.
 For a **new** directory only, for example:

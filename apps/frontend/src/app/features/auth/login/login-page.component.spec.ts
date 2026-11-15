@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { throwError } from 'rxjs';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { RegistrationPolicyService } from '../../../core/auth/registration-policy.service';
 import { LoginPageComponent } from './login-page.component';
 
 describe('LoginPageComponent', () => {
@@ -20,6 +21,7 @@ describe('LoginPageComponent', () => {
       imports: [LoginPageComponent, NoopAnimationsModule],
       providers: [
         provideRouter([]),
+        { provide: RegistrationPolicyService, useValue: { enabled: () => true } },
         {
           provide: AuthStore,
           useValue: authStore,

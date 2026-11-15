@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
 import { productBrand } from '../../core/config/product-brand';
+import { RegistrationPolicyService } from '../../core/auth/registration-policy.service';
 import { ThemeSwitcherComponent } from '../../core/theme/theme-switcher.component';
 
 @Component({
@@ -14,6 +15,7 @@ import { ThemeSwitcherComponent } from '../../core/theme/theme-switcher.componen
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent {
+  protected readonly registrationEnabled = inject(RegistrationPolicyService).enabled;
   protected readonly brand = productBrand;
   protected readonly features = [
     {

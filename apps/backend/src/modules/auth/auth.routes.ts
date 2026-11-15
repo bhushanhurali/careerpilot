@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { env } from '../../config/env.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { HttpError } from '../../shared/errors/http-error.js';
+import { ok } from '../../shared/responses/api-response.js';
 import { validateBody } from '../../shared/validation/validate-request.js';
 import { AuthController } from './auth.controller.js';
 import { loginRateLimit, refreshRateLimit, registerRateLimit } from './auth.rate-limit.js';
@@ -25,6 +26,18 @@ export function createAuthRouter(options: AuthRouterOptions = {}): Router {
 
   const maybeRateLimit = (middleware: RequestHandler): RequestHandler[] =>
     options.disableRateLimits ? [] : [middleware];
+
+  router.get('/registration', (_request, response) => {
+    response.json(ok({ registrationEnabled: env.REGISTRATION_ENABLED }));
+  });
+
+  router.post('/register', (_request, _response, next) => {
+    if (!env.REGISTRATION_ENABLED) {
+      next(new HttpError(403, 'REGISTRATION_DISABLED', 'Public registration is disabled'));
+      return;
+    }
+    next();
+  });
 
   router.use((request, _response, next) => {
     if (

@@ -67,8 +67,8 @@ into production without a verified migration plan.
 
 ## 4. Bring Up the Backend and HTTPS
 
-Before publishing an API DNS record, enforce the [restricted rollout](#7-restricted-rollout-and-privacy)
-or keep the host unreachable to the public. The repository has no registration toggle.
+Before publishing an API DNS record, explicitly set `REGISTRATION_ENABLED=false` in the protected
+production environment file and follow the [restricted rollout](#7-restricted-rollout-and-privacy).
 
 1. Follow [Run a Release](production-runtime.md#run-a-release): validate Compose quietly, build the
    image, start PostgreSQL and wait for health, run `node dist/db/migrate.js up` through the one-off
@@ -81,6 +81,37 @@ or keep the host unreachable to the public. The repository has no registration t
    `curl --fail https://api.jobthreader.com/ready` from an authorized client. `/health` is liveness,
    not readiness. A `503` or failed Caddy upstream check is a stop signal, not a reason to bypass
    readiness.
+
+### Provision the Initial Account
+
+Keep `REGISTRATION_ENABLED=false` throughout. After PostgreSQL is healthy and compiled migrations
+have run, create an ordinary account over a trusted operator SSH session. The one-off container
+does not start an HTTP listener, publish ports, or create a session. Use a unique password from a
+password manager (12 to 128 characters). In Bash, with the `dc` helper already defined:
+
+```bash
+(
+  set +x
+  set -o pipefail
+  read -r -s -p 'Initial account password: ' account_password || exit 1
+  printf '\n' >&2
+  printf '%s' "$account_password" | dc run --rm --no-deps -T backend \
+    node dist/modules/auth/create-account.js 'owner@example.com' 'First' 'Last'
+)
+```
+
+Replace the example account details. Pass only the password on stdin, never as an argument,
+Compose variable, or checked-in seed. A duplicate email fails without changing the existing
+account. Confirm the policy endpoint reports `false`, and run this non-mutating probe:
+
+```sh
+curl -isS https://api.jobthreader.com/api/v1/auth/registration
+curl -isS https://api.jobthreader.com/api/v1/auth/register \
+  -H 'Origin: https://jobthreader.com' -H 'Content-Type: application/json' --data '{}'
+```
+
+Expect `200` with `registrationEnabled: false` and `403 REGISTRATION_DISABLED` respectively. Verify
+the account can sign in normally and both registration URLs lead to sign-in without showing a form.
 
 ## 5. Configure Cloudflare Pages
 
@@ -132,11 +163,10 @@ and [custom domains](https://developers.cloudflare.com/pages/configuration/custo
 
 ## 7. Restricted Rollout and Privacy
 
-- **Keep real signup restricted** until these gates are met. The API registration route is currently
-  enabled and there is no invite-only or environment switch. Hiding a button, CORS, and rate limiting
-  do not disable signup. Use an operator-tested network/proxy restriction for the API during a
-  controlled pilot, or keep it unpublished. If an edge restriction is used, verify direct API
-  access cannot bypass it. Keep test data synthetic until data-handling controls are in place.
+- **Keep public signup disabled** until these gates are met. Set `REGISTRATION_ENABLED=false` and
+  verify direct API requests are rejected; hiding a button, CORS, and rate limiting do not disable
+  signup. Provision any initial users privately. Keep test data synthetic until data-handling
+  controls are in place.
 - Publish a privacy notice identifying the operator and contact, data collected (including resumes,
   extracted text, job records, cookies and logs), purposes and applicable legal bases, processors,
   hosting and transfers, retention, rights, and request procedures. Review actual provider terms

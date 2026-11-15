@@ -8,7 +8,7 @@ import {
 } from '../../shared/security/jwt.js';
 import { hashPassword, verifyPassword } from '../../shared/security/password.js';
 import { hashToken } from '../../shared/security/token-hash.js';
-import { AuthRepository } from './auth.repository.js';
+import { AuthRepository, CreateUserInput } from './auth.repository.js';
 import {
   AuthTokenResponse,
   AuthUserDto,
@@ -39,24 +39,31 @@ function invalidRefreshTokenError(): HttpError {
 export class AuthService {
   constructor(private readonly authRepository: AuthRepository) {}
 
-  async register(input: RegisterInput): Promise<AuthTokenResponse> {
+  private async prepareNewUser(input: RegisterInput): Promise<CreateUserInput> {
     const existingUser = await this.authRepository.findUserByEmail(input.email);
 
     if (existingUser) {
       throw new HttpError(409, 'EMAIL_ALREADY_EXISTS', 'A user with this email already exists');
     }
 
+    const passwordHash = await hashPassword(input.password);
+    return {
+      email: input.email,
+      passwordHash,
+      firstName: input.firstName,
+      lastName: input.lastName,
+    };
+  }
+
+  async provisionAccount(input: RegisterInput): Promise<void> {
+    const user = await this.prepareNewUser(input);
+    await this.authRepository.createUser(user);
+  }
+
+  async register(input: RegisterInput): Promise<AuthTokenResponse> {
+    const newUser = await this.prepareNewUser(input);
     return this.authRepository.transaction(async (transaction) => {
-      const passwordHash = await hashPassword(input.password);
-      const user = await this.authRepository.createUser(
-        {
-          email: input.email,
-          passwordHash,
-          firstName: input.firstName,
-          lastName: input.lastName,
-        },
-        transaction,
-      );
+      const user = await this.authRepository.createUser(newUser, transaction);
       const refreshToken = signRefreshToken({ userId: user.id });
       const accessToken = signAccessToken({ id: user.id, role: user.role });
 
