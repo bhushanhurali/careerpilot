@@ -151,6 +151,9 @@ so the Docker service name `backend` is not a browser API address. The legacy
 
 ### Production HTTPS Proxy
 
+See the [production runtime guide](production-runtime.md) for the Compose, Caddy, and persistent
+storage setup and the explicit compiled migration command.
+
 Set `TRUSTED_PROXY_IP` to the **single immediate proxy peer IP that Express sees** on its socket.
 The address may differ from the host's loopback address when Express runs in a container. Express
 trusts only that address at the first hop, not a CIDR, hop count alone, or an arbitrary client.

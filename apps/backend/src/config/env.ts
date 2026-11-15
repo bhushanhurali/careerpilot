@@ -30,6 +30,7 @@ const envSchema = z
       .optional(),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     RESUME_STORAGE_DIR: z.string().trim().min(1).default('.careerpilot-data/resumes'),
+    RESUME_STORAGE_ID: z.string().uuid().optional(),
     REMINDER_TIME_ZONE: z
       .string()
       .trim()

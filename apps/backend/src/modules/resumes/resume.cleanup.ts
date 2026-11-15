@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import { logger } from '../../config/logger.js';
 import { ResumeModel } from '../../db/models/resume.model.js';
 import { sequelize } from '../../db/sequelize.js';
+import { runPeriodically } from '../../shared/run-periodically.js';
 import { LocalResumeStorage, type ResumeStorage } from './resume.storage.js';
 
 const retryDelayMs = 60_000;
@@ -55,20 +56,14 @@ export async function processResumeCleanup(
   }
 }
 
-export function startResumeCleanup(): () => void {
+export function startResumeCleanup(): () => Promise<void> {
   const storage = new LocalResumeStorage();
-  let running = false;
-  const tick = () => {
-    if (running) return;
-    running = true;
-    void processResumeCleanup(storage)
-      .catch(() => logger.error('Could not process pending resume cleanup'))
-      .finally(() => {
-        running = false;
-      });
-  };
-  const timer = setInterval(tick, retryDelayMs);
-  timer.unref();
-  tick();
-  return () => clearInterval(timer);
+  return runPeriodically(async () => {
+    try {
+      await storage.verifyMount();
+      await processResumeCleanup(storage);
+    } catch {
+      logger.error('Could not process pending resume cleanup');
+    }
+  }, retryDelayMs);
 }

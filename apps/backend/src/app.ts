@@ -18,6 +18,7 @@ import { createNotificationsRouter } from './modules/notifications/notifications
 import { createResumesRouter } from './modules/resumes/resume.routes.js';
 import { createTasksRouter } from './modules/tasks/tasks.routes.js';
 import { ok } from './shared/responses/api-response.js';
+import { verifyReadiness } from './readiness.js';
 
 type CreateAppOptions = {
   authRepository?: AuthRepository;
@@ -53,6 +54,16 @@ export function createApp(options: CreateAppOptions = {}) {
 
   app.get('/health', (_request: Request, response: Response) => {
     response.status(200).json({ status: 'ok' });
+  });
+
+  app.get('/ready', async (_request, response) => {
+    response.set('Cache-Control', 'no-store');
+    try {
+      await verifyReadiness();
+      response.status(200).json({ status: 'ready' });
+    } catch {
+      response.status(503).json({ status: 'not_ready' });
+    }
   });
 
   app.get('/api/v1/health', (_request: Request, response: Response) => {
