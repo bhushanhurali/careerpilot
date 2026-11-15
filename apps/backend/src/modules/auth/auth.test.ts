@@ -13,6 +13,7 @@ import {
   TransactionContext,
 } from './auth.repository.js';
 import { RefreshTokenRecord, UserRecord } from './auth.types.js';
+import { AuthService } from './auth.service.js';
 
 class InMemoryAuthRepository implements AuthRepository {
   users: UserRecord[] = [];
@@ -148,6 +149,47 @@ async function registerUser(app: ReturnType<typeof createApp>) {
 }
 
 describe('auth API', () => {
+  it('blocks direct registration but lets a privately provisioned account log in', async () => {
+    const previous = env.REGISTRATION_ENABLED;
+    env.REGISTRATION_ENABLED = false;
+    try {
+      const { app, repository } = createTestApp();
+      const configuration = await request(app).get('/api/v1/auth/registration');
+      expect(configuration.status).toBe(200);
+      expect(configuration.headers['cache-control']).toBe('private, no-store');
+      expect(configuration.body).toMatchObject({
+        success: true,
+        data: { registrationEnabled: false },
+      });
+      const denied = await registerUser(app);
+      expect(denied.status).toBe(403);
+      expect(denied.body).toMatchObject({
+        success: false,
+        error: { code: 'REGISTRATION_DISABLED' },
+      });
+      expect(denied.headers['set-cookie']).toBeUndefined();
+      expect(repository.users).toHaveLength(0);
+      const account = {
+        email: 'ada@example.com',
+        password: 'StrongPassword123!',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      };
+      const service = new AuthService(repository);
+      await service.provisionAccount(account);
+      await expect(service.provisionAccount(account)).rejects.toMatchObject({
+        code: 'EMAIL_ALREADY_EXISTS',
+      });
+      expect(repository.users[0]?.passwordHash).not.toBe(account.password);
+      expect(repository.refreshTokens).toHaveLength(0);
+      await request(app)
+        .post('/api/v1/auth/login')
+        .send({ email: account.email, password: account.password })
+        .expect(200);
+    } finally {
+      env.REGISTRATION_ENABLED = previous;
+    }
+  });
   it('scopes credentialed browser auth and prevents caching in production', async () => {
     const initial = { ...env };
     Object.assign(env, {

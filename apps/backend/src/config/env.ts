@@ -21,6 +21,10 @@ function isReminderTimeZone(value: string): boolean {
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    REGISTRATION_ENABLED: z
+      .enum(['true', 'false'])
+      .transform((value) => value === 'true')
+      .optional(),
     PORT: z.coerce.number().int().positive().default(3000),
     DATABASE_URL: z.string().url(),
     CORS_ORIGIN: z.string().url().default('http://localhost:4200'),
@@ -92,11 +96,15 @@ const envSchema = z
   });
 
 export function parseEnv(input: NodeJS.ProcessEnv) {
-  return envSchema.parse({
+  const parsed = envSchema.parse({
     ...input,
     PORT: input.PORT ?? input.BACKEND_PORT,
     CORS_ORIGIN: input.CORS_ORIGIN ?? input.BACKEND_CORS_ORIGIN,
   });
+  return {
+    ...parsed,
+    REGISTRATION_ENABLED: parsed.REGISTRATION_ENABLED ?? parsed.NODE_ENV !== 'production',
+  };
 }
 
 export const env = parseEnv(process.env);

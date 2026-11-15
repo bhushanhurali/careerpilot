@@ -1,25 +1,52 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { of } from 'rxjs';
 
 import { routes } from '../../app.routes';
 import { AuthStore } from '../../core/auth/auth.store';
+import { RegistrationPolicyService } from '../../core/auth/registration-policy.service';
 import { productBrand } from '../../core/config/product-brand';
 import { LandingPageComponent } from './landing-page.component';
 
 describe('Public landing routes', () => {
+  const enabled = signal(true);
   beforeEach(() => {
+    enabled.set(true);
     TestBed.configureTestingModule({
       imports: [NoopAnimationsModule],
       providers: [
         provideRouter(routes),
+        {
+          provide: RegistrationPolicyService,
+          useValue: {
+            enabled,
+            get status$() {
+              return of(enabled());
+            },
+          },
+        },
         {
           provide: AuthStore,
           useValue: { status: () => 'anonymous', isAuthenticated: () => false },
         },
       ],
     });
+  });
+
+  it('hides signup links and redirects both registration URLs when disabled', async () => {
+    enabled.set(false);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/', LandingPageComponent);
+    expect(harness.routeNativeElement?.querySelector('a[href="/register"]')).toBeNull();
+    expect(harness.routeNativeElement?.querySelector('a[href="/login"]')).not.toBeNull();
+    for (const url of ['/register', '/auth/register']) {
+      await harness.navigateByUrl(url);
+      expect(TestBed.inject(Router).url).toBe('/auth/login');
+      expect(harness.routeNativeElement?.querySelector('a[href="/auth/register"]')).toBeNull();
+    }
   });
 
   it('renders the public page with clearly labeled sample data and auth CTAs', async () => {

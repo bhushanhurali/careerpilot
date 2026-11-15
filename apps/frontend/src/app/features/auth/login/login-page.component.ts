@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../../core/auth/auth.store';
+import { RegistrationPolicyService } from '../../../core/auth/registration-policy.service';
 import { AuthLayoutComponent } from '../components/auth-layout.component';
 
 @Component({
@@ -31,6 +32,7 @@ export class LoginPageComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authStore = inject(AuthStore);
   private readonly router = inject(Router);
+  protected readonly registrationEnabled = inject(RegistrationPolicyService).enabled;
 
   protected readonly hidePassword = signal(true);
   protected readonly isSubmitting = signal(false);

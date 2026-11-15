@@ -14,6 +14,21 @@ const production = {
 };
 
 describe('backend environment', () => {
+  it('defaults registration by environment and accepts only explicit boolean strings', () => {
+    expect(parseEnv(production).REGISTRATION_ENABLED).toBe(false);
+    expect(parseEnv({ ...production, NODE_ENV: 'test' }).REGISTRATION_ENABLED).toBe(true);
+    expect(parseEnv({ ...production, NODE_ENV: 'development' }).REGISTRATION_ENABLED).toBe(true);
+    expect(parseEnv({ ...production, REGISTRATION_ENABLED: 'true' }).REGISTRATION_ENABLED).toBe(
+      true,
+    );
+    expect(
+      parseEnv({ ...production, NODE_ENV: 'test', REGISTRATION_ENABLED: 'false' })
+        .REGISTRATION_ENABLED,
+    ).toBe(false);
+    expect(() => parseEnv({ ...production, REGISTRATION_ENABLED: 'yes' })).toThrow(
+      'REGISTRATION_ENABLED',
+    );
+  });
   it('accepts an explicit production configuration and preserves the local defaults', () => {
     expect(parseEnv(production)).toMatchObject(production);
     expect(

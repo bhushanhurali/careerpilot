@@ -132,6 +132,15 @@ so the Docker service name `backend` is not a browser API address. The legacy
 
 ## Production Guidance
 
+`REGISTRATION_ENABLED` accepts only `true` or `false`. It defaults to `false` in production and
+`true` in development/test; both Compose files pass through explicit overrides. Production rollout
+should keep it explicitly `false`. Changing it requires recreating the backend container (not
+rebuilding Angular). The public `GET /api/v1/auth/registration` endpoint returns only the flag,
+with `Cache-Control: private, no-store`. Angular reads it once per page load and hides signup if
+the endpoint is unavailable. Disabled `POST /api/v1/auth/register` requests receive
+`403 REGISTRATION_DISABLED`; login and session endpoints remain available. See the
+[initial account procedure](manual-deployment.md#provision-the-initial-account).
+
 - Inject secrets through the deployment platform rather than committing an environment file.
 - Set `NODE_ENV=production` and pass an explicit `DATABASE_URL` using `postgres://` or
   `postgresql://` with a hostname and database name.

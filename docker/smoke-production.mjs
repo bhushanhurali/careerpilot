@@ -28,7 +28,7 @@ writeFileSync(
   }),
 );
 
-function compose(args, expectedStatus = 0) {
+function compose(args, expectedStatus = 0, input) {
   const result = spawnSync(
     'docker',
     [
@@ -45,7 +45,8 @@ function compose(args, expectedStatus = 0) {
     ],
     {
       cwd: root,
-      stdio: 'inherit',
+      stdio: [input === undefined ? 'inherit' : 'pipe', 'inherit', 'inherit'],
+      input,
       timeout: 300_000,
       env: {
         ...process.env,
@@ -59,6 +60,7 @@ function compose(args, expectedStatus = 0) {
         PROXY_SUBNET: `${prefix}.0/24`,
         RESUME_HOST_DIR: scratch,
         RESUME_STORAGE_ID: storageId,
+        REGISTRATION_ENABLED: 'false',
       },
     },
   );
@@ -117,6 +119,44 @@ try {
   compose(['run', '--rm', '--no-deps', 'backend', 'node', 'dist/db/migrate.js', 'up']);
   compose(['run', '--rm', '--no-deps', '-e', `RESUME_STORAGE_ID=${randomUUID()}`, 'backend'], 1);
   compose(['up', '-d', '--wait', 'backend']);
+  const accountPassword = randomBytes(24).toString('hex');
+  const accountArgs = [
+    'run',
+    '--rm',
+    '--no-deps',
+    '-T',
+    'backend',
+    'node',
+    'dist/modules/auth/create-account.js',
+    'smoke@example.com',
+    'Smoke',
+    'Test',
+  ];
+  compose(accountArgs, 0, accountPassword);
+  compose(accountArgs, 1, accountPassword);
+  compose(
+    [
+      'exec',
+      '-T',
+      'backend',
+      'node',
+      '--input-type=module',
+      '-e',
+      `
+    import { readFileSync } from 'node:fs';
+    const auth = 'http://127.0.0.1:3000/api/v1/auth';
+    const post = (route, body) => fetch(auth + route, { method: 'POST', headers: { Origin: 'https://jobthreader.com', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const policy = await (await fetch(auth + '/registration')).json();
+    if (policy.data?.registrationEnabled !== false) throw Error('Expected disabled registration');
+    const signup = await post('/register', {});
+    if (signup.status !== 403 || (await signup.json()).error?.code !== 'REGISTRATION_DISABLED') throw Error('Public signup was not denied');
+    const login = await post('/login', { email: 'smoke@example.com', password: readFileSync(0, 'utf8') });
+    if (!login.ok) throw Error('Provisioned account could not sign in');
+  `,
+    ],
+    0,
+    accountPassword,
+  );
   compose([
     'exec',
     '-T',

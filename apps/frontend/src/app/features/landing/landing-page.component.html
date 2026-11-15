@@ -7,7 +7,9 @@
     <nav aria-label="Public navigation" class="flex flex-wrap items-center gap-1">
       <cp-theme-switcher />
       <a mat-button routerLink="/login">Login</a>
-      <a mat-flat-button routerLink="/register">Get Started</a>
+      @if (registrationEnabled()) {
+        <a mat-flat-button routerLink="/register">Get Started</a>
+      }
     </nav>
   </div>
 </header>
@@ -21,7 +23,11 @@
         Track applications, prepare for interviews, and stay on top of follow-ups in one workspace.
       </p>
       <div class="flex flex-wrap justify-center gap-3">
-        <a mat-flat-button routerLink="/register">Get Started</a>
+        @if (registrationEnabled()) {
+          <a mat-flat-button routerLink="/register">Get Started</a>
+        } @else {
+          <a mat-flat-button routerLink="/login">Login</a>
+        }
         <a mat-stroked-button href="#product-preview">See the workspace</a>
       </div>
     </div>
@@ -108,7 +114,9 @@
   <section class="wrap band final-cta" aria-labelledby="cta-title">
     <h2 id="cta-title">Ready to organize your job search?</h2>
     <div class="flex flex-wrap justify-center gap-3">
-      <a mat-flat-button routerLink="/register">Get Started</a>
+      @if (registrationEnabled()) {
+        <a mat-flat-button routerLink="/register">Get Started</a>
+      }
       <a mat-stroked-button routerLink="/login">Login</a>
     </div>
   </section>
