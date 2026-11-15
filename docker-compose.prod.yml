@@ -1,34 +1,92 @@
 services:
   postgres:
     image: postgres:17-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    networks: [database]
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ['CMD-SHELL', 'pg_isready -h 127.0.0.1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 12
 
   backend:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile.prod
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 25s
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: ${DATABASE_URL}
-      CORS_ORIGIN: ${BACKEND_CORS_ORIGIN}
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL}
+      CORS_ORIGIN: https://jobthreader.com
+      TRUSTED_PROXY_IP: ${TRUSTED_PROXY_IP:?Set the static Caddy IP}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Set JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET}
+      COOKIE_SECURE: 'true'
+      RESUME_STORAGE_DIR: /var/lib/careerpilot/resumes
+      RESUME_STORAGE_ID: ${RESUME_STORAGE_ID:?Set RESUME_STORAGE_ID}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       REMINDER_TIME_ZONE: ${REMINDER_TIME_ZONE:-UTC}
+    networks: [ingress, database]
+    volumes:
+      - type: bind
+        source: ${RESUME_HOST_DIR:?Set an absolute RESUME_HOST_DIR}
+        target: /var/lib/careerpilot/resumes
+        bind:
+          create_host_path: false
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          'fetch("http://127.0.0.1:3000/ready").then(r => { if (!r.ok) process.exitCode = 1 }).catch(() => { process.exitCode = 1 })',
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
     ports:
-      - '3000:3000'
+      - '80:80'
+      - '443:443'
+    networks:
+      public: {}
+      ingress:
+        ipv4_address: ${TRUSTED_PROXY_IP:?Set the static Caddy IP}
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+networks:
+  public: {}
+  ingress:
+    internal: true
+    ipam:
+      config:
+        - subnet: ${PROXY_SUBNET:?Set a non-overlapping private IPv4 subnet}
+  database:
+    internal: true
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

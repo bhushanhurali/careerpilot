@@ -1,0 +1,9 @@
+api.jobthreader.com {
+	reverse_proxy backend:3000 {
+		health_uri /ready
+		health_timeout 4s
+		header_up -Forwarded
+		header_up -CF-Connecting-IP
+		header_up -X-Real-IP
+	}
+}

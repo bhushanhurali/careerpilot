@@ -458,7 +458,8 @@ If login succeeds but the cookie is missing:
 If the frontend cannot call the backend:
 
 - Confirm the backend is available at `http://localhost:3000/api/v1/health`.
-- Confirm `NG_APP_API_BASE_URL=http://localhost:3000/api/v1`.
+- Confirm the development API URL is `http://localhost:3000/api/v1` in
+  `apps/frontend/src/app/core/config/api.config.ts`.
 - Restart the frontend after changing frontend environment configuration.
 
 If backend environment validation fails:

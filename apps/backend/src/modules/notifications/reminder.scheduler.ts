@@ -3,6 +3,7 @@ import { QueryTypes } from 'sequelize';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 import { sequelize } from '../../db/sequelize.js';
+import { runPeriodically } from '../../shared/run-periodically.js';
 import { activeApplicationJoins, openDatedTask, scheduledInterview } from './notification-scope.js';
 
 // Materialize only due events. The event keys, not poll time, survive retries and restarts.
@@ -56,19 +57,13 @@ export async function processReminders(
   });
 }
 
-export function startReminderScheduler(): () => void {
-  let running = false;
-  const tick = () => {
-    if (running) return;
-    running = true;
-    void processReminders()
-      .catch((error: unknown) => logger.error({ error }, 'Reminder processing failed'))
-      .finally(() => {
-        running = false;
-      });
-  };
-  const timer = setInterval(tick, 60_000);
-  timer.unref();
-  tick();
-  return () => clearInterval(timer);
+export function startReminderScheduler(): () => Promise<void> {
+  return runPeriodically(async () => {
+    try {
+      await processReminders();
+    } catch (error) {
+      if (env.NODE_ENV === 'production') logger.error('Reminder processing failed');
+      else logger.error({ error }, 'Reminder processing failed');
+    }
+  }, 60_000);
 }

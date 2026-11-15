@@ -98,25 +98,73 @@ must cross the frontend/backend origin boundary during local development.
 
 ## Ports and Frontend API URL
 
-| Variable              | Required | Default/Example                | Purpose                             |
-| --------------------- | -------- | ------------------------------ | ----------------------------------- |
-| `BACKEND_PORT`        | No       | `3000`                         | Backend host port and backend alias |
-| `PORT`                | No       | `3000`                         | Backend-native listener variable    |
-| `FRONTEND_PORT`       | No       | `4200`                         | Angular host port in Docker Compose |
-| `NG_APP_API_BASE_URL` | No       | `http://localhost:3000/api/v1` | Browser-visible API base URL        |
+| Variable        | Required | Default/Example | Purpose                             |
+| --------------- | -------- | --------------- | ----------------------------------- |
+| `BACKEND_PORT`  | No       | `3000`          | Backend host port and backend alias |
+| `PORT`          | No       | `3000`          | Backend-native listener variable    |
+| `FRONTEND_PORT` | No       | `4200`          | Angular host port in Docker Compose |
 
 `PORT` takes precedence over `BACKEND_PORT`. Docker Compose exposes `BACKEND_PORT` on the host but
 runs the backend on container port `3000`.
 
-`NG_APP_API_BASE_URL` must be reachable by the browser. Do not use Docker service name `backend`
-here because the browser is outside the Compose network.
+Angular development builds and tests use `http://localhost:3000/api/v1` from
+`apps/frontend/src/app/core/config/api.config.ts`. The browser is outside the Compose network,
+so the Docker service name `backend` is not a browser API address. The legacy
+`NG_APP_API_BASE_URL` entry in local Compose is not consumed by Angular.
+
+### Frontend Production Build (Cloudflare Pages)
+
+- Build from the repository root with Node.js 22 and the workspace pnpm version. After installing
+  dependencies, run `pnpm --filter @careerpilot/frontend build` and publish
+  `apps/frontend/dist/frontend/browser`.
+- Angular's production file replacement supplies `https://api.jobthreader.com/api/v1` from
+  `apps/frontend/src/app/core/config/api.config.production.ts`. No Pages environment variable is
+  required. The URL is public and compiled into the bundle. To change it, update the production
+  configuration and the verifier's expected URL, then rebuild and redeploy the frontend.
+- Use the package build command rather than bare `ng build`: it verifies that the emitted JavaScript
+  contains the exact production URL and rejects loopback API URLs.
+- Leave the publish root without a top-level `404.html` so
+  [Pages serves the SPA entry point for deep links](https://developers.cloudflare.com/pages/configuration/serving-pages/#single-page-application-spa-rendering).
+  Verify direct loads and refreshes of `/login`, `/register`, and `/dashboard` after deployment.
+- Production authentication still needs credentialed CORS for `https://jobthreader.com` and secure
+  refresh cookies from `https://api.jobthreader.com`. A `pages.dev` preview is not equivalent to
+  the production site for origin or cookie testing.
 
 ## Production Guidance
 
 - Inject secrets through the deployment platform rather than committing an environment file.
-- Use long, random, independently rotated JWT secrets.
-- Set `NODE_ENV=production` and `COOKIE_SECURE=true`.
+- Set `NODE_ENV=production` and pass an explicit `DATABASE_URL` using `postgres://` or
+  `postgresql://` with a hostname and database name.
+- Generate `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` separately with `openssl rand -hex 32`.
+  Production requires distinct 64-character hex secrets and rejects common placeholder patterns.
+- Set `COOKIE_SECURE=true` or omit it to use the production default. `false` is rejected in
+  production. The refresh cookie is host-only, HttpOnly, Secure, and SameSite=Lax. It works
+  between the two HTTPS JobThreader subdomains because they are same-site, even though they are
+  different origins.
 - Use PostgreSQL credentials with least privilege and TLS where supported.
-- Set the exact deployed frontend origin for CORS.
+- Set `CORS_ORIGIN=https://jobthreader.com` (or its existing `BACKEND_CORS_ORIGIN` alias), without a
+  trailing slash. Only that origin receives credentialed CORS headers. In production, auth POSTs
+  also require that exact `Origin`, including for CLI smoke tests. This is a browser CSRF control,
+  not a substitute for authentication.
 - Treat a change to token TTLs as a security and user-experience decision.
 - Never log environment values containing passwords or secrets.
+
+### Production HTTPS Proxy
+
+See the [production runtime guide](production-runtime.md) for the Compose, Caddy, and persistent
+storage setup and the explicit compiled migration command.
+
+Set `TRUSTED_PROXY_IP` to the **single immediate proxy peer IP that Express sees** on its socket.
+The address may differ from the host's loopback address when Express runs in a container. Express
+trusts only that address at the first hop, not a CIDR, hop count alone, or an arbitrary client.
+Keep the Express listener reachable only from that proxy and keep the proxy-to-Express link private.
+
+The proxy must replace inbound `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` with
+the verified client IP, HTTPS scheme, and expected host, and discard incoming `Forwarded`. If a CDN
+is in front, recover the client IP only from a verified upstream before setting those values. Do
+not expose a second path around the proxy. See [Express proxy guidance](https://expressjs.com/en/guide/behind-proxies/).
+
+API responses are `private, no-store`; configure any upstream cache to honor that. Production
+request logs omit raw URLs, headers, bodies, and exception payloads, and Sequelize SQL logging is
+disabled. Apply equivalent log hygiene at the reverse proxy. Auth rate limits remain per process
+and reset on restart; deployments with multiple API instances need a shared limit policy.
