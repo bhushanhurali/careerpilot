@@ -15,7 +15,10 @@ import { UserModel } from './models/user.model.js';
 
 export const sequelize = new Sequelize(env.DATABASE_URL, {
   dialect: 'postgres',
-  logging: (message) => logger.debug({ sql: message }, 'sequelize query'),
+  logging:
+    env.NODE_ENV === 'production'
+      ? false
+      : (message) => logger.debug({ sql: message }, 'sequelize query'),
 });
 
 UserModel.initialize(sequelize);

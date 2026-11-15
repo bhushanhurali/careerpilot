@@ -1,3 +1,5 @@
+import { BlockList, isIP } from 'node:net';
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
@@ -24,12 +26,30 @@ type CreateAppOptions = {
 
 export function createApp(options: CreateAppOptions = {}) {
   const app = express();
+  if (env.NODE_ENV === 'production' && env.TRUSTED_PROXY_IP) {
+    const proxy = new BlockList();
+    proxy.addAddress(env.TRUSTED_PROXY_IP, isIP(env.TRUSTED_PROXY_IP) === 6 ? 'ipv6' : 'ipv4');
+    app.set(
+      'trust proxy',
+      (address: string, hop: number) =>
+        hop === 0 && proxy.check(address, isIP(address) === 6 ? 'ipv6' : 'ipv4'),
+    );
+  }
 
+  app.use('/api/v1', (_request, response, next) => {
+    response.set('Cache-Control', 'private, no-store');
+    next();
+  });
   app.use(helmet());
-  app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
+  app.use(
+    cors({
+      origin: (origin, callback) => callback(null, origin === env.CORS_ORIGIN),
+      credentials: true,
+    }),
+  );
+  app.use(requestLogger);
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
-  app.use(requestLogger);
 
   app.get('/health', (_request: Request, response: Response) => {
     response.status(200).json({ status: 'ok' });

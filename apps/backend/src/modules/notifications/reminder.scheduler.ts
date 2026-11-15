@@ -62,7 +62,10 @@ export function startReminderScheduler(): () => void {
     if (running) return;
     running = true;
     void processReminders()
-      .catch((error: unknown) => logger.error({ error }, 'Reminder processing failed'))
+      .catch((error: unknown) => {
+        if (env.NODE_ENV === 'production') logger.error('Reminder processing failed');
+        else logger.error({ error }, 'Reminder processing failed');
+      })
       .finally(() => {
         running = false;
       });

@@ -1,9 +1,11 @@
 import crypto from 'node:crypto';
 
+import express from 'express';
 import request from 'supertest';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createApp } from '../../app.js';
+import { env } from '../../config/env.js';
 import {
   AuthRepository,
   CreateRefreshTokenInput,
@@ -146,6 +148,138 @@ async function registerUser(app: ReturnType<typeof createApp>) {
 }
 
 describe('auth API', () => {
+  it('scopes credentialed browser auth and prevents caching in production', async () => {
+    const initial = { ...env };
+    Object.assign(env, {
+      NODE_ENV: 'production',
+      CORS_ORIGIN: 'https://jobthreader.com',
+      COOKIE_SECURE: undefined,
+    });
+    try {
+      const { app, repository } = createTestApp();
+      const origin = env.CORS_ORIGIN;
+      const preflight = await request(app)
+        .options('/api/v1/auth/login')
+        .set('Origin', origin)
+        .set('Access-Control-Request-Method', 'POST');
+      expect(preflight.status).toBe(204);
+      expect(preflight.headers['access-control-allow-origin']).toBe(origin);
+      expect(preflight.headers['access-control-allow-credentials']).toBe('true');
+      const denied = await request(app)
+        .options('/api/v1/auth/login')
+        .set('Origin', 'https://preview.jobthreader.com')
+        .set('Access-Control-Request-Method', 'POST');
+      expect(denied.headers['access-control-allow-origin']).toBeUndefined();
+
+      const signup = await request(app).post('/api/v1/auth/register').set('Origin', origin).send({
+        email: 'ada@example.com',
+        password: 'StrongPassword123!',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+      });
+      expect(signup.status).toBe(201);
+      expect(signup.headers['cache-control']).toBe('private, no-store');
+      const [cookie] = getSetCookieHeader(signup);
+      expect(cookie).toMatch(/; Path=\/api\/v1\/auth;.*; HttpOnly; Secure; SameSite=Lax/);
+      expect(cookie).not.toMatch(/; Domain=/i);
+
+      for (const disallowed of [undefined, 'null', 'https://preview.jobthreader.com']) {
+        const logout = request(app)
+          .post('/api/v1/auth/logout')
+          .set('Cookie', cookie ?? '')
+          .send({});
+        if (disallowed !== undefined) logout.set('Origin', disallowed);
+        const response = await logout;
+        expect(response.status).toBe(403);
+        expect(response.headers['access-control-allow-origin']).toBeUndefined();
+        expect(response.headers['cache-control']).toBe('private, no-store');
+        expect(response.headers['set-cookie']).toBeUndefined();
+      }
+      expect(repository.refreshTokens[0]?.revokedAt).toBeNull();
+      const logout = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Origin', origin)
+        .set('Cookie', cookie?.split(';')[0] ?? '')
+        .send({});
+      expect(logout.status).toBe(200);
+      expect(getSetCookieHeader(logout)[0]).toMatch(/; HttpOnly; Secure; SameSite=Lax/);
+      expect(repository.refreshTokens[0]?.revokedAt).not.toBeNull();
+      expect((await request(app).get('/api/v1/resumes')).headers['cache-control']).toBe(
+        'private, no-store',
+      );
+    } finally {
+      Object.assign(env, initial);
+    }
+  });
+
+  it('limits untrusted peers by socket IP and trusted peers by the nearest forwarded client', async () => {
+    const initial = { ...env };
+    Object.assign(env, { NODE_ENV: 'production', CORS_ORIGIN: 'https://jobthreader.com' });
+    try {
+      env.TRUSTED_PROXY_IP = '192.0.2.10';
+      const directApp = createApp({ authRepository: new InMemoryAuthRepository() });
+      const probe = express();
+      const trust: unknown = directApp.get('trust proxy');
+      probe.set('trust proxy', trust);
+      probe.get('/', (incoming, response) => {
+        response.json({ protocol: incoming.protocol, host: incoming.hostname });
+      });
+      await request(probe)
+        .get('/')
+        .set('Host', 'api.jobthreader.com')
+        .set('X-Forwarded-Host', 'attacker.example')
+        .set('X-Forwarded-Proto', 'https')
+        .expect(200, { protocol: 'http', host: 'api.jobthreader.com' });
+      const login = (app: ReturnType<typeof createApp>, forwarded: string) =>
+        request(app)
+          .post('/api/v1/auth/login')
+          .set('Origin', env.CORS_ORIGIN)
+          .set('X-Forwarded-For', forwarded)
+          .set('Forwarded', 'for=203.0.113.30;proto=https')
+          .set('X-Forwarded-Proto', 'https')
+          .set('X-Forwarded-Host', 'attacker.example')
+          .send({});
+      for (let index = 1; index <= 11; index++) {
+        expect((await login(directApp, `198.51.100.${String(index)}`)).status).toBe(
+          index === 11 ? 429 : 400,
+        );
+      }
+
+      env.TRUSTED_PROXY_IP = '127.0.0.1';
+      const proxiedApp = createApp({ authRepository: new InMemoryAuthRepository() });
+      for (let index = 1; index <= 11; index++) {
+        expect((await login(proxiedApp, `198.51.100.${String(index)}, 203.0.113.10`)).status).toBe(
+          index === 11 ? 429 : 400,
+        );
+      }
+      expect((await login(proxiedApp, '203.0.113.11')).status).toBe(400);
+    } finally {
+      Object.assign(env, initial);
+    }
+  });
+
+  it('does not log malformed production request payloads or return them in errors', async () => {
+    const initial = env.NODE_ENV;
+    env.NODE_ENV = 'production';
+    const { logger } = await import('../../config/logger.js');
+    const log = vi.spyOn(logger, 'error');
+    try {
+      const { app } = createTestApp();
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .type('json')
+        .send('{"password":"must-not-leak"');
+      expect(response.text).not.toContain('must-not-leak');
+      expect(log).toHaveBeenCalledOnce();
+      expect(log.mock.calls[0]?.[1]).toBe('Unhandled application error');
+      expect(JSON.stringify(log.mock.calls)).toMatch(/"requestId":"[a-f0-9-]+"/);
+      expect(JSON.stringify(log.mock.calls)).not.toContain('must-not-leak');
+    } finally {
+      env.NODE_ENV = initial;
+      log.mockRestore();
+    }
+  });
+
   it('registers a user, returns an access token, and sets an HTTP-only refresh cookie', async () => {
     const { app, repository } = createTestApp();
     const response = await registerUser(app);

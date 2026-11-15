@@ -133,9 +133,35 @@ so the Docker service name `backend` is not a browser API address. The legacy
 ## Production Guidance
 
 - Inject secrets through the deployment platform rather than committing an environment file.
-- Use long, random, independently rotated JWT secrets.
-- Set `NODE_ENV=production` and `COOKIE_SECURE=true`.
+- Set `NODE_ENV=production` and pass an explicit `DATABASE_URL` using `postgres://` or
+  `postgresql://` with a hostname and database name.
+- Generate `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` separately with `openssl rand -hex 32`.
+  Production requires distinct 64-character hex secrets and rejects common placeholder patterns.
+- Set `COOKIE_SECURE=true` or omit it to use the production default. `false` is rejected in
+  production. The refresh cookie is host-only, HttpOnly, Secure, and SameSite=Lax. It works
+  between the two HTTPS JobThreader subdomains because they are same-site, even though they are
+  different origins.
 - Use PostgreSQL credentials with least privilege and TLS where supported.
-- Set the exact deployed frontend origin for CORS.
+- Set `CORS_ORIGIN=https://jobthreader.com` (or its existing `BACKEND_CORS_ORIGIN` alias), without a
+  trailing slash. Only that origin receives credentialed CORS headers. In production, auth POSTs
+  also require that exact `Origin`, including for CLI smoke tests. This is a browser CSRF control,
+  not a substitute for authentication.
 - Treat a change to token TTLs as a security and user-experience decision.
 - Never log environment values containing passwords or secrets.
+
+### Production HTTPS Proxy
+
+Set `TRUSTED_PROXY_IP` to the **single immediate proxy peer IP that Express sees** on its socket.
+The address may differ from the host's loopback address when Express runs in a container. Express
+trusts only that address at the first hop, not a CIDR, hop count alone, or an arbitrary client.
+Keep the Express listener reachable only from that proxy and keep the proxy-to-Express link private.
+
+The proxy must replace inbound `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` with
+the verified client IP, HTTPS scheme, and expected host, and discard incoming `Forwarded`. If a CDN
+is in front, recover the client IP only from a verified upstream before setting those values. Do
+not expose a second path around the proxy. See [Express proxy guidance](https://expressjs.com/en/guide/behind-proxies/).
+
+API responses are `private, no-store`; configure any upstream cache to honor that. Production
+request logs omit raw URLs, headers, bodies, and exception payloads, and Sequelize SQL logging is
+disabled. Apply equivalent log hygiene at the reverse proxy. Auth rate limits remain per process
+and reset on restart; deployments with multiple API instances need a shared limit policy.

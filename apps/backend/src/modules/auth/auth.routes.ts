@@ -1,7 +1,9 @@
 import { RequestHandler, Router } from 'express';
 import { z } from 'zod';
 
+import { env } from '../../config/env.js';
 import { authenticate } from '../../middleware/authenticate.js';
+import { HttpError } from '../../shared/errors/http-error.js';
 import { validateBody } from '../../shared/validation/validate-request.js';
 import { AuthController } from './auth.controller.js';
 import { loginRateLimit, refreshRateLimit, registerRateLimit } from './auth.rate-limit.js';
@@ -23,6 +25,18 @@ export function createAuthRouter(options: AuthRouterOptions = {}): Router {
 
   const maybeRateLimit = (middleware: RequestHandler): RequestHandler[] =>
     options.disableRateLimits ? [] : [middleware];
+
+  router.use((request, _response, next) => {
+    if (
+      env.NODE_ENV === 'production' &&
+      request.method === 'POST' &&
+      request.get('Origin') !== env.CORS_ORIGIN
+    ) {
+      next(new HttpError(403, 'ORIGIN_NOT_ALLOWED', 'Request origin is not allowed'));
+      return;
+    }
+    next();
+  });
 
   router.post(
     '/register',
